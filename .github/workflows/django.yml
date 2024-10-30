@@ -44,12 +44,12 @@ jobs:
 
       - name: Run Tests
         run: |
-          poetry run python manage.py collectstatic --settings=rechnung.test_settings
+          poetry run python manage.py collectstatic --settings=rechnung.test_settings --no-input
           poetry run coverage run manage.py test --settings=rechnung.test_settings
         if: ${{ matrix.test-type == 'unit' }}
       - name: Run Tests
         run: |
-          poetry run python manage.py collectstatic --settings=rechnung.test_settings
+          poetry run python manage.py collectstatic --settings=rechnung.test_settings --no-input
           poetry run coverage run manage.py test -k Integration --settings=rechnung.test_settings
         if: ${{ matrix.test-type == 'integration' }}
 
