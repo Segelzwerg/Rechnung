@@ -1,0 +1,37 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: Whist-Team/actions/setup-poetry@v2
+        with:
+          python-version: 3.13
+
+      - name: Lint sources with flake8
+        run: poetry run flake8 lh_django about_us contact home news repertoire media_app --count --show-source --statistics
+      - uses: articulate/actions-markdownlint@v1
+        with:
+          ignore: static/
+      - name: Lint sources with pylint
+        run: poetry run pylint --load-plugins=pylint_django --django-settings-module=rechnung.test_settings rechnung
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run bandit
+        uses: tj-actions/bandit@v5
+        with:
+          targets: |
+            rechnung
+          options: "-r -c pyproject.toml"
