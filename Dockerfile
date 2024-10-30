@@ -12,7 +12,6 @@ COPY --from=poetry /app/requirements.txt .
 RUN pip install -r requirements.txt
 COPY rechnung ./rechnung/
 COPY static/ ./static/
-COPY themes/ ./themes/
 COPY templates/ ./templates/
 COPY manage.py ./manage.py
 CMD python manage.py migrate --settings=$DJANGO_SETTINGS_MODUE; python manage.py collectstatic
