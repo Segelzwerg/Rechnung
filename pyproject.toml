@@ -23,3 +23,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.bandit]
 exclude_dirs = ["*/tests.py"]
+exlude = "rechnung/test_settings.py"
