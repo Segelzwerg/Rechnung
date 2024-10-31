@@ -333,6 +333,38 @@ spelling = ["pyenchant (>=3.2,<4.0)"]
 testutils = ["gitpython (>3)"]
 
 [[package]]
+name = "pylint-django"
+version = "2.6.1"
+description = "A Pylint plugin to help Pylint understand the Django web framework"
+optional = false
+python-versions = "<4.0,>=3.9"
+files = [
+    {file = "pylint-django-2.6.1.tar.gz", hash = "sha256:19e8c85a8573a04e3de7be2ba91e9a7c818ebf05e1b617be2bbae67a906b725f"},
+    {file = "pylint_django-2.6.1-py3-none-any.whl", hash = "sha256:359f68fe8c810ee6bc8e1ab4c83c19b15a43b234a24b08978f47a23462b5ce28"},
+]
+
+[package.dependencies]
+pylint = ">=3.0,<4"
+pylint-plugin-utils = ">=0.8"
+
+[package.extras]
+with-django = ["Django (>=2.2)"]
+
+[[package]]
+name = "pylint-plugin-utils"
+version = "0.8.2"
+description = "Utilities and helpers for writing Pylint plugins"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "pylint_plugin_utils-0.8.2-py3-none-any.whl", hash = "sha256:ae11664737aa2effbf26f973a9e0b6779ab7106ec0adc5fe104b0907ca04e507"},
+    {file = "pylint_plugin_utils-0.8.2.tar.gz", hash = "sha256:d3cebf68a38ba3fba23a873809155562571386d4c1b03e5b4c4cc26c3eee93e4"},
+]
+
+[package.dependencies]
+pylint = ">=1.7"
+
+[[package]]
 name = "pyyaml"
 version = "6.0.2"
 description = "YAML parser and emitter for Python"
@@ -466,4 +498,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.13"
-content-hash = "9039a1a899e6479aa84c6084f6b3d7cc47dc34f0e7e4182ab0a87cee68fb1121"
+content-hash = "76e148fa5592ada9ccf32f9846079a39031938e7ba3ddb3627e4e4e111491e6c"
