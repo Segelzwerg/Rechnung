@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "rechnung"
+version = "0.1.0"
+description = ""
+authors = ["Segelzwerg <25705862+Segelzwerg@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+django = "^5.1.2"
+
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^3.3.1"
+bandit = "^1.7.10"
+flake8 = "^7.1.1"
+coverage = "^7.6.4"
+pylint-django = "^2.6.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.bandit]
+exclude_dirs = ["*/tests.py"]
+exlude = "rechnung/test_settings.py"
