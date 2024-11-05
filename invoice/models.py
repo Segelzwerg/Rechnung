@@ -1,6 +1,11 @@
 from django.db.models import Model, CharField, ForeignKey, CASCADE
 
-from rechnung.models.address import Address
+
+class Address(Model):
+    street = CharField(max_length=120)
+    number = CharField(max_length=120)
+    city = CharField(max_length=120)
+    country = CharField(max_length=120)
 
 
 class Vendor(Model):
