@@ -1,8 +1,6 @@
-from django.shortcuts import render
+from django.views.generic import CreateView, UpdateView, DeleteView
 
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-
-from invoice.models import Address
+from invoice.models import Address, Vendor
 
 
 class AddressCreateView(CreateView):
@@ -17,3 +15,16 @@ class AddressUpdateView(UpdateView):
 
 class AddressDeleteView(DeleteView):
     model = Address
+
+
+class VendorCreateView(CreateView):
+    model = Vendor
+    fields = '__all__'
+
+
+class VendorUpdateView(UpdateView):
+    model = Vendor
+
+
+class VendorDeleteView(DeleteView):
+    model = Vendor
