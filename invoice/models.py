@@ -1,5 +1,5 @@
 """Models for invoice app."""
-from django.db.models import Model, CharField, ForeignKey, CASCADE
+from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField
 
 
 class Address(Model):
@@ -8,6 +8,14 @@ class Address(Model):
     number = CharField(max_length=120)
     city = CharField(max_length=120)
     country = CharField(max_length=120)
+
+
+class Customer(Model):
+    """Defines a customer."""
+    first_name = CharField(max_length=120)
+    last_name = CharField(max_length=120)
+    email = EmailField(max_length=120)
+    address = ForeignKey(Address, on_delete=CASCADE)
 
 
 class Vendor(Model):
