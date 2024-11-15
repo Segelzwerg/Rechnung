@@ -1,5 +1,8 @@
 """Models for invoice app."""
-from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField
+from datetime import datetime
+
+from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
+    DateField, DateTimeField
 
 
 class Address(Model):
@@ -23,3 +26,9 @@ class Vendor(Model):
     name = CharField(max_length=255)
     company_name = CharField(max_length=255, unique=True)
     address: Address = ForeignKey(Address, on_delete=CASCADE)
+
+class Invoice(Model):
+    invoice_number = IntegerField(unique=True)
+    date = DateField(default=datetime.today())
+    vendor = ForeignKey(Vendor, on_delete=CASCADE)
+    customer = ForeignKey(Customer, on_delete=CASCADE)
