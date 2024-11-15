@@ -1,7 +1,7 @@
 """Defines the views of the invoice app."""
 from django.views.generic import CreateView, UpdateView, DeleteView
 
-from invoice.models import Address, Vendor, Customer
+from invoice.models import Address, Vendor, Customer, Invoice
 
 
 class AddressCreateView(CreateView):
@@ -36,6 +36,23 @@ class CustomerUpdateView(UpdateView):
 class CustomerDeleteView(DeleteView):
     """Delete an existing customer."""
     model = Customer
+
+
+class InvoiceCreateView(CreateView):
+    """Create a new invoice."""
+    model = Invoice
+    fields = '__all__'
+
+
+class InvoiceUpdateView(UpdateView):
+    """Update an existing invoice."""
+    model = Invoice
+    fields = '__all__'
+
+
+class InvoiceDeleteView(DeleteView):
+    """Delete an existing invoice."""
+    model = Invoice
 
 
 class VendorCreateView(CreateView):
