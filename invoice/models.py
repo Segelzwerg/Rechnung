@@ -1,8 +1,9 @@
-"""Models for invoice app."""
-from datetime import datetime
+"""Mode
+ls for invoice app."""
 
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
-    DateField, DateTimeField
+    DateField, UniqueConstraint
+from django.utils.timezone import now
 
 
 class Address(Model):
@@ -27,8 +28,18 @@ class Vendor(Model):
     company_name = CharField(max_length=255, unique=True)
     address: Address = ForeignKey(Address, on_delete=CASCADE)
 
+
 class Invoice(Model):
-    invoice_number = IntegerField(unique=True)
-    date = DateField(default=datetime.today())
+    """Defines a invoice."""
+    invoice_number = IntegerField()
+    date = DateField(default=now())
     vendor = ForeignKey(Vendor, on_delete=CASCADE)
     customer = ForeignKey(Customer, on_delete=CASCADE)
+
+    class Meta:
+        """
+        Meta configuration of invoice. Ensure uniques of the combination invoice number and
+        vendor profile.
+        """
+        constraints = [UniqueConstraint(fields=['vendor', 'invoice_number'],
+                                        name='unique_invoice_numbers_per_vendor')]
