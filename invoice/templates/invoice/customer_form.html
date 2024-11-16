@@ -1,14 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Create Customer</title>
-</head>
-<body>
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Create Customer">
-</form>
-</body>
-</html>
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+    <div class="w-50">
+        <form method="POST" class="form-horizontal">
+            {% csrf_token %}
+            {% bootstrap_form form layout="floating" %}
+            <input type="submit" value="Create Customer">
+        </form>
+    </div>
+{% endblock content %}
