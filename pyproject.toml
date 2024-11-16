@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.13"
 django = "^5.1.2"
+django-bootstrap5 = "^24.3"
 
 
 [tool.poetry.group.dev.dependencies]

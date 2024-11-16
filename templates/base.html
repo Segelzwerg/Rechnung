@@ -6,6 +6,12 @@
     <meta charset="UTF-8">
     <title>Rechnung</title>
 </head>
+{# Load the tag library #}
+{% load django_bootstrap5 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
 <body>
 {% block navbar %}
     <nav class="navbar navbar-expand-md navbar-dark bg-dark">
