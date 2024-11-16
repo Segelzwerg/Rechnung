@@ -35,6 +35,39 @@
                         </li>
                     </ul>
                 </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="{{ nav_bar_escape }}/customers/"
+                       role="button" data-bs-toggle="dropdown"
+                       aria-expanded="false">Customers</a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item"
+                               href="{{ nav_bar_escape }}/customer/add/">Add</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="{{ nav_bar_escape }}/addresses/"
+                       role="button" data-bs-toggle="dropdown"
+                       aria-expanded="false">Addresses</a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item"
+                               href="{{ nav_bar_escape }}/address/add/">Add</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="{{ nav_bar_escape }}/vendors/"
+                       role="button" data-bs-toggle="dropdown"
+                       aria-expanded="false">Vendors</a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item"
+                               href="{{ nav_bar_escape }}/vendor/add/">Add</a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </div>
         {% if user.is_authenticated %}
