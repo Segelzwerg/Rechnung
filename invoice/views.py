@@ -1,4 +1,5 @@
 """Defines the views of the invoice app."""
+from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView
 
 from invoice.models import Address, Vendor, Customer, Invoice
@@ -8,6 +9,7 @@ class AddressCreateView(CreateView):
     """Create a new address."""
     model = Address
     fields = '__all__'
+    success_url = reverse_lazy('address-list')
 
 
 class AddressUpdateView(UpdateView):
