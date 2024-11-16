@@ -8,6 +8,7 @@ urlpatterns = [
     path("address/add/", views.AddressCreateView.as_view(), name="address-add"),
     path("address/<int:pk>/", views.AddressUpdateView.as_view(), name="address-update"),
     path("address/<int:pk>/delete/", views.AddressDeleteView.as_view(), name="address-delete"),
+    path("addresses/", views.AddressListView.as_view(), name="address-list"),
     path("customer/add/", views.CustomerCreateView.as_view(), name="customer-add"),
     path("customer/<int:pk>/", views.CustomerUpdateView.as_view(), name="customer-update"),
     path("customer/<int:pk>/delete/", views.CustomerDeleteView.as_view(), name="customer-delete"),
