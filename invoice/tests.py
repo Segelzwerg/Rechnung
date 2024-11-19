@@ -3,7 +3,7 @@ from hypothesis import given, example
 from hypothesis.extra.django import TestCase
 from hypothesis.strategies import characters, text, emails
 
-from invoice.models import Address, Customer
+from invoice.models import Address, Customer, Vendor
 
 
 class AddAddressViewTestCase(TestCase):
@@ -27,7 +27,6 @@ class AddAddressViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/addresses/')
         address = Address.objects.get(street=street, number=number)
-
         self.assertIsNotNone(address)
         self.assertEqual(address.city, city)
         self.assertEqual(address.country, country)
@@ -50,8 +49,33 @@ class AddCustomerViewTestCase(TestCase):
             'email': email,
             'address': 1
         }, follow=True)
-        customer = Customer.objects.get(first_name=first_name, last_name=last_name)
         self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, '/customers/')
+        customer = Customer.objects.get(first_name=first_name, last_name=last_name)
         self.assertIsNotNone(customer)
         self.assertEqual(customer.email, email)
         self.assertEqual(customer.address, address)
+
+
+class AddVendorViewTestCase(TestCase):
+    def setUp(self):
+        self.url = reverse('vendor-add')
+
+    @given(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
+           text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
+           )
+    @example("John", "Doe Company")
+    def test_add_vendor(self, name, company):
+        address = Address.objects.create(street="Main Street", number="45", city="Capital",
+                                         country="Mainland")
+        response = self.client.post(self.url, data={
+            'name': name,
+            'company_name': company,
+            'address': 1
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, '/vendors/')
+        vendor = Vendor.objects.get(name=name)
+        self.assertIsNotNone(vendor)
+        self.assertEqual(vendor.company_name, company)
+        self.assertEqual(vendor.address, address)
