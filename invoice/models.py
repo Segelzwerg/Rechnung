@@ -30,7 +30,7 @@ class Vendor(Model):
 
 
 class Invoice(Model):
-    """Defines a invoice."""
+    """Defines an invoice."""
     invoice_number = IntegerField()
     date = DateField(default=now())
     vendor = ForeignKey(Vendor, on_delete=CASCADE)
