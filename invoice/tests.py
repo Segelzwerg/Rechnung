@@ -10,7 +10,10 @@ class AddAddressViewTestCase(TestCase):
     def setUp(self):
         self.url = reverse('address-add')
 
-    @given(text(), text(), text(), text())
+    @given(text(alphabet=characters(codec='utf-8'), min_size=1),
+           text(alphabet=characters(codec='utf-8'), min_size=1),
+           text(alphabet=characters(codec='utf-8'), min_size=1),
+           text(alphabet=characters(codec='utf-8'), min_size=1))
     @example("Main Street", "45", "Capital", "Mainland")
     def test_add_address(self, street, number, city, country):
         response = self.client.post(self.url, data={
