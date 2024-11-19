@@ -2,7 +2,7 @@
 ls for invoice app."""
 
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
-    DateField, UniqueConstraint
+    DateField, UniqueConstraint, FloatField
 from django.utils.timezone import now
 
 
@@ -43,3 +43,19 @@ class Invoice(Model):
         """
         constraints = [UniqueConstraint(fields=['vendor', 'invoice_number'],
                                         name='unique_invoice_numbers_per_vendor')]
+
+    @property
+    def items(self):
+        """Get list of invoice items."""
+        return list(self.items_set.all())
+
+
+class InvoiceItem(Model):
+    name = CharField(max_length=120)
+    description = CharField(max_length=1000)
+    quantity = IntegerField()
+    price = FloatField()
+    tax = FloatField()
+    net_total = FloatField()
+    total = FloatField()
+    invoice = ForeignKey(Invoice, on_delete=CASCADE)
