@@ -5,6 +5,7 @@ from invoice import views
 
 urlpatterns = [
     # ...
+    path("", views.StartView.as_view(), name="start"),
     path("address/add/", views.AddressCreateView.as_view(), name="address-add"),
     path("address/<int:pk>/", views.AddressUpdateView.as_view(), name="address-update"),
     path("address/<int:pk>/delete/", views.AddressDeleteView.as_view(), name="address-delete"),
