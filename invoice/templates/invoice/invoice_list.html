@@ -17,8 +17,8 @@
             <tr>
                 <td>{{ invoice.invoice_number }}</td>
                 <td>{{ invoice.date }}</td>
-                <td>{{ invoice.vendor }}</td>
-                <td>{{ invoice.customer }}</td>
+                <td>{{ invoice.vendor.name }} ({{ invoice.vendor.company_name }})</td>
+                <td>{{ invoice.customer.first_name }} {{ invoice.customer.last_name }}</td>
                 <td><a href="/invoice/{{ invoice.id }}/">Update</a> / <a href="/invoice/
 {{ invoice.id }}/delete/">Delete</a></td>
             </tr>
