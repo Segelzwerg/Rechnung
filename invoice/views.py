@@ -1,8 +1,13 @@
 """Defines the views of the invoice app."""
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, DeleteView, ListView
+from django.views.generic import CreateView, UpdateView, DeleteView, ListView, TemplateView
 
 from invoice.models import Address, Vendor, Customer, Invoice
+
+
+class StartView(TemplateView):
+    """The start page."""
+    template_name = 'invoice/start.html'
 
 
 class AddressCreateView(CreateView):
