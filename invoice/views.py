@@ -34,6 +34,7 @@ class CustomerCreateView(CreateView):
     """Create a new customer."""
     model = Customer
     fields = '__all__'
+    success_url = reverse_lazy('customer-list')
 
 
 class CustomerUpdateView(UpdateView):
@@ -47,10 +48,16 @@ class CustomerDeleteView(DeleteView):
     model = Customer
 
 
+class CustomerListView(ListView):
+    """List all customers."""
+    model = Customer
+
+
 class InvoiceCreateView(CreateView):
     """Create a new invoice."""
     model = Invoice
     fields = '__all__'
+    success_url = reverse_lazy('invoice-list')
 
 
 class InvoiceUpdateView(UpdateView):
@@ -64,10 +71,16 @@ class InvoiceDeleteView(DeleteView):
     model = Invoice
 
 
+class InvoiceListView(ListView):
+    """List all invoices."""
+    model = Invoice
+
+
 class VendorCreateView(CreateView):
     """Create a new vendor."""
     model = Vendor
     fields = '__all__'
+    success_url = reverse_lazy('vendor-list')
 
 
 class VendorUpdateView(UpdateView):
@@ -77,4 +90,9 @@ class VendorUpdateView(UpdateView):
 
 class VendorDeleteView(DeleteView):
     """Delete an existing vendor."""
+    model = Vendor
+
+
+class VendorListView(ListView):
+    """List all vendors."""
     model = Vendor
