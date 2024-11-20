@@ -113,7 +113,8 @@ class InvoiceItemModelTestCase(TestCase):
         address = Address.objects.create()
         vendor = Vendor.objects.create(address=address)
         customer = Customer.objects.create(address=address)
-        self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer)
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer,
+                                              date=now())
 
     def tearDown(self):
         InvoiceItem.objects.all().delete()
@@ -209,7 +210,7 @@ class InvoiceModelTestCase(TestCase):
 
     def test_invoice_items(self):
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
-                                         customer=Customer.objects.first())
+                                         customer=Customer.objects.first(), date=now())
         invoice_item = build_invoice_item(invoice=invoice).example()
         invoice_item.save()
         self.assertEqual(invoice.items, [invoice_item])
