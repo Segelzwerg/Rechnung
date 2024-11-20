@@ -2,6 +2,7 @@ from math import inf, nan
 
 from django.core.exceptions import ValidationError
 from django.urls import reverse
+from django.utils.timezone import now
 from hypothesis import given, example
 from hypothesis.extra.django import TestCase
 from hypothesis.strategies import characters, text, emails, integers, floats, composite
@@ -158,7 +159,7 @@ class InvoiceModelTestCase(TestCase):
 
     def test_invoice_items(self):
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
-                                         customer=Customer.objects.first())
+                                         customer=Customer.objects.first(), date=now())
         invoice_item = build_invoice_item(invoice=invoice).example()
         invoice_item.save()
         self.assertEqual(invoice.items, [invoice_item])
