@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
     DateField, UniqueConstraint, FloatField
-from django.utils.timezone import now
 
 
 class Address(Model):
@@ -20,7 +19,7 @@ class Customer(Model):
     """Defines a customer."""
     first_name = CharField(max_length=120)
     last_name = CharField(max_length=120)
-    email = EmailField(max_length=255)
+    email = EmailField(max_length=256)
     address = ForeignKey(Address, on_delete=CASCADE)
 
 
@@ -34,7 +33,7 @@ class Vendor(Model):
 class Invoice(Model):
     """Defines an invoice."""
     invoice_number = IntegerField()
-    date = DateField(default=now())
+    date = DateField()
     vendor = ForeignKey(Vendor, on_delete=CASCADE)
     customer = ForeignKey(Customer, on_delete=CASCADE)
 
