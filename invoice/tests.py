@@ -1,11 +1,10 @@
 from math import inf, nan
-from unittest.mock import MagicMock, patch
 
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from hypothesis import given, example
 from hypothesis.extra.django import TestCase
-from hypothesis.strategies import characters, text, emails, integers, floats
+from hypothesis.strategies import characters, text, emails, integers, floats, composite
 
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice
 
@@ -85,6 +84,17 @@ class AddVendorViewTestCase(TestCase):
         self.assertEqual(vendor.address, address)
 
 
+@composite
+def build_invoice_item(draw, invoice: Invoice):
+    name = draw(text())
+    description = draw(text())
+    quantity = draw(integers())
+    price = draw(floats(allow_infinity=False, allow_nan=False))
+    tax = draw(floats(min_value=0.0, max_value=1.0))
+    return InvoiceItem(name=name, description=description, quantity=quantity,
+                       price=price, tax=tax, invoice=invoice)
+
+
 class InvoiceItemModelTestCase(TestCase):
     def setUp(self):
         vendor = Vendor()
@@ -135,4 +145,14 @@ class InvoiceItemModelTestCase(TestCase):
 
 
 class InvoiceModelTestCase(TestCase):
-    pass
+    def setUp(self):
+        address = Address.objects.create()
+        _ = Vendor.objects.create(address=address)
+        _ = Customer.objects.create(address=address)
+
+    def test_invoice_items(self):
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first())
+        invoice_item = build_invoice_item(invoice=invoice).example()
+        invoice_item.save()
+        self.assertEqual(invoice.items, [invoice_item])
