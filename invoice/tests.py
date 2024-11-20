@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.utils.timezone import now
 from hypothesis import given, example
 from hypothesis.extra.django import TestCase
+from hypothesis.provisional import domains
 from hypothesis.strategies import characters, text, emails, integers, floats, composite
 
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice
@@ -42,7 +43,7 @@ class AddCustomerViewTestCase(TestCase):
 
     @given(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
            text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           emails())
+           emails(domains=domains(max_length=255, max_element_length=63)))
     @example("John", "Doe", "john@doe.com")
     def test_add_customer(self, first_name, last_name, email):
         address = Address.objects.create(street="Main Street", number="45", city="Capital",
@@ -150,6 +151,7 @@ class InvoiceItemModelTestCase(TestCase):
                                    price=100.0, tax=0.19, invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
+
 
 class InvoiceModelTestCase(TestCase):
     def setUp(self):
