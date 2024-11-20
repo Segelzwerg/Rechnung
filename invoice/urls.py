@@ -5,6 +5,7 @@ from invoice import views
 
 urlpatterns = [
     # ...
+    path("", views.StartView.as_view(), name="start"),
     path("address/add/", views.AddressCreateView.as_view(), name="address-add"),
     path("address/<int:pk>/", views.AddressUpdateView.as_view(), name="address-update"),
     path("address/<int:pk>/delete/", views.AddressDeleteView.as_view(), name="address-delete"),
@@ -18,6 +19,7 @@ urlpatterns = [
     path("invoice/<int:invoice_id>/pdf/", views.pdf_invoice, name="invoice-pdf"),
     path("invoice/<int:pk>/delete/", views.InvoiceDeleteView.as_view(), name="invoice-delete"),
     path("invoices/", views.InvoiceListView.as_view(), name="invoice-list"),
+    path('invoice-item/add/', views.InvoiceItemCreateView.as_view(), name='invoice-item-add'),
     path("vendor/add/", views.VendorCreateView.as_view(), name="vendor-add"),
     path("vendor/<int:pk>/", views.VendorUpdateView.as_view(), name="vendor-update"),
     path("vendor/<int:pk>/delete/", views.VendorDeleteView.as_view(), name="vendor-delete"),

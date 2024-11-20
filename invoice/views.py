@@ -1,13 +1,19 @@
 """Defines the views of the invoice app."""
 import io
-from importlib.resources.readers import FileReader
 
 from django.http import FileResponse
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, DeleteView, ListView, DetailView
+from django.views.generic import CreateView, UpdateView, DeleteView, ListView
+from django.views.generic import TemplateView
+from invoice.forms import InvoiceItemForm
 from reportlab.pdfgen import canvas
 
-from invoice.models import Address, Vendor, Customer, Invoice
+from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem
+
+
+class StartView(TemplateView):
+    """The start page."""
+    template_name = 'invoice/start.html'
 
 
 class AddressCreateView(CreateView):
@@ -64,11 +70,21 @@ class InvoiceCreateView(CreateView):
     fields = '__all__'
     success_url = reverse_lazy('invoice-list')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+        return context
+
 
 class InvoiceUpdateView(UpdateView):
     """Update an existing invoice."""
     model = Invoice
     fields = '__all__'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+        return context
 
 
 class InvoiceDeleteView(DeleteView):
@@ -95,6 +111,13 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
     pdf_object.save()
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=False, filename='invoice.pdf')
+
+
+class InvoiceItemCreateView(CreateView):
+    """Create a new invoice item."""
+    model = InvoiceItem
+    fields = '__all__'
+    success_url = reverse_lazy('invoice-list')
 
 
 class VendorCreateView(CreateView):

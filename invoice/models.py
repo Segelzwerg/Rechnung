@@ -1,9 +1,10 @@
-"""Mode
-ls for invoice app."""
+"""Models for invoice app."""
+from math import isnan, isinf
 
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
-    DateField, UniqueConstraint
-from django.utils.timezone import now
+    DateField, UniqueConstraint, FloatField
 
 
 class Address(Model):
@@ -18,7 +19,7 @@ class Customer(Model):
     """Defines a customer."""
     first_name = CharField(max_length=120)
     last_name = CharField(max_length=120)
-    email = EmailField(max_length=120)
+    email = EmailField(max_length=256)
     address = ForeignKey(Address, on_delete=CASCADE)
 
 
@@ -30,9 +31,9 @@ class Vendor(Model):
 
 
 class Invoice(Model):
-    """Defines a invoice."""
+    """Defines an invoice."""
     invoice_number = IntegerField()
-    date = DateField(default=now())
+    date = DateField()
     vendor = ForeignKey(Vendor, on_delete=CASCADE)
     customer = ForeignKey(Customer, on_delete=CASCADE)
 
@@ -43,3 +44,36 @@ class Invoice(Model):
         """
         constraints = [UniqueConstraint(fields=['vendor', 'invoice_number'],
                                         name='unique_invoice_numbers_per_vendor')]
+
+    @property
+    def items(self):
+        """Get list of invoice items."""
+        return list(self.invoiceitem_set.all())
+
+
+def validate_real_values(value):
+    if isnan(value):
+        raise ValidationError('Value must not be nan.')
+    if isinf(value):
+        raise ValidationError('Value must not be inf or -inf.')
+
+
+class InvoiceItem(Model):
+    """Line item of an invoice."""
+    name = CharField(max_length=120)
+    description = CharField(max_length=1000)
+    quantity = IntegerField(validators=[MinValueValidator(0)])
+    price = FloatField(
+        validators=[MinValueValidator(-1000000), MaxValueValidator(1000000), validate_real_values])
+    tax = FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    invoice = ForeignKey(Invoice, on_delete=CASCADE)
+
+    @property
+    def net_total(self) -> float:
+        """Get the sum of the item excluding taxes."""
+        return self.price * self.quantity
+
+    @property
+    def total(self) -> float:
+        """Get the sum of the item including taxes."""
+        return self.net_total * (1.0 + self.tax)
