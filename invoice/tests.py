@@ -97,16 +97,25 @@ def build_invoice_item(draw, invoice: Invoice):
 
 class InvoiceItemModelTestCase(TestCase):
     def setUp(self):
-        vendor = Vendor()
-        customer = Customer()
-        self.invoice = Invoice(invoice_number=1, vendor=vendor, customer=customer)
+        address = Address.objects.create()
+        vendor = Vendor.objects.create(address=address)
+        customer = Customer.objects.create(address=address)
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer)
 
-    @given(text(), text(), integers(), floats(allow_infinity=False, allow_nan=False),
+    def tearDown(self):
+        InvoiceItem.objects.all().delete()
+        Customer.objects.all().delete()
+        Vendor.objects.all().delete()
+        Address.objects.all().delete()
+
+    @given(text(min_size=1), text(min_size=1), integers(min_value=1, max_value=9223372036854775807),
+           floats(allow_infinity=False, allow_nan=False, min_value=-1000000, max_value=1000000),
            floats(min_value=0.0, max_value=1.0))
     @example('Security Services', 'Implementation of a firewall', 1, 100.0, 0.19)
     def test_create_invoice_item(self, name, description, quantity, price, tax):
         invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
                                    price=price, tax=tax, invoice=self.invoice)
+        invoice_item.full_clean()
         self.assertEqual(invoice_item.name, name)
         self.assertEqual(invoice_item.description, description)
         self.assertEqual(invoice_item.quantity, quantity)
@@ -136,6 +145,20 @@ class InvoiceItemModelTestCase(TestCase):
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
+    def test_more_then_million_price(self):
+        invoice_item = InvoiceItem(name='Security Services',
+                                   description='Implementation of a firewall', quantity=1,
+                                   price=1000001, tax=0.19, invoice=self.invoice)
+        with self.assertRaises(ValidationError):
+            invoice_item.full_clean()
+
+    def test_less_then_negative_million_price(self):
+        invoice_item = InvoiceItem(name='Security Services',
+                                   description='Implementation of a firewall', quantity=1,
+                                   price=-1000001, tax=0.19, invoice=self.invoice)
+        with self.assertRaises(ValidationError):
+            invoice_item.full_clean()
+
     def test_nan_price(self):
         invoice_item = InvoiceItem(name='Security Services',
                                    description='Implementation of a firewall', quantity=1,
@@ -149,6 +172,21 @@ class InvoiceItemModelTestCase(TestCase):
                                    price=100.0, tax=0.19, invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
+
+    def test_empty_name(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='Implementation of a firewall', quantity=1,
+                                   price=100.0, tax=0.19, invoice=self.invoice)
+        with self.assertRaises(ValidationError):
+            invoice_item.full_clean()
+
+    def test_empty_description(self):
+        invoice_item = InvoiceItem(name='Security Services',
+                                   description='', quantity=1,
+                                   price=100.0, tax=0.19, invoice=self.invoice)
+        with self.assertRaises(ValidationError):
+            invoice_item.full_clean()
+
 
 class InvoiceModelTestCase(TestCase):
     def setUp(self):
