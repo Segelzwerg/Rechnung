@@ -1,4 +1,7 @@
 """Models for invoice app."""
+from math import isnan, isinf
+
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
     DateField, UniqueConstraint, FloatField
@@ -49,12 +52,20 @@ class Invoice(Model):
         return list(self.invoiceitem_set.all())
 
 
+def validate_real_values(value):
+    if isnan(value):
+        raise ValidationError('Value must not be nan.')
+    if isinf(value):
+        raise ValidationError('Value must not be inf or -inf.')
+
+
 class InvoiceItem(Model):
     """Line item of an invoice."""
     name = CharField(max_length=120)
     description = CharField(max_length=1000)
     quantity = IntegerField(validators=[MinValueValidator(0)])
-    price = FloatField()
+    price = FloatField(
+        validators=[MinValueValidator(-1000000), MaxValueValidator(1000000), validate_real_values])
     tax = FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
     invoice = ForeignKey(Invoice, on_delete=CASCADE)
 
