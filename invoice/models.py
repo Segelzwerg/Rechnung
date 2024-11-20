@@ -1,6 +1,5 @@
-"""Mode
-ls for invoice app."""
-
+"""Models for invoice app."""
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
     DateField, UniqueConstraint, FloatField
 from django.utils.timezone import now
@@ -47,15 +46,24 @@ class Invoice(Model):
     @property
     def items(self):
         """Get list of invoice items."""
-        return list(self.items_set.all())
+        return list(self.invoiceitem_set.all())
 
 
 class InvoiceItem(Model):
+    """Line item of an invoice."""
     name = CharField(max_length=120)
     description = CharField(max_length=1000)
     quantity = IntegerField()
     price = FloatField()
-    tax = FloatField()
-    net_total = FloatField()
-    total = FloatField()
+    tax = FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
     invoice = ForeignKey(Invoice, on_delete=CASCADE)
+
+    @property
+    def net_total(self) -> float:
+        """Get the sum of the item excluding taxes."""
+        return self.price * self.quantity
+
+    @property
+    def total(self) -> float:
+        """Get the sum of the item including taxes."""
+        return self.net_total * (1.0 + self.tax)
