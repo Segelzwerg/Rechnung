@@ -2,11 +2,77 @@
 {% load django_bootstrap5 %}
 
 {% block content %}
-    <div class="w-50">
-        <form method="POST" class="form-horizontal">
-            {% csrf_token %}
-            {% bootstrap_form form layout="floating" %}
-            <input type="submit" value="Create Invoice">
-        </form>
+    <div class="container">
+        <div class="row">
+            <div class="col w-25">
+                <form method="POST" class="form-horizontal">
+                    {% csrf_token %}
+                    {% bootstrap_form form layout="floating" %}
+                    {% bootstrap_button button_type="submit" content="Create Invoice" %}
+                </form>
+            </div>
+            <div class="col">
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#InvoiceItemModal">
+                            Add line item
+                        </button>
+                    </div>
+                </div>
+                {% if invoice.items %}
+                    <div class="col">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Quantity</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Tax</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for item in invoice.items %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.description }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.price }}</td>
+                                    <td>{{ item.tax }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="InvoiceItemModal" tabindex="-1"
+         aria-labelledby="InvoiceItemModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="InvoiceItemModalLabel">Add line item</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <form role="form" method="post" action="/invoice-item/add/">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        {% bootstrap_form invoice_item_form layout="floating" %}
+                    </div>
+                    <div class="modal-footer">
+                        {% bootstrap_button button_type="reset" content="Reset" %}
+                        {% bootstrap_button button_type="submit" content="Save" %}
+                    </div>
+                </form>
+
+            </div>
+        </div>
     </div>
 {% endblock content %}

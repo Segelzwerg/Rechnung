@@ -2,7 +2,8 @@
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView, TemplateView
 
-from invoice.models import Address, Vendor, Customer, Invoice
+from invoice.forms import InvoiceItemForm
+from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem
 
 
 class StartView(TemplateView):
@@ -64,11 +65,21 @@ class InvoiceCreateView(CreateView):
     fields = '__all__'
     success_url = reverse_lazy('invoice-list')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+        return context
+
 
 class InvoiceUpdateView(UpdateView):
     """Update an existing invoice."""
     model = Invoice
     fields = '__all__'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+        return context
 
 
 class InvoiceDeleteView(DeleteView):
@@ -79,6 +90,13 @@ class InvoiceDeleteView(DeleteView):
 class InvoiceListView(ListView):
     """List all invoices."""
     model = Invoice
+
+
+class InvoiceItemCreateView(CreateView):
+    """Create a new invoice item."""
+    model = InvoiceItem
+    fields = '__all__'
+    success_url = reverse_lazy('invoice-list')
 
 
 class VendorCreateView(CreateView):
