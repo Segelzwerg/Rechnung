@@ -20,7 +20,7 @@ class Customer(Model):
     """Defines a customer."""
     first_name = CharField(max_length=120)
     last_name = CharField(max_length=120)
-    email = EmailField(max_length=120)
+    email = EmailField(max_length=255)
     address = ForeignKey(Address, on_delete=CASCADE)
 
 

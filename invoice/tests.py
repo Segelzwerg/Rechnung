@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.urls import reverse
 from hypothesis import given, example
 from hypothesis.extra.django import TestCase
+from hypothesis.provisional import domains
 from hypothesis.strategies import characters, text, emails, integers, floats, composite
 
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice
@@ -41,7 +42,7 @@ class AddCustomerViewTestCase(TestCase):
 
     @given(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
            text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           emails())
+           emails(domains=domains(max_length=255, max_element_length=63)))
     @example("John", "Doe", "john@doe.com")
     def test_add_customer(self, first_name, last_name, email):
         address = Address.objects.create(street="Main Street", number="45", city="Capital",
@@ -58,6 +59,17 @@ class AddCustomerViewTestCase(TestCase):
         self.assertIsNotNone(customer)
         self.assertEqual(customer.email, email)
         self.assertEqual(customer.address, address)
+
+
+class CustomerModelTestCase(TestCase):
+    def test_long_email(self):
+        long_email = 'a' * 240 + '@' + 'b' * 20 + '.com'
+        address = Address.objects.create(street="Main Street", number="45", city="Capital",
+                                         country="Mainland")
+        customer = Customer.objects.create(first_name='John', last_name='Doe', email=long_email,
+                                           address=address)
+        with self.assertRaises(ValidationError):
+            customer.full_clean()
 
 
 class AddVendorViewTestCase(TestCase):
