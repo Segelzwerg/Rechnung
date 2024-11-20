@@ -2,7 +2,6 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
     DateField, UniqueConstraint, FloatField
-from django.utils.timezone import now
 
 
 class Address(Model):
@@ -31,7 +30,7 @@ class Vendor(Model):
 class Invoice(Model):
     """Defines an invoice."""
     invoice_number = IntegerField()
-    date = DateField(default=now())
+    date = DateField()
     vendor = ForeignKey(Vendor, on_delete=CASCADE)
     customer = ForeignKey(Customer, on_delete=CASCADE)
 
