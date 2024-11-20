@@ -143,6 +143,12 @@ class InvoiceItemModelTestCase(TestCase):
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
+    def test_negative_quantity(self):
+        invoice_item = InvoiceItem(name='Security Services',
+                                   description='Implementation of a firewall', quantity=-1,
+                                   price=100.0, tax=0.19, invoice=self.invoice)
+        with self.assertRaises(ValidationError):
+            invoice_item.full_clean()
 
 class InvoiceModelTestCase(TestCase):
     def setUp(self):

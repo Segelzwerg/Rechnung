@@ -53,7 +53,7 @@ class InvoiceItem(Model):
     """Line item of an invoice."""
     name = CharField(max_length=120)
     description = CharField(max_length=1000)
-    quantity = IntegerField()
+    quantity = IntegerField(validators=[MinValueValidator(0)])
     price = FloatField()
     tax = FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
     invoice = ForeignKey(Invoice, on_delete=CASCADE)
