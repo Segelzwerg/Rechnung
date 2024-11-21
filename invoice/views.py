@@ -5,9 +5,10 @@ from django.http import FileResponse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.views.generic import TemplateView
-from invoice.forms import InvoiceItemForm
 from reportlab.pdfgen import canvas
+from reportlab.platypus import Table
 
+from invoice.forms import InvoiceItemForm
 from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem
 
 
@@ -98,6 +99,7 @@ class InvoiceListView(ListView):
 
 
 def pdf_invoice(request, invoice_id) -> FileResponse:
+    """Generate an invoice as PDF file."""
     buffer = io.BytesIO()
     pdf_object = canvas.Canvas(buffer)
     invoice = Invoice.objects.get(id=invoice_id)
@@ -107,6 +109,11 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
                           invoice.vendor.address.number)
     pdf_object.drawString(100, 740, invoice.vendor.address.city)
     pdf_object.drawString(100, 720, invoice.vendor.address.country)
+    pdf_object.drawString(100, 660, 'Rechnung')
+    data = Invoice.objects.get(id=invoice_id).table_export
+    table = Table(data=data)
+    table.wrapOn(pdf_object, 200, 300)
+    table.drawOn(pdf_object, x=100, y=600)
     pdf_object.showPage()
     pdf_object.save()
     buffer.seek(0)
