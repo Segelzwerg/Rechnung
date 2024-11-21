@@ -9,6 +9,8 @@
             <th scope="col">Date</th>
             <th scope="col">Vendor</th>
             <th scope="col">Customer</th>
+            <th scope="col">Net Total</th>
+            <th scope="col">Total</th>
             <th scope="col">Action</th>
         </tr>
         </thead>
@@ -19,6 +21,8 @@
                 <td>{{ invoice.date }}</td>
                 <td>{{ invoice.vendor.name }} ({{ invoice.vendor.company_name }})</td>
                 <td>{{ invoice.customer.first_name }} {{ invoice.customer.last_name }}</td>
+                <td>{{ invoice.net_total }}</td>
+                <td>{{ invoice.total }}</td>
                 <td><a href="/invoice/{{ invoice.id }}/">Update</a> / <a href="/invoice/
 {{ invoice.id }}/delete/">Delete</a></td>
             </tr>
