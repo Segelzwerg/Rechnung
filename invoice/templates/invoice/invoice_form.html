@@ -38,7 +38,7 @@
                                     <td>{{ item.name }}</td>
                                     <td>{{ item.description }}</td>
                                     <td>{{ item.quantity }}</td>
-                                    <td>{{ item.price }}</td>
+                                    <td>{{ item.price|floatformat:2 }}</td>
                                     <td>{{ item.tax }}</td>
                                 </tr>
                             {% endfor %}

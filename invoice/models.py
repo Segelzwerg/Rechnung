@@ -74,13 +74,19 @@ def validate_real_values(value):
         raise ValidationError('Value must not be inf or -inf.')
 
 
+def validate_two_digits_decimals(value):
+    """Allow only two decimal digits."""
+    if str(value)[::-1].find('.') > 2:
+        raise ValidationError('Price must have only two decimal digits.')
+
+
 class InvoiceItem(Model):
     """Line item of an invoice."""
     name = CharField(max_length=120)
     description = CharField(max_length=1000)
     quantity = IntegerField(validators=[MinValueValidator(0)])
-    price = FloatField(
-        validators=[MinValueValidator(-1000000), MaxValueValidator(1000000), validate_real_values])
+    price = FloatField(validators=[MinValueValidator(-1000000), MaxValueValidator(1000000),
+                                   validate_real_values, validate_two_digits_decimals])
     tax = FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
     invoice = ForeignKey(Invoice, on_delete=CASCADE)
 

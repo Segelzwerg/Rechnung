@@ -3,7 +3,7 @@ from math import inf, nan
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.timezone import now
-from hypothesis import given, example
+from hypothesis import given, example, assume
 from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
 from hypothesis.strategies import characters, text, emails, integers, floats, composite
@@ -127,6 +127,7 @@ class InvoiceItemModelTestCase(TestCase):
            floats(min_value=0.0, max_value=1.0))
     @example('Security Services', 'Implementation of a firewall', 1, 100.0, 0.19)
     def test_create_invoice_item(self, name, description, quantity, price, tax):
+        assume(str(price)[::-1].find('.') < 2)  # Allow only two digit decimals
         invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
                                    price=price, tax=tax, invoice=self.invoice)
         invoice_item.full_clean()
@@ -177,6 +178,13 @@ class InvoiceItemModelTestCase(TestCase):
         invoice_item = InvoiceItem(name='Security Services',
                                    description='Implementation of a firewall', quantity=1,
                                    price=nan, tax=0.19, invoice=self.invoice)
+        with self.assertRaises(ValidationError):
+            invoice_item.full_clean()
+
+    def test_three_digits_price(self):
+        invoice_item = InvoiceItem(name='Security Services',
+                                   description='Implementation of a firewall', quantity=1,
+                                   price=3.111, tax=0.19, invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
