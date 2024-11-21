@@ -201,6 +201,19 @@ class InvoiceItemModelTestCase(TestCase):
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
+    def test_list_export(self):
+        invoice = Invoice()
+        name = 'Concert'
+        description = '2 hour live event'
+        quantity = 1
+        price = 4000.0
+        tax = 0.19
+        invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
+                                   price=price, tax=tax, invoice=invoice)
+        list_export = invoice_item.list_export
+        self.assertEqual(list_export, [name, description, quantity, price, tax, price * quantity,
+                                       price * quantity * (1.0 + tax)])
+
 
 class InvoiceModelTestCase(TestCase):
     def setUp(self):
@@ -214,3 +227,28 @@ class InvoiceModelTestCase(TestCase):
         invoice_item = build_invoice_item(invoice=invoice).example()
         invoice_item.save()
         self.assertEqual(invoice.items, [invoice_item])
+
+    def test_table_export(self):
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=now())
+        invoice_item = build_invoice_item(invoice=invoice).example()
+        invoice_item.save()
+        table = invoice.table_export
+        self.assertEqual(table,
+                         [['Name', 'Description', 'Quantity', 'Price', 'Tax', 'Net Total', 'Total'],
+                          [invoice_item.name, invoice_item.description, invoice_item.quantity,
+                           invoice_item.price, invoice_item.tax, invoice_item.net_total,
+                           invoice_item.total]])
+
+
+class InvoicePDFViewTestCase(TestCase):
+    def setUp(self):
+        address = Address.objects.create()
+        vendor = Vendor.objects.create(address=Address.objects.first())
+        customer = Customer.objects.create(address=Address.objects.first())
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                              customer=Customer.objects.first(), date=now())
+
+    def test_pdf(self):
+        response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}))
+        self.assertEqual(response.status_code, 200)
