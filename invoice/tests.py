@@ -239,3 +239,16 @@ class InvoiceModelTestCase(TestCase):
                           [invoice_item.name, invoice_item.description, invoice_item.quantity,
                            invoice_item.price, invoice_item.tax, invoice_item.net_total,
                            invoice_item.total]])
+
+
+class InvoicePDFViewTestCase(TestCase):
+    def setUp(self):
+        address = Address.objects.create()
+        vendor = Vendor.objects.create(address=Address.objects.first())
+        customer = Customer.objects.create(address=Address.objects.first())
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                              customer=Customer.objects.first(), date=now())
+
+    def test_pdf(self):
+        response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}))
+        self.assertEqual(response.status_code, 200)
