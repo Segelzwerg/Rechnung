@@ -240,6 +240,15 @@ class InvoiceModelTestCase(TestCase):
                            invoice_item.price, invoice_item.tax, invoice_item.net_total,
                            invoice_item.total]])
 
+    def test_invoice_net_total(self):
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=now())
+        first_item = build_invoice_item(invoice=invoice).example()
+        second_item = build_invoice_item(invoice=invoice).example()
+        first_item.save()
+        second_item.save()
+        self.assertEqual(invoice.net_total, first_item.net_total + second_item.net_total)
+
 
 class InvoicePDFViewTestCase(TestCase):
     def setUp(self):
