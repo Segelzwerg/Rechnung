@@ -62,6 +62,10 @@ class Invoice(Model):
         """Get the sum of net total."""
         return sum(item.net_total for item in self.items)
 
+    @property
+    def total(self):
+        """Get the sum of total."""
+        return sum(item.total for item in self.items)
 
 def validate_real_values(value):
     if isnan(value):
