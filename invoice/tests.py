@@ -227,3 +227,15 @@ class InvoiceModelTestCase(TestCase):
         invoice_item = build_invoice_item(invoice=invoice).example()
         invoice_item.save()
         self.assertEqual(invoice.items, [invoice_item])
+
+    def test_table_export(self):
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=now())
+        invoice_item = build_invoice_item(invoice=invoice).example()
+        invoice_item.save()
+        table = invoice.table_export
+        self.assertEqual(table,
+                         [['Name', 'Description', 'Quantity', 'Price', 'Tax', 'Net Total', 'Total'],
+                          [invoice_item.name, invoice_item.description, invoice_item.quantity,
+                           invoice_item.price, invoice_item.tax, invoice_item.net_total,
+                           invoice_item.total]])
