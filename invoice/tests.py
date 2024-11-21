@@ -210,7 +210,7 @@ class InvoiceItemModelTestCase(TestCase):
         tax = 0.19
         invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
                                    price=price, tax=tax, invoice=invoice)
-        list_export = invoice_item.list_export()
+        list_export = invoice_item.list_export
         self.assertEqual(list_export, [name, description, quantity, price, tax, price * quantity,
                                        price * quantity * (1.0 + tax)])
 
