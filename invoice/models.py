@@ -50,6 +50,13 @@ class Invoice(Model):
         """Get list of invoice items."""
         return list(self.invoiceitem_set.all())
 
+    @property
+    def table_export(self):
+        """Get the line items as list and export all of them as table with a header row."""
+        header = ['Name', 'Description', 'Quantity', 'Price', 'Tax', 'Net Total', 'Total']
+        item_list = [item.list_export for item in self.items]
+        return [header] + item_list
+
 
 def validate_real_values(value):
     if isnan(value):
@@ -78,6 +85,7 @@ class InvoiceItem(Model):
         """Get the sum of the item including taxes."""
         return self.net_total * (1.0 + self.tax)
 
+    @property
     def list_export(self):
         """Get the fields as list."""
         return [self.name, self.description, self.quantity, self.price, self.tax, self.net_total,
