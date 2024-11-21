@@ -77,3 +77,8 @@ class InvoiceItem(Model):
     def total(self) -> float:
         """Get the sum of the item including taxes."""
         return self.net_total * (1.0 + self.tax)
+
+    def list_export(self):
+        """Get the fields as list."""
+        return [self.name, self.description, self.quantity, self.price, self.tax, self.net_total,
+                self.total]

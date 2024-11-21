@@ -201,6 +201,19 @@ class InvoiceItemModelTestCase(TestCase):
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
+    def test_list_export(self):
+        invoice = Invoice()
+        name = 'Concert'
+        description = '2 hour live event'
+        quantity = 1
+        price = 4000.0
+        tax = 0.19
+        invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
+                                   price=price, tax=tax, invoice=invoice)
+        list_export = invoice_item.list_export()
+        self.assertEqual(list_export, [name, description, quantity, price, tax, price * quantity,
+                                       price * quantity * (1.0 + tax)])
+
 
 class InvoiceModelTestCase(TestCase):
     def setUp(self):
