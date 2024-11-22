@@ -76,6 +76,17 @@
                         </li>
                     </ul>
                 </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="{{ nav_bar_escape }}/vendors/"
+                       role="button" data-bs-toggle="dropdown"
+                       aria-expanded="false">Bank Accounts</a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item"
+                               href="{{ nav_bar_escape }}/bankaccount/add/">Add</a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </div>
         {% if user.is_authenticated %}
