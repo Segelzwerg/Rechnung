@@ -144,6 +144,7 @@ class VendorCreateView(CreateView):
 class VendorUpdateView(UpdateView):
     """Update an existing vendor."""
     model = Vendor
+    fields = '__all__'
 
 
 class VendorDeleteView(DeleteView):
