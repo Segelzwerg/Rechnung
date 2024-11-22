@@ -1,6 +1,9 @@
 """Models for invoice app."""
 from decimal import Decimal
+from math import isnan, isinf
+from warnings import deprecated
 
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
     DateField, UniqueConstraint
@@ -66,6 +69,21 @@ class Invoice(Model):
     def total(self):
         """Get the sum of total."""
         return sum(item.total for item in self.items)
+
+
+@deprecated
+def validate_real_values(value):
+    if isnan(value):
+        raise ValidationError('Value must not be nan.')
+    if isinf(value):
+        raise ValidationError('Value must not be inf or -inf.')
+
+
+@deprecated
+def validate_two_digits_decimals(value):
+    """Allow only two decimal digits."""
+    if str(value)[::-1].find('.') > 2:
+        raise ValidationError('Price must have only two decimal digits.')
 
 
 class InvoiceItem(Model):
