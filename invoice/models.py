@@ -9,6 +9,8 @@ from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, 
     DateField, UniqueConstraint
 from django.db.models.fields import DecimalField
 
+MAX_VALUE_DJANGO_SAVE = 2147483647
+
 
 class Address(Model):
     """Defines any type of address. For vendors as well as customers."""
@@ -35,7 +37,7 @@ class Vendor(Model):
 
 class Invoice(Model):
     """Defines an invoice."""
-    invoice_number = IntegerField()
+    invoice_number = IntegerField(validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
     date = DateField()
     vendor = ForeignKey(Vendor, on_delete=CASCADE)
     customer = ForeignKey(Customer, on_delete=CASCADE)
@@ -63,7 +65,7 @@ class Invoice(Model):
     @property
     def net_total(self) -> Decimal:
         """Get the sum of net total."""
-        return Decimal(sum([item.net_total for item in self.items]))
+        return Decimal(sum(item.net_total for item in self.items))
 
     @property
     def total(self):
@@ -90,7 +92,8 @@ class InvoiceItem(Model):
     """Line item of an invoice."""
     name = CharField(max_length=120)
     description = CharField(max_length=1000)
-    quantity = IntegerField(validators=[MinValueValidator(0)])
+    quantity = IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
     price = DecimalField(max_digits=19, decimal_places=2,
                          validators=[MinValueValidator(-1000000),
                                      MaxValueValidator(1000000)])

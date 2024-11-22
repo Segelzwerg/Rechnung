@@ -9,7 +9,7 @@ from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
 from hypothesis.strategies import characters, text, emails, integers, composite, decimals
 
-from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice
+from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE
 
 GERMAN_TAX_RATE = Decimal('0.19')
 HUNDRED = Decimal('100')
@@ -106,7 +106,7 @@ class AddVendorViewTestCase(TestCase):
 def build_invoice_item(draw):
     name = draw(text())
     description = draw(text())
-    quantity = draw(integers())
+    quantity = draw(integers(min_value=0, max_value=MAX_VALUE_DJANGO_SAVE))
     price = draw(decimals(max_value=10000000, min_value=-1000000,
                           places=2, allow_infinity=False, allow_nan=False))
     tax = draw(decimals(places=2, min_value=Decimal('0.0'), max_value=ONE))
@@ -128,7 +128,8 @@ class InvoiceItemModelTestCase(TestCase):
         Vendor.objects.all().delete()
         Address.objects.all().delete()
 
-    @given(text(min_size=1), text(min_size=1), integers(min_value=1, max_value=9223372036854775807),
+    @given(text(min_size=1), text(min_size=1),
+           integers(min_value=1, max_value=MAX_VALUE_DJANGO_SAVE),
            decimals(allow_infinity=False, allow_nan=False, min_value=-1000000, max_value=1000000,
                     places=2),
            decimals(places=2, min_value=0.0, max_value=1.0))
@@ -228,6 +229,18 @@ class InvoiceItemModelTestCase(TestCase):
         list_export = invoice_item.list_export
         self.assertEqual(list_export, [name, description, quantity, price, tax, price * quantity,
                                        price * quantity * (ONE + tax)])
+
+    def test_sql_quantity_limit(self):
+        invoice = Invoice()
+        name = 'Concert'
+        description = '2 hour live event'
+        price = Decimal('4000.0')
+        tax = GERMAN_TAX_RATE
+        quantity = MAX_VALUE_DJANGO_SAVE + 1
+        invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
+                                   price=price, tax=tax, invoice=invoice)
+        with self.assertRaises(ValidationError):
+            invoice_item.full_clean()
 
 
 class InvoiceModelTestCase(TestCase):
