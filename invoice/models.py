@@ -8,6 +8,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
     DateField, UniqueConstraint
 from django.db.models.fields import DecimalField
+from schwifty import IBAN, BIC
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
 
@@ -18,6 +19,29 @@ class Address(Model):
     number = CharField(max_length=120)
     city = CharField(max_length=120)
     country = CharField(max_length=120)
+
+
+def validate_iban(value):
+    """Validate IBAN."""
+    try:
+        iban = IBAN(value)
+        iban.validate()
+    except ValueError as err:
+        raise ValidationError('Invalid IBAN.') from err
+
+
+def validate_bic(value):
+    """Validate BIC."""
+    try:
+        BIC(value).validate()
+    except ValueError as err:
+        raise ValidationError('Invalid BIC.') from err
+
+
+class BankAccount(Model):
+    """Defines a bank account."""
+    iban = CharField(max_length=34, validators=[validate_iban], unique=True)
+    bic = CharField(max_length=11, validators=[validate_bic])
 
 
 class Customer(Model):
@@ -34,6 +58,7 @@ class Vendor(Model):
     company_name = CharField(max_length=255, unique=True)
     address: Address = ForeignKey(Address, on_delete=CASCADE)
     tax_id = CharField(max_length=120, null=True, blank=True)
+    bank_account: BankAccount = ForeignKey(BankAccount, on_delete=CASCADE, null=True, blank=True)
 
 
 class Invoice(Model):

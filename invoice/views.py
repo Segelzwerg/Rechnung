@@ -9,7 +9,7 @@ from reportlab.pdfgen import canvas
 from reportlab.platypus import Table
 
 from invoice.forms import InvoiceItemForm
-from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem
+from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem, BankAccount
 
 A4_WIDTH = 595
 
@@ -42,6 +42,26 @@ class AddressDeleteView(DeleteView):
 class AddressListView(ListView):
     """List all addresses."""
     model = Address
+
+
+class BankAccountCreateView(CreateView):
+    """Create a new bank account."""
+    model = BankAccount
+    fields = '__all__'
+    success_url = reverse_lazy('bank-account-add')
+
+
+class BankAccountUpdateView(UpdateView):
+    """Update an existing bank account."""
+    model = BankAccount
+    fields = '__all__'
+    success_url = reverse_lazy('bank-account-update')
+
+
+class BankAccountDeleteView(DeleteView):
+    """Delete an existing bank account."""
+    model = BankAccount
+    success_url = reverse_lazy('start')
 
 
 class CustomerCreateView(CreateView):
@@ -123,6 +143,9 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
                           f'Total: {invoice.total}')
     if invoice.vendor.tax_id:
         pdf_object.drawString(100, 100, f'Tax ID: {invoice.vendor.tax_id}')
+    if invoice.vendor.bank_account:
+        pdf_object.drawString(100, 80, f'IBAN: {invoice.vendor.bank_account.iban}')
+        pdf_object.drawString(100, 60, f'BIC: {invoice.vendor.bank_account.bic}')
     pdf_object.showPage()
     pdf_object.save()
     buffer.seek(0)

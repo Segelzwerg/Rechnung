@@ -455,6 +455,17 @@ files = [
 ]
 
 [[package]]
+name = "pycountry"
+version = "24.6.1"
+description = "ISO country, subdivision, language, currency and script definitions and their translations"
+optional = false
+python-versions = ">=3.8"
+files = [
+    { file = "pycountry-24.6.1-py3-none-any.whl", hash = "sha256:f1a4fb391cd7214f8eefd39556d740adcc233c778a27f8942c8dca351d6ce06f" },
+    { file = "pycountry-24.6.1.tar.gz", hash = "sha256:b61b3faccea67f87d10c1f2b0fc0be714409e8fcdcc1315613174f6466c10221" },
+]
+
+[[package]]
 name = "pyflakes"
 version = "3.2.0"
 description = "passive checker of Python programs"
@@ -636,6 +647,35 @@ pygments = ">=2.13.0,<3.0.0"
 jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
+name = "rstr"
+version = "3.2.2"
+description = "Generate random strings in Python"
+optional = false
+python-versions = ">=3.7"
+files = [
+    { file = "rstr-3.2.2-py3-none-any.whl", hash = "sha256:f39195d38da1748331eeec52f1276e71eb6295e7949beea91a5e9af2340d7b3b" },
+    { file = "rstr-3.2.2.tar.gz", hash = "sha256:c4a564d4dfb4472d931d145c43d1cf1ad78c24592142e7755b8866179eeac012" },
+]
+
+[[package]]
+name = "schwifty"
+version = "2024.11.0"
+description = ""
+optional = false
+python-versions = ">=3.9"
+files = [
+    { file = "schwifty-2024.11.0-py3-none-any.whl", hash = "sha256:743bb6ae91f1cded149b3842f9becf795f19641d75755f73eaf921524b1ba8f9" },
+    { file = "schwifty-2024.11.0.tar.gz", hash = "sha256:d0aaed03168403b433de515d663df09516941ae70152850da3afe3c242255f6a" },
+]
+
+[package.dependencies]
+pycountry = "*"
+rstr = "*"
+
+[package.extras]
+pydantic = ["pydantic (>=2.0)"]
+
+[[package]]
 name = "sortedcontainers"
 version = "2.4.0"
 description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
@@ -700,4 +740,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.13"
-content-hash = "f2c1f2f64a64b154b2c1adf292bcbd939e191db406d9c2829ac4265af2cfa007"
+content-hash = "37d69949ee2fd6e2ac35022ba09a28b87daff56a144814311d7ffc3d2a915f33"
