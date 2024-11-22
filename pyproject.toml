@@ -10,6 +10,7 @@ python = "^3.13"
 django = "^5.1.2"
 django-bootstrap5 = "^24.3"
 reportlab = "^4.2.5"
+schwifty = "^2024.11.0"
 
 
 [tool.poetry.group.dev.dependencies]
