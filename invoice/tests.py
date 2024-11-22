@@ -103,14 +103,15 @@ class AddVendorViewTestCase(TestCase):
 
 
 @composite
-def build_invoice_item(draw, invoice: Invoice):
+def build_invoice_item(draw):
     name = draw(text())
     description = draw(text())
     quantity = draw(integers())
-    price = draw(decimals(places=2, allow_infinity=False, allow_nan=False))
-    tax = draw(decimals(places=2, min_value=0.0, max_value=1.0))
+    price = draw(decimals(max_value=10000000, min_value=-1000000,
+                          places=2, allow_infinity=False, allow_nan=False))
+    tax = draw(decimals(places=2, min_value=Decimal('0.0'), max_value=ONE))
     return InvoiceItem(name=name, description=description, quantity=quantity,
-                       price=price, tax=tax, invoice=invoice)
+                       price=price, tax=tax)
 
 
 class InvoiceItemModelTestCase(TestCase):
@@ -235,17 +236,26 @@ class InvoiceModelTestCase(TestCase):
         _ = Vendor.objects.create(address=address)
         _ = Customer.objects.create(address=address)
 
-    def test_invoice_items(self):
+    def tearDown(self):
+        Vendor.objects.all().delete()
+        Customer.objects.all().delete()
+        Address.objects.all().delete()
+        Invoice.objects.all().delete()
+        InvoiceItem.objects.all().delete()
+
+    @given(build_invoice_item())
+    def test_invoice_items(self, invoice_item):
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
                                          customer=Customer.objects.first(), date=now())
-        invoice_item = build_invoice_item(invoice=invoice).example()
+        invoice_item.invoice = invoice
         invoice_item.save()
         self.assertEqual(invoice.items, [invoice_item])
 
-    def test_table_export(self):
+    @given(build_invoice_item())
+    def test_table_export(self, invoice_item):
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
                                          customer=Customer.objects.first(), date=now())
-        invoice_item = build_invoice_item(invoice=invoice).example()
+        invoice_item.invoice = invoice
         invoice_item.save()
         table = invoice.table_export
         self.assertEqual(table,
@@ -254,23 +264,31 @@ class InvoiceModelTestCase(TestCase):
                            invoice_item.price, invoice_item.tax, invoice_item.net_total,
                            invoice_item.total]])
 
-    def test_invoice_net_total(self):
+    @given(build_invoice_item(), build_invoice_item())
+    def test_invoice_net_total(self, first_item, second_item):
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
                                          customer=Customer.objects.first(), date=now())
-        first_item = build_invoice_item(invoice=invoice).example()
-        second_item = build_invoice_item(invoice=invoice).example()
+        first_item.invoice = invoice
+        second_item.invoice = invoice
         first_item.save()
         second_item.save()
-        self.assertEqual(invoice.net_total, first_item.net_total + second_item.net_total)
+        self.assertEqual(invoice.net_total, first_item.net_total + second_item.net_total,
+                         msg=f'First Net Total:{first_item.net_total}'
+                             f'Second Net Total:{second_item.net_total}'
+                             f'Invoice Net Total:{invoice.net_total}')
 
-    def test_invoice_total(self):
+    @given(build_invoice_item(), build_invoice_item())
+    def test_invoice_total(self, first_item, second_item):
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
                                          customer=Customer.objects.first(), date=now())
-        first_item = build_invoice_item(invoice=invoice).example()
-        second_item = build_invoice_item(invoice=invoice).example()
+        first_item.invoice = invoice
+        second_item.invoice = invoice
         first_item.save()
         second_item.save()
-        self.assertEqual(invoice.total, first_item.total + second_item.total)
+        self.assertEqual(invoice.total, first_item.total + second_item.total,
+                         msg=f'First Total:{first_item.total}\n'
+                             f'Second Total:{second_item.total}\n'
+                             f'Invoice Total:{invoice.total}')
 
     def test_no_items_net_total(self):
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),

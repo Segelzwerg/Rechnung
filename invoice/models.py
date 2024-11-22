@@ -61,9 +61,9 @@ class Invoice(Model):
         return [header] + item_list
 
     @property
-    def net_total(self):
+    def net_total(self) -> Decimal:
         """Get the sum of net total."""
-        return sum(item.net_total for item in self.items)
+        return Decimal(sum([item.net_total for item in self.items]))
 
     @property
     def total(self):
