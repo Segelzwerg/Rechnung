@@ -1,10 +1,12 @@
 """Models for invoice app."""
+from decimal import Decimal
 from math import isnan, isinf
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
-    DateField, UniqueConstraint, FloatField
+    DateField, UniqueConstraint
+from django.db.models.fields import DecimalField
 
 
 class Address(Model):
@@ -67,6 +69,7 @@ class Invoice(Model):
         """Get the sum of total."""
         return sum(item.total for item in self.items)
 
+
 def validate_real_values(value):
     if isnan(value):
         raise ValidationError('Value must not be nan.')
@@ -85,20 +88,24 @@ class InvoiceItem(Model):
     name = CharField(max_length=120)
     description = CharField(max_length=1000)
     quantity = IntegerField(validators=[MinValueValidator(0)])
-    price = FloatField(validators=[MinValueValidator(-1000000), MaxValueValidator(1000000),
-                                   validate_real_values, validate_two_digits_decimals])
-    tax = FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    price = DecimalField(max_digits=19, decimal_places=2,
+                         validators=[MinValueValidator(-1000000),
+                                     MaxValueValidator(1000000),
+                                     validate_real_values])
+    tax = DecimalField(max_digits=3, decimal_places=2,
+                       validators=[MinValueValidator(0.00),
+                                   MaxValueValidator(1.00)])
     invoice = ForeignKey(Invoice, on_delete=CASCADE)
 
     @property
-    def net_total(self) -> float:
+    def net_total(self) -> Decimal:
         """Get the sum of the item excluding taxes."""
         return self.price * self.quantity
 
     @property
-    def total(self) -> float:
+    def total(self) -> Decimal:
         """Get the sum of the item including taxes."""
-        return self.net_total * (1.0 + self.tax)
+        return self.net_total * (Decimal('1.0') + self.tax)
 
     @property
     def list_export(self):
