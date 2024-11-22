@@ -75,11 +75,13 @@ class CustomerUpdateView(UpdateView):
     """Update an existing customer."""
     model = Customer
     fields = '__all__'
+    success_url = reverse_lazy('customer-list')
 
 
 class CustomerDeleteView(DeleteView):
     """Delete an existing customer."""
     model = Customer
+    success_url = reverse_lazy('customer-list')
 
 
 class CustomerListView(ListView):
@@ -103,6 +105,7 @@ class InvoiceUpdateView(UpdateView):
     """Update an existing invoice."""
     model = Invoice
     fields = '__all__'
+    success_url = reverse_lazy('invoice-list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -113,6 +116,7 @@ class InvoiceUpdateView(UpdateView):
 class InvoiceDeleteView(DeleteView):
     """Delete an existing invoice."""
     model = Invoice
+    success_url = reverse_lazy('invoice-list')
 
 
 class InvoiceListView(ListView):
@@ -170,11 +174,13 @@ class VendorUpdateView(UpdateView):
     """Update an existing vendor."""
     model = Vendor
     fields = '__all__'
+    success_url = reverse_lazy('vendor-list')
 
 
 class VendorDeleteView(DeleteView):
     """Delete an existing vendor."""
     model = Vendor
+    success_url = reverse_lazy('vendor-list')
 
 
 class VendorListView(ListView):
