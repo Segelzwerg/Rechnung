@@ -121,6 +121,8 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
                           f'Net Total: {invoice.net_total}')
     pdf_object.drawString(A4_WIDTH - 250, table_y_start - table_height - 20,
                           f'Total: {invoice.total}')
+    if invoice.vendor.tax_id:
+        pdf_object.drawString(100, 100, f'Tax ID: {invoice.vendor.tax_id}')
     pdf_object.showPage()
     pdf_object.save()
     buffer.seek(0)
