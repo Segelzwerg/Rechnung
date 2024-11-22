@@ -1,14 +1,19 @@
+from decimal import Decimal
 from math import inf, nan
 
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.timezone import now
-from hypothesis import given, example, assume
+from hypothesis import given, example
 from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
-from hypothesis.strategies import characters, text, emails, integers, floats, composite
+from hypothesis.strategies import characters, text, emails, integers, composite, decimals
 
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice
+
+GERMAN_TAX_RATE = Decimal('0.19')
+HUNDRED = Decimal('100')
+ONE = Decimal('1')
 
 
 class AddAddressViewTestCase(TestCase):
@@ -102,8 +107,8 @@ def build_invoice_item(draw, invoice: Invoice):
     name = draw(text())
     description = draw(text())
     quantity = draw(integers())
-    price = draw(floats(allow_infinity=False, allow_nan=False))
-    tax = draw(floats(min_value=0.0, max_value=1.0))
+    price = draw(decimals(places=2, allow_infinity=False, allow_nan=False))
+    tax = draw(decimals(places=2, min_value=0.0, max_value=1.0))
     return InvoiceItem(name=name, description=description, quantity=quantity,
                        price=price, tax=tax, invoice=invoice)
 
@@ -123,11 +128,12 @@ class InvoiceItemModelTestCase(TestCase):
         Address.objects.all().delete()
 
     @given(text(min_size=1), text(min_size=1), integers(min_value=1, max_value=9223372036854775807),
-           floats(allow_infinity=False, allow_nan=False, min_value=-1000000, max_value=1000000),
-           floats(min_value=0.0, max_value=1.0))
-    @example('Security Services', 'Implementation of a firewall', 1, 100.0, 0.19)
+           decimals(allow_infinity=False, allow_nan=False, min_value=-1000000, max_value=1000000,
+                    places=2),
+           decimals(places=2, min_value=0.0, max_value=1.0))
+    @example('Security Services', 'Implementation of a firewall', 1, HUNDRED,
+             GERMAN_TAX_RATE)
     def test_create_invoice_item(self, name, description, quantity, price, tax):
-        assume(str(price)[::-1].find('.') < 2)  # Allow only two digit decimals
         invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
                                    price=price, tax=tax, invoice=self.invoice)
         invoice_item.full_clean()
@@ -137,75 +143,75 @@ class InvoiceItemModelTestCase(TestCase):
         self.assertEqual(invoice_item.price, price)
         self.assertEqual(invoice_item.tax, tax)
         self.assertEqual(invoice_item.net_total, price * quantity)
-        self.assertEqual(invoice_item.total, price * quantity * (1.0 + tax))
+        self.assertEqual(invoice_item.total, price * quantity * (ONE + tax))
 
     def test_negative_tax(self):
         invoice_item = InvoiceItem(name='Security Services',
                                    description='Implementation of a firewall', quantity=1,
-                                   price=100.0, tax=-0.19, invoice=self.invoice)
+                                   price=HUNDRED, tax=-GERMAN_TAX_RATE, invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
     def test_high_tax(self):
         invoice_item = InvoiceItem(name='Security Services',
                                    description='Implementation of a firewall', quantity=1,
-                                   price=100.0, tax=1.19, invoice=self.invoice)
+                                   price=HUNDRED, tax=Decimal('1.19'), invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
     def test_inf_price(self):
         invoice_item = InvoiceItem(name='Security Services',
                                    description='Implementation of a firewall', quantity=1,
-                                   price=inf, tax=0.19, invoice=self.invoice)
+                                   price=inf, tax=GERMAN_TAX_RATE, invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
     def test_more_then_million_price(self):
         invoice_item = InvoiceItem(name='Security Services',
                                    description='Implementation of a firewall', quantity=1,
-                                   price=1000001, tax=0.19, invoice=self.invoice)
+                                   price=1000001, tax=GERMAN_TAX_RATE, invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
     def test_less_then_negative_million_price(self):
         invoice_item = InvoiceItem(name='Security Services',
                                    description='Implementation of a firewall', quantity=1,
-                                   price=-1000001, tax=0.19, invoice=self.invoice)
+                                   price=-1000001, tax=GERMAN_TAX_RATE, invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
     def test_nan_price(self):
         invoice_item = InvoiceItem(name='Security Services',
                                    description='Implementation of a firewall', quantity=1,
-                                   price=nan, tax=0.19, invoice=self.invoice)
+                                   price=nan, tax=Decimal, invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
     def test_three_digits_price(self):
         invoice_item = InvoiceItem(name='Security Services',
                                    description='Implementation of a firewall', quantity=1,
-                                   price=3.111, tax=0.19, invoice=self.invoice)
+                                   price=Decimal('3.111'), tax=Decimal, invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
     def test_negative_quantity(self):
         invoice_item = InvoiceItem(name='Security Services',
                                    description='Implementation of a firewall', quantity=-1,
-                                   price=100.0, tax=0.19, invoice=self.invoice)
+                                   price=HUNDRED, tax=GERMAN_TAX_RATE, invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
     def test_empty_name(self):
         invoice_item = InvoiceItem(name='',
                                    description='Implementation of a firewall', quantity=1,
-                                   price=100.0, tax=0.19, invoice=self.invoice)
+                                   price=HUNDRED, tax=GERMAN_TAX_RATE, invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
     def test_empty_description(self):
         invoice_item = InvoiceItem(name='Security Services',
                                    description='', quantity=1,
-                                   price=100.0, tax=0.19, invoice=self.invoice)
+                                   price=HUNDRED, tax=GERMAN_TAX_RATE, invoice=self.invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
@@ -214,13 +220,13 @@ class InvoiceItemModelTestCase(TestCase):
         name = 'Concert'
         description = '2 hour live event'
         quantity = 1
-        price = 4000.0
-        tax = 0.19
+        price = Decimal('4000.0')
+        tax = GERMAN_TAX_RATE
         invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
                                    price=price, tax=tax, invoice=invoice)
         list_export = invoice_item.list_export
         self.assertEqual(list_export, [name, description, quantity, price, tax, price * quantity,
-                                       price * quantity * (1.0 + tax)])
+                                       price * quantity * (ONE + tax)])
 
 
 class InvoiceModelTestCase(TestCase):
