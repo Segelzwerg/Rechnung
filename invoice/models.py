@@ -71,7 +71,7 @@ class Invoice(Model):
         return sum(item.total for item in self.items)
 
 
-@deprecated
+@deprecated('Deprecated in 0.1 and remove in 1.0')
 def validate_real_values(value):
     if isnan(value):
         raise ValidationError('Value must not be nan.')
@@ -79,7 +79,7 @@ def validate_real_values(value):
         raise ValidationError('Value must not be inf or -inf.')
 
 
-@deprecated
+@deprecated('Deprecated in 0.1 and remove in 1.0')
 def validate_two_digits_decimals(value):
     """Allow only two decimal digits."""
     if str(value)[::-1].find('.') > 2:
