@@ -28,6 +28,7 @@ class Vendor(Model):
     name = CharField(max_length=255)
     company_name = CharField(max_length=255, unique=True)
     address: Address = ForeignKey(Address, on_delete=CASCADE)
+    tax_id = CharField(max_length=120, null=True, blank=True)
 
 
 class Invoice(Model):
@@ -66,6 +67,7 @@ class Invoice(Model):
     def total(self):
         """Get the sum of total."""
         return sum(item.total for item in self.items)
+
 
 def validate_real_values(value):
     if isnan(value):
