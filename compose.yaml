@@ -1,0 +1,11 @@
+services:
+  web:
+    image: ghcr.io/segelzwerg/segelzwerg/rechnung
+    ports:
+      - "12321:8000"
+  db:
+    image: postgres:17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+volumes:
+  postgres_data:
