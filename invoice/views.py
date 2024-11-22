@@ -114,6 +114,8 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
     table = Table(data=data)
     table.wrapOn(pdf_object, 200, 300)
     table.drawOn(pdf_object, x=100, y=600)
+    if invoice.vendor.tax_id:
+        pdf_object.drawString(100, 100, f'Tax ID: {invoice.vendor.tax_id}')
     pdf_object.showPage()
     pdf_object.save()
     buffer.seek(0)
