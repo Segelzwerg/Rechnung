@@ -141,5 +141,10 @@ class InvoiceItem(Model):
     @property
     def list_export(self):
         """Get the fields as list."""
-        return [self.name, self.description, self.quantity, self.price, self.tax, self.net_total,
+        return [self.name, self.description, self.quantity, self.price, self.tax_string,
+                self.net_total,
                 self.total]
+
+    @property
+    def tax_string(self) -> str:
+        return f'{self.tax * 100}%'
