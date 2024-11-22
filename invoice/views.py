@@ -11,6 +11,8 @@ from reportlab.platypus import Table
 from invoice.forms import InvoiceItemForm
 from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem
 
+A4_WIDTH = 595
+
 
 class StartView(TemplateView):
     """The start page."""
@@ -113,10 +115,12 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
     pdf_object.drawString(100, 660, 'Rechnung')
     data = Invoice.objects.get(id=invoice_id).table_export
     table = Table(data=data)
-    table_width, table_height = table.wrapOn(pdf_object, 0, 0)
+    _, table_height = table.wrapOn(pdf_object, 0, 0)
     table.drawOn(pdf_object, x=100, y=table_y_start)
-    pdf_object.drawString(350, table_y_start - table_height, f'Net Total: {invoice.net_total}')
-    pdf_object.drawString(350, table_y_start - table_height - 20, f'Total: {invoice.total}')
+    pdf_object.drawString(A4_WIDTH - 250, table_y_start - table_height,
+                          f'Net Total: {invoice.net_total}')
+    pdf_object.drawString(A4_WIDTH - 250, table_y_start - table_height - 20,
+                          f'Total: {invoice.total}')
     pdf_object.showPage()
     pdf_object.save()
     buffer.seek(0)
