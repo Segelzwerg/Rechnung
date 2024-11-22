@@ -227,8 +227,8 @@ class InvoiceItemModelTestCase(TestCase):
         invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
                                    price=price, tax=tax, invoice=invoice)
         list_export = invoice_item.list_export
-        self.assertEqual(list_export, [name, description, quantity, price, tax, price * quantity,
-                                       price * quantity * (ONE + tax)])
+        self.assertEqual(list_export, [name, description, quantity, price, str(tax * 100) + '%',
+                                       price * quantity, price * quantity * (ONE + tax)])
 
     def test_sql_quantity_limit(self):
         invoice = Invoice()
@@ -241,6 +241,10 @@ class InvoiceItemModelTestCase(TestCase):
                                    price=price, tax=tax, invoice=invoice)
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
+
+    @given(build_invoice_item())
+    def test_tax_string(self, invoice_item: InvoiceItem):
+        self.assertEqual(invoice_item.tax_string, str(invoice_item.tax * 100) + '%')
 
 
 class InvoiceModelTestCase(TestCase):
@@ -274,7 +278,7 @@ class InvoiceModelTestCase(TestCase):
         self.assertEqual(table,
                          [['Name', 'Description', 'Quantity', 'Price', 'Tax', 'Net Total', 'Total'],
                           [invoice_item.name, invoice_item.description, invoice_item.quantity,
-                           invoice_item.price, invoice_item.tax, invoice_item.net_total,
+                           invoice_item.price, invoice_item.tax_string, invoice_item.net_total,
                            invoice_item.total]])
 
     @given(build_invoice_item(), build_invoice_item())
