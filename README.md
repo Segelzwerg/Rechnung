@@ -19,3 +19,4 @@ However, you need to set up a few environment variables.
 | DB_HOST                | Hostname of the database.                                                                                                          |
 | DB_PORT                | Port of the database.                                                                                                              |
 | -                      | -                                                                                                                                  | 
+
