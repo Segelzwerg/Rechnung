@@ -1,0 +1,25 @@
+services:
+  rechnung:
+    #build: . # Enable if you want to build from source
+    image: ghcr.io/segelzwerg/segelzwerg/rechnung
+    ports:
+      - "12321:8000" # You can change to any port you like.
+    depends_on:
+      - postgres
+    environment:
+      - SECRET_KEY=$SECRET_KEY
+      - ALLOWED_HOSTS=$ALLOWED_HOSTS
+      - DB_NAME=$DB_NAME
+      - DB_USER=$DB_USER
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_HOST=$DB_HOST
+      - DB_PORT=$DB_PORT
+  postgres:
+    image: postgres:17
+    volumes:
+      #- <external_path>:/var/lib/postgresql/data/ # Enable if you want to use an external drive
+      - /var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=$DB_USER
+      - POSTGRES_PASSWORD=$DB_PASSWORD
+      - POSTGRES_DB=$DB_NAME
