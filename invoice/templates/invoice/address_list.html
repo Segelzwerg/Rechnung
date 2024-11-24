@@ -6,7 +6,7 @@
         <thead>
         <tr>
             <th scope="col">Street</th>
-            <th scope="col">Number</th>
+            <th scope="col">Postcode</th>
             <th scope="col">City</th>
             <th scope="col">Country</th>
             <th scope="col">Action</th>
@@ -16,7 +16,7 @@
         {% for address in address_list %}
             <tr>
                 <td>{{ address.street }}</td>
-                <td>{{ address.number }}</td>
+                <td>{{ address.postcode }}</td>
                 <td>{{ address.city }}</td>
                 <td>{{ address.country }}</td>
                 <td><a href="/address/{{ address.id }}/">Update</a> / <a href="/address/

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+    <div class="w-50">
+        <form method="POST" class="form-horizontal">
+            {% csrf_token %}
+            {% bootstrap_form form layout="floating" %}
+            <input type="submit" value="Confirm delete" class="btn btn-primary">
+        </form>
+    </div>
+{% endblock content %}
