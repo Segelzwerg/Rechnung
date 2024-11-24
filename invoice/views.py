@@ -132,9 +132,8 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
     table_y_start = 600
     pdf_object.drawString(100, 800, invoice.vendor.name)
     pdf_object.drawString(100, 780, invoice.vendor.company_name)
-    pdf_object.drawString(100, 760, invoice.vendor.address.street + " " +
-                          invoice.vendor.address.number)
-    pdf_object.drawString(100, 740, invoice.vendor.address.city)
+    pdf_object.drawString(100, 760, invoice.vendor.address.street)
+    pdf_object.drawString(100, 740, f'{invoice.vendor.address.postcode} {invoice.vendor.address.city}')
     pdf_object.drawString(100, 720, invoice.vendor.address.country)
     pdf_object.drawString(100, 660, 'Rechnung')
     data = Invoice.objects.get(id=invoice_id).table_export

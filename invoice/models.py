@@ -15,8 +15,8 @@ MAX_VALUE_DJANGO_SAVE = 2147483647
 
 class Address(Model):
     """Defines any type of address. For vendors as well as customers."""
-    street = CharField(max_length=120)
-    number = CharField(max_length=120)
+    street = CharField(max_length=200)
+    postcode = CharField(max_length=10)
     city = CharField(max_length=120)
     country = CharField(max_length=120)
 
