@@ -6,7 +6,7 @@
         <form method="POST" class="form-horizontal">
             {% csrf_token %}
             {% bootstrap_form form layout="floating" %}
-            <input type="submit" value="Confirm delete" class="btn btn-primary">
+            {% bootstrap_button button_type="submit" content="Confirm delete" %}
         </form>
     </div>
 {% endblock content %}
