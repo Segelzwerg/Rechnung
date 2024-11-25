@@ -32,6 +32,6 @@ exclude_dirs = ["*/tests.py"]
 exlude = "rechnung/test_settings.py"
 
 [tool.pylint]
-max-line-length = 100
+max-line-length = 120
 load-plugins = "pylint_django"
-ignore-patterns = ["^\\.#", "tests.*?py", "rechnung.*settings.py", "invoice/migrations/*?.py"]
+ignore-paths = [".*/migrations", ".*/.*settings.py", ".*/tests.py"]
