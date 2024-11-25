@@ -21,7 +21,7 @@ jobs:
         with:
           ignore: static/
       - name: Lint sources with pylint
-        run: poetry run pylint --load-plugins=pylint_django --django-settings-module=rechnung.test_settings rechnung
+        run: poetry run pylint --load-plugins=pylint_django --django-settings-module=rechnung.test_settings rechnung invoice
 
   security:
     runs-on: ubuntu-latest
