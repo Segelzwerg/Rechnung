@@ -14,6 +14,7 @@ services:
       - DB_PASSWORD=$DB_PASSWORD
       - DB_HOST=$DB_HOST
       - DB_PORT=$DB_PORT
+      - DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
   postgres:
     image: postgres:16.4
     volumes:
