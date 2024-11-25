@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+    {% bootstrap_button button_type="link" href="/bankaccount/add" content="Add bank account" %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">IBAN</th>
+            <th scope="col">BIC</th>
+            <th scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for bankaccount in bankaccount_list %}
+            <tr>
+                <td>{{ bankaccount.iban }}</td>
+                <td>{{ bankaccount.bic }}</td>
+                <td><a href="/bankaccount/{{ bankaccount.id }}/">Update</a> / <a href="/bankaccount/
+{{ bankaccount.id }}/delete/">Delete</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}
