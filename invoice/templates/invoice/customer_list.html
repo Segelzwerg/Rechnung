@@ -2,5 +2,26 @@
 {% load django_bootstrap5 %}
 
 {% block content %}
-
+    {% bootstrap_button button_type="link" href="/customer/add" content="Add customer" %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">First Name</th>
+            <th scope="col">Last Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for customer in customer_list %}
+            <tr>
+                <td>{{ customer.first_name }}</td>
+                <td>{{ customer.last_name }}</td>
+                <td>{{ customer.email }}</td>
+                <td><a href="/customer/{{ customer.id }}/">Update</a> / <a href="/customer/
+{{ customer.id }}/delete/">Delete</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 {% endblock content %}

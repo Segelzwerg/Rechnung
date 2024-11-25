@@ -12,11 +12,12 @@
 {# Load CSS and JavaScript #}
 {% bootstrap_css %}
 {% bootstrap_javascript %}
+
 <body>
+
 {% block navbar %}
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-md bg-dark" data-bs-theme="dark">
         <div class="container-fluid">
-            <p>{{ nav_bar_escape }}</p>
             <ul class="navbar-nav justify-content">
                 {% if nav_logo %}
                     <a class="navbar-brand" href="{{ nav_logo.url }}">
@@ -25,84 +26,100 @@
                     </a>
                 {% endif %}
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="{{ nav_bar_escape }}/invoices/"
+                    <a class="nav-link dropdown-toggle" href="#"
                        role="button" data-bs-toggle="dropdown"
                        aria-expanded="false">Invoices</a>
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="{{ nav_bar_escape }}/invoice/add/">Add</a>
+                               href="/invoices">List</a>
                         </li>
                         <li>
                             <a class="dropdown-item"
-                               href="{{ nav_bar_escape }}/invoices">List</a>
+                               href="/invoice/add/">Add</a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="{{ nav_bar_escape }}/customers/"
+                    <a class="nav-link dropdown-toggle" href="#"
                        role="button" data-bs-toggle="dropdown"
                        aria-expanded="false">Customers</a>
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="{{ nav_bar_escape }}/customer/add/">Add</a>
+                               href="/customers">List</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item"
+                               href="/customer/add/">Add</a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="{{ nav_bar_escape }}/addresses/"
+                    <a class="nav-link dropdown-toggle" href="#"
                        role="button" data-bs-toggle="dropdown"
                        aria-expanded="false">Addresses</a>
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="{{ nav_bar_escape }}/address/add/">Add</a>
+                               href="/addresses">List</a>
                         </li>
                         <li>
                             <a class="dropdown-item"
-                               href="{{ nav_bar_escape }}/addresses">List</a>
+                               href="/address/add/">Add</a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="{{ nav_bar_escape }}/vendors/"
+                    <a class="nav-link dropdown-toggle" href="#"
                        role="button" data-bs-toggle="dropdown"
                        aria-expanded="false">Vendors</a>
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="{{ nav_bar_escape }}/vendor/add/">Add</a>
+                               href="/vendors">List</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item"
+                               href="/vendor/add/">Add</a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="{{ nav_bar_escape }}/vendors/"
+                    <a class="nav-link dropdown-toggle" href="#"
                        role="button" data-bs-toggle="dropdown"
                        aria-expanded="false">Bank Accounts</a>
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="{{ nav_bar_escape }}/bankaccount/add/">Add</a>
+                               href="/bankaccounts">List</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item"
+                               href="/bankaccount/add/">Add</a>
                         </li>
                     </ul>
                 </li>
             </ul>
+            {% if user.is_authenticated %}
+                <div class="d-flex">
+                    <span class="navbar-text">
+                        {{ user.username }}
+                    </span>
+                    <form id="logoutform" method="POST" action="/accounts/logout" class="d-flex">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-info">{% translate "Logout" %}</button>
+                    </form>
+                </div>
+            {% endif %}
         </div>
-        {% if user.is_authenticated %}
-            <span class="navbar-text">
-                {{ user.username }}
-              </span>
-            <form id="logoutform" method="POST" action="accounts/logout/">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-info">{% translate "Logout" %}</button>
-            </form>
-        {% endif %}
     </nav>
 {% endblock navbar %}
+
 <div id="content">
     {% block content %}
     {% endblock content %}
 </div>
+
 </body>
 </html>

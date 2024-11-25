@@ -2,5 +2,26 @@
 {% load django_bootstrap5 %}
 
 {% block content %}
-
+    {% bootstrap_button button_type="link" href="/vendor/add" content="Add vendor" %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Company Name</th>
+            <th scope="col">Tax ID</th>
+            <th scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for vendor in vendor_list %}
+            <tr>
+                <td>{{ vendor.name }}</td>
+                <td>{{ vendor.company_name }}</td>
+                <td>{{ vendor.tax_id }}</td>
+                <td><a href="/vendor/{{ vendor.id }}/">Update</a> / <a href="/vendor/
+{{ vendor.id }}/delete/">Delete</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 {% endblock content %}
