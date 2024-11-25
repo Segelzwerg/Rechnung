@@ -64,6 +64,11 @@ class BankAccountDeleteView(DeleteView):
     success_url = reverse_lazy('start')
 
 
+class BankAccountListView(ListView):
+    """List all bank accounts."""
+    model = BankAccount
+
+
 class CustomerCreateView(CreateView):
     """Create a new customer."""
     model = Customer
