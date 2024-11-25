@@ -1,7 +1,7 @@
 services:
   rechnung:
-    #build: . # Enable if you want to build from source
-    image: ghcr.io/segelzwerg/segelzwerg/rechnung:latest
+    build: . # Enable if you want to build from source
+    #image: ghcr.io/segelzwerg/segelzwerg/rechnung:latest
     ports:
       - "12321:8000" # You can change to any port you like.
     depends_on:
@@ -15,7 +15,7 @@ services:
       - DB_HOST=$DB_HOST
       - DB_PORT=$DB_PORT
   postgres:
-    image: postgres:17
+    image: postgres:16.4
     volumes:
       #- <external_path>:/var/lib/postgresql/data/ # Enable if you want to use an external drive
       - /var/lib/postgresql/data/
