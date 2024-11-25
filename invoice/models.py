@@ -101,6 +101,7 @@ class Invoice(Model):
 
 @deprecated('Deprecated in 0.1 and remove in 1.0')
 def validate_real_values(value):
+    """Validate real values."""
     if isnan(value):
         raise ValidationError('Value must not be nan.')
     if isinf(value):
@@ -147,4 +148,5 @@ class InvoiceItem(Model):
 
     @property
     def tax_string(self) -> str:
+        """Get the tax string."""
         return f'{self.tax * 100}%'
