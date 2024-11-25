@@ -143,10 +143,15 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
     table_y_start = 600
     pdf_object.drawString(100, 800, invoice.vendor.name)
     pdf_object.drawString(100, 780, invoice.vendor.company_name)
-    pdf_object.drawString(100, 760, invoice.vendor.address.street)
-    pdf_object.drawString(100, 740, f'{invoice.vendor.address.postcode} {invoice.vendor.address.city}')
-    pdf_object.drawString(100, 720, invoice.vendor.address.country)
-    pdf_object.drawString(100, 660, 'Rechnung')
+    pdf_object.drawString(100, 760, invoice.vendor.address.line_1)
+    if invoice.vendor.address.line_2:
+        pdf_object.drawString(100, 740, invoice.vendor.address.line_2)
+    if invoice.vendor.address.line_3:
+        pdf_object.drawString(100, 720, invoice.vendor.address.line_3)
+    pdf_object.drawString(100, 700,
+                          f'{invoice.vendor.address.postcode} {invoice.vendor.address.city}')
+    pdf_object.drawString(100, 680, invoice.vendor.address.country)
+    pdf_object.drawString(100, 640, 'Rechnung')
     data = Invoice.objects.get(id=invoice_id).table_export
     table = Table(data=data)
     _, table_height = table.wrapOn(pdf_object, 0, 0)

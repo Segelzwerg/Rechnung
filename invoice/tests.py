@@ -20,24 +20,27 @@ class AddAddressViewTestCase(TestCase):
     def setUp(self):
         self.url = reverse('address-add')
 
-    @given(street=text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           postcode=text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']), min_size=1, max_size=10),
-           city=text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           country=text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1))
-    @example(street="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany")
-    @example(street='0', postcode='0', city='0', country='\r').xfail(reason='"\r" is not a valid input.')
-    def test_add_address(self, street, postcode, city, country):
+    @given(
+        line_1=text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
+        postcode=text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
+                      min_size=1, max_size=10),
+        city=text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
+        country=text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1))
+    @example(line_1="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany")
+    @example(line_1='0', postcode='0', city='0', country='\r').xfail(
+        reason='"\r" is not a valid input.')
+    def test_add_address(self, line_1, postcode, city, country):
         response = self.client.post(self.url, data={
-            'street': street,
+            'line_1': line_1,
             'postcode': postcode,
             'city': city,
             'country': country
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/addresses/')
-        address = Address.objects.get(street=street, postcode=postcode)
+        address = Address.objects.get(line_1=line_1, postcode=postcode)
         self.assertIsNotNone(address)
-        self.assertEqual(address.street, street)
+        self.assertEqual(address.line_1, line_1)
         self.assertEqual(address.postcode, postcode)
         self.assertEqual(address.city, city)
         self.assertEqual(address.country, country)
@@ -52,7 +55,8 @@ class AddCustomerViewTestCase(TestCase):
            emails(domains=domains(max_length=255, max_element_length=63)))
     @example("John", "Doe", "john@doe.com")
     def test_add_customer(self, first_name, last_name, email):
-        address = Address.objects.create(street="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany")
+        address = Address.objects.create(line_1="Musterstraße 1", postcode="12345",
+                                         city="Musterstadt", country="Germany")
         response = self.client.post(self.url, data={
             'first_name': first_name,
             'last_name': last_name,
@@ -70,7 +74,8 @@ class AddCustomerViewTestCase(TestCase):
 class CustomerModelTestCase(TestCase):
     def test_long_email(self):
         long_email = 'a' * 240 + '@' + 'b' * 20 + '.com'
-        address = Address.objects.create(street="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany")
+        address = Address.objects.create(line_1="Musterstraße 1", postcode="12345",
+                                         city="Musterstadt", country="Germany")
         customer = Customer.objects.create(first_name='John', last_name='Doe', email=long_email,
                                            address=address)
         with self.assertRaises(ValidationError):
@@ -86,7 +91,8 @@ class AddVendorViewTestCase(TestCase):
            )
     @example("John", "Doe Company")
     def test_add_vendor(self, name, company):
-        address = Address.objects.create(street="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany")
+        address = Address.objects.create(line_1="Musterstraße 1", postcode="12345",
+                                         city="Musterstadt", country="Germany")
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
