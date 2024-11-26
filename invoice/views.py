@@ -104,6 +104,7 @@ class CustomerUpdateView(FormView):
 
     def form_valid(self, form):
         """Create a new customer and a new address."""
+        customer_id = self.kwargs['pk']
         address_line_1 = form.cleaned_data['address_line_1']
         address_line_2 = form.cleaned_data['address_line_2']
         address_line_3 = form.cleaned_data['address_line_3']
@@ -111,15 +112,21 @@ class CustomerUpdateView(FormView):
         address_city = form.cleaned_data['address_city']
         address_state = form.cleaned_data['address_state']
         address_country = form.cleaned_data['address_country']
-        address = Address.objects.create(line_1=address_line_1,
-                                         line_2=address_line_2,
-                                         line_3=address_line_3,
-                                         postcode=address_postcode,
-                                         city=address_city, state=address_state,
-                                         country=address_country)
-        _ = Customer.objects.create(first_name=form.cleaned_data['first_name'],
-                                    last_name=form.cleaned_data['last_name'],
-                                    email=form.cleaned_data['email'], address=address)
+        customer = Customer.objects.get(id=customer_id)
+        customer.first_name = form.cleaned_data['first_name']
+        customer.last_name = form.cleaned_data['last_name']
+        customer.email = form.cleaned_data['email']
+        address = customer.address
+        address.line_1 = address_line_1
+        address.line_2 = address_line_2
+        address.line_3 = address_line_3
+        address.postcode = address_postcode
+        address.city = address_city
+        address.state = address_state
+        address.country = address_country
+        address.save()
+        customer.save()
+
         return super().form_valid(form)
 
 
