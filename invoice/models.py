@@ -63,6 +63,14 @@ class Customer(Model):
     email = EmailField(max_length=256)
     address = ForeignKey(Address, on_delete=CASCADE)
 
+    def dict(self) -> dict:
+        """
+        Get dictionary representation of customer.
+        Including the address as dictionary. Where each key gets 'address_' prefix.
+        """
+        address_dict = {f'address_{key}': value for key, value in self.address.__dict__.items()}
+        return self.__dict__ | address_dict
+
 
 class Vendor(Model):
     """Defines profiles for the invoicer."""
