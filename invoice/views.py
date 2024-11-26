@@ -102,6 +102,13 @@ class CustomerUpdateView(FormView):
     form_class = CustomerForm
     success_url = reverse_lazy('customer-list')
 
+    def get_context_data(self, **kwargs):
+        customer = Customer.objects.get(id=self.kwargs['pk'])
+        context = super().get_context_data(**kwargs)
+        form_data = customer.dict()
+        context['form'] = CustomerForm(initial=form_data)
+        return context
+
     def form_valid(self, form):
         """Create a new customer and a new address."""
         customer_id = self.kwargs['pk']
