@@ -20,6 +20,7 @@ class Address(Model):
     line_3 = CharField(max_length=200, null=True, blank=True)
     postcode = CharField(max_length=10)
     city = CharField(max_length=120)
+    state = CharField(max_length=200, null=True, blank=True)
     country = CharField(max_length=120)
 
 
