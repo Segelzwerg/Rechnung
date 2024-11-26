@@ -4,7 +4,7 @@ from math import inf, nan
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.timezone import now
-from hypothesis import given, example
+from hypothesis import given, example, assume
 from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
 from hypothesis.strategies import characters, text, emails, integers, composite, decimals
@@ -14,6 +14,39 @@ from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_
 GERMAN_TAX_RATE = Decimal('0.19')
 HUNDRED = Decimal('100')
 ONE = Decimal('1')
+
+
+@composite
+def build_customer_fields(draw):
+    first_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
+                           min_size=1))
+    last_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
+                          min_size=1))
+    email = draw(emails(domains=domains(max_length=255, max_element_length=63)))
+    return (first_name, last_name, email)
+
+
+@composite
+def build_address_fields(draw):
+    address_line_1 = draw(text(
+        alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']), min_size=1))
+    address_line_2 = draw(text(
+        alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
+    address_line_3 = draw(text(
+        alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
+    city = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
+                     min_size=1))
+    postcode = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs',
+                                                                        'Pd']),
+                         min_size=1, max_size=10))
+    state = draw(text(alphabet=characters(codec='utf-8',
+                                          categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
+    country = draw(text(alphabet=characters(codec='utf-8',
+                                            categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
+                        min_size=1))
+    assume(address_line_1[0] != ' ')
+    assume(country != '\xa0')
+    return (address_line_1, address_line_2, address_line_3, city, postcode, state, country)
 
 
 class AddAddressViewTestCase(TestCase):
@@ -51,23 +84,30 @@ class AddCustomerViewTestCase(TestCase):
     def setUp(self):
         self.url = reverse('customer-add')
 
-    @given(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           emails(domains=domains(max_length=255, max_element_length=63)))
-    @example("John", "Doe", "john@doe.com")
-    def test_add_customer(self, first_name, last_name, email):
-        address = Address.objects.create(line_1="Musterstraße 1", postcode="12345",
-                                         city="Musterstadt", country="Germany")
+    @given(build_customer_fields(), build_address_fields())
+    @example(('John', 'Doe', 'john@doe.com'),
+             ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'))
+    def test_add_customer(self, customer_fields, address_fields):
+        first_name, last_name, email = customer_fields
+        address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
         response = self.client.post(self.url, data={
             'first_name': first_name,
             'last_name': last_name,
             'email': email,
-            'address': address.id
+            'address_line_1': address_line_1,
+            'address_line_2': address_line_2,
+            'address_line_3': address_line_3,
+            'address_city': city,
+            'address_postcode': postcode,
+            'address_state': state,
+            'address_country': country,
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/customers/')
         customer = Customer.objects.get(first_name=first_name, last_name=last_name)
+        address = Address.objects.first()
         self.assertIsNotNone(customer)
+        self.assertIsNotNone(address)
         self.assertEqual(customer.email, email)
         self.assertEqual(customer.address, address)
 
