@@ -29,6 +29,7 @@ class AddAddressViewTestCase(TestCase):
     @example(line_1="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany")
     @example(line_1='0', postcode='0', city='0', country='\r').xfail(
         reason='"\r" is not a valid input.')
+    @example(line_1='0', postcode='\xa0', city='0', country='0').xfail(reason='Issue raised #127')
     def test_add_address(self, line_1, postcode, city, country):
         response = self.client.post(self.url, data={
             'line_1': line_1,
