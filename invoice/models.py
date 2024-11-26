@@ -23,6 +23,15 @@ class Address(Model):
     state = CharField(max_length=200, null=True, blank=True)
     country = CharField(max_length=120)
 
+    def __str__(self):
+        export = self.line_1
+        if self.line_2:
+            export += f' {self.line_2}'
+        if self.line_3:
+            export += f' {self.line_3}'
+        export += f', {self.postcode} {self.city}, {self.country}'
+        return export
+
 
 def validate_iban(value):
     """Validate IBAN."""
