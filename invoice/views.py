@@ -3,12 +3,12 @@ import io
 
 from django.http import FileResponse
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, DeleteView, ListView
+from django.views.generic import CreateView, UpdateView, DeleteView, ListView, FormView
 from django.views.generic import TemplateView
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table
 
-from invoice.forms import InvoiceItemForm
+from invoice.forms import InvoiceItemForm, CustomerForm
 from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem, BankAccount
 
 A4_WIDTH = 595
@@ -69,11 +69,31 @@ class BankAccountListView(ListView):
     model = BankAccount
 
 
-class CustomerCreateView(CreateView):
+class CustomerCreateView(FormView):
     """Create a new customer."""
-    model = Customer
-    fields = '__all__'
+    template_name = 'invoice/customer_form.html'
+    form_class = CustomerForm
     success_url = reverse_lazy('customer-list')
+
+    def form_valid(self, form):
+        """Create a new customer and a new address."""
+        address_line_1 = form.cleaned_data['address_line_1']
+        address_line_2 = form.cleaned_data['address_line_2']
+        address_line_3 = form.cleaned_data['address_line_3']
+        address_postcode = form.cleaned_data['address_postcode']
+        address_city = form.cleaned_data['address_city']
+        address_state = form.cleaned_data['address_state']
+        address_country = form.cleaned_data['address_country']
+        address = Address.objects.create(line_1=address_line_1,
+                                         line_2=address_line_2,
+                                         line_3=address_line_3,
+                                         postcode=address_postcode,
+                                         city=address_city, state=address_state,
+                                         country=address_country)
+        _ = Customer.objects.create(first_name=form.cleaned_data['first_name'],
+                                    last_name=form.cleaned_data['last_name'],
+                                    email=form.cleaned_data['email'], address=address)
+        return super().form_valid(form)
 
 
 class CustomerUpdateView(UpdateView):
