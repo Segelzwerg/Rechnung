@@ -251,20 +251,19 @@ class VendorUpdateView(UpdateView):
             context['address_form'] = AddressForm(self.request.POST)
             context['bank_form'] = BankAccountForm(self.request.POST)
         else:
-            context['address_form'] = AddressForm(initial=self.object.address.__dict__)
-            context['bank_form'] = BankAccountForm(initial=self.object.bank_account.__dict__)
+            context['address_form'] = AddressForm(instance=self.object.address)
+            context['bank_form'] = BankAccountForm(instance=self.object.bank_account)
         return context
 
     def form_valid(self, form):
         """Updates an existing vendor including the address and the bank account."""
-        address_form = AddressForm(self.request.POST)
-        address = address_form.save()
-        bank_account_form = BankAccountForm(self.request.POST)
-        bank_account = bank_account_form.save()
-        vendor = form.save(commit=False)
-        vendor.address = address
-        vendor.bank_account = bank_account
-        vendor.save()
+        address_form = AddressForm(instance=self.object.address, data=self.request.POST)
+        if address_form.is_valid():
+            address_form.save()
+        bank_account_form = BankAccountForm(instance=self.object.bank_account,
+                                            data=self.request.POST)
+        if bank_account_form.is_valid():
+            bank_account_form.save()
         return super().form_valid(form)
 
 
