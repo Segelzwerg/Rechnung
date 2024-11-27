@@ -42,6 +42,8 @@ class CustomerCreateView(CreateView):
     def form_valid(self, form):
         """Create a new customer and a new address."""
         address_form = AddressForm(self.request.POST)
+        if not address_form.is_valid():
+            return self.form_invalid(address_form)
         address = address_form.save()
         customer = form.save(commit=False)
         customer.address = address
@@ -66,8 +68,9 @@ class CustomerUpdateView(UpdateView):
     def form_valid(self, form):
         """Updates an existing customer including the address."""
         address_form = AddressForm(instance=self.object.address, data=self.request.POST)
-        if address_form.is_valid():
-            address_form.save()
+        if not address_form.is_valid():
+            return self.form_invalid(address_form)
+        address_form.save()
         return super().form_valid(form)
 
 
@@ -186,8 +189,12 @@ class VendorCreateView(CreateView):
     def form_valid(self, form):
         """Create a new vendor, a new address and a new bank account."""
         address_form = AddressForm(self.request.POST)
+        if not address_form.is_valid():
+            return self.form_invalid(address_form)
         address = address_form.save()
         bank_account_form = BankAccountForm(self.request.POST)
+        if not bank_account_form.is_valid():
+            return self.form_invalid(bank_account_form)
         bank_account = bank_account_form.save()
         vendor = form.save(commit=False)
         vendor.address = address
@@ -215,12 +222,14 @@ class VendorUpdateView(UpdateView):
     def form_valid(self, form):
         """Updates an existing vendor including the address and the bank account."""
         address_form = AddressForm(instance=self.object.address, data=self.request.POST)
-        if address_form.is_valid():
-            address_form.save()
+        if not address_form.is_valid():
+            return self.form_invalid(address_form)
+        address_form.save()
         bank_account_form = BankAccountForm(instance=self.object.bank_account,
                                             data=self.request.POST)
-        if bank_account_form.is_valid():
-            bank_account_form.save()
+        if not bank_account_form.is_valid():
+            return self.form_invalid(bank_account_form)
+        bank_account_form.save()
         return super().form_valid(form)
 
 

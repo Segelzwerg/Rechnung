@@ -114,6 +114,19 @@ class AddCustomerViewTestCase(TestCase):
         self.assertEqual(customer.email, email)
         self.assertEqual(customer.address, address)
 
+    def test_update_invalid_input_address(self):
+        response = self.client.post(self.url, data={
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'email': 'john@doe.com',
+            'line_1': '',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'line_1',
+                             errors=['This field is required.'])
+
 
 class UpdateCustomerViewTestCase(TestCase):
     def setUp(self):
@@ -149,6 +162,32 @@ class UpdateCustomerViewTestCase(TestCase):
         self.assertIsNotNone(customer)
         self.assertEqual(customer.email, email)
         self.assertEqual(customer.address, address)
+
+    def test_update_invalid_input_customer(self):
+        response = self.client.post(self.url, data={
+            'first_name': 'John',
+            'last_name': '',
+            'email': 'john@doe.com',
+            'line_1': 'Musterstraße 1',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'last_name',
+                             errors=['This field is required.'])
+
+    def test_update_invalid_input_address(self):
+        response = self.client.post(self.url, data={
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'email': 'john@doe.com',
+            'line_1': '',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'line_1',
+                             errors=['This field is required.'])
 
 
 class CustomerModelTestCase(TestCase):
@@ -196,6 +235,30 @@ class AddVendorViewTestCase(TestCase):
         self.assertEqual(vendor.address, address)
         self.assertEqual(vendor.bank_account, bank_account)
 
+    def test_update_invalid_input_address(self):
+        response = self.client.post(self.url, data={
+            'name': 'John',
+            'company_name': 'John Doe Company',
+            'line_1': '',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'line_1',
+                             errors=['This field is required.'])
+
+    def test_update_invalid_input_bank_account(self):
+        response = self.client.post(self.url, data={
+            'name': 'John',
+            'company_name': 'John Doe Company',
+            'line_1': 'Musterstraße 1',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'iban',
+                             errors=['This field is required.'])
+
 
 class UpdateVendorViewTestCase(TestCase):
     def setUp(self):
@@ -239,6 +302,30 @@ class UpdateVendorViewTestCase(TestCase):
         self.assertEqual(vendor.company_name, company)
         self.assertEqual(vendor.address, address)
         self.assertEqual(vendor.bank_account, bank_account)
+
+    def test_update_invalid_input_address(self):
+        response = self.client.post(self.url, data={
+            'name': 'John',
+            'company_name': 'John Doe Company',
+            'line_1': '',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'line_1',
+                             errors=['This field is required.'])
+
+    def test_update_invalid_input_bank_account(self):
+        response = self.client.post(self.url, data={
+            'name': 'John',
+            'company_name': 'John Doe Company',
+            'line_1': 'Musterstraße 1',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'iban',
+                             errors=['This field is required.'])
 
 
 class InvoiceItemModelTestCase(TestCase):
