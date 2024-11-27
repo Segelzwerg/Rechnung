@@ -6,7 +6,7 @@ from warnings import deprecated
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
-    DateField, UniqueConstraint
+    DateField, UniqueConstraint, OneToOneField
 from django.db.models.fields import DecimalField
 from schwifty import IBAN, BIC
 
@@ -61,7 +61,7 @@ class Customer(Model):
     first_name = CharField(max_length=120)
     last_name = CharField(max_length=120)
     email = EmailField(max_length=256)
-    address = ForeignKey(Address, on_delete=CASCADE)
+    address = OneToOneField(Address, on_delete=CASCADE)
 
     def dict(self) -> dict:
         """
