@@ -88,7 +88,7 @@ class CustomerUpdateView(UpdateView):
         return context
 
     def form_valid(self, form):
-        """Updates an existing vendor including the address and the bank account."""
+        """Updates an existing customer including the address."""
         address_form = AddressForm(instance=self.object.address, data=self.request.POST)
         if address_form.is_valid():
             address_form.save()
