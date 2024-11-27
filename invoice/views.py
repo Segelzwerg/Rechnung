@@ -8,7 +8,7 @@ from django.views.generic import TemplateView
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table
 
-from invoice.forms import InvoiceItemForm, CustomerForm
+from invoice.forms import InvoiceItemForm, CustomerForm, VendorForm
 from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem, BankAccount
 
 A4_WIDTH = 595
@@ -17,6 +17,7 @@ A4_WIDTH = 595
 class StartView(TemplateView):
     """The start page."""
     template_name = 'invoice/start.html'
+
 
 class AddressListView(ListView):
     """List all addresses."""
@@ -211,18 +212,78 @@ class InvoiceItemCreateView(CreateView):
     success_url = reverse_lazy('invoice-list')
 
 
-class VendorCreateView(CreateView):
-    """Create a new vendor."""
-    model = Vendor
-    fields = '__all__'
+class VendorCreateView(FormView):
+    """Create a new vendor. Including a bank account and a new address."""
+    template_name = 'invoice/vendor_form.html'
+    form_class = VendorForm
     success_url = reverse_lazy('vendor-list')
+
+    def form_valid(self, form):
+        """Create a new customer and a new address."""
+        address_line_1 = form.cleaned_data['address_line_1']
+        address_line_2 = form.cleaned_data['address_line_2']
+        address_line_3 = form.cleaned_data['address_line_3']
+        address_postcode = form.cleaned_data['address_postcode']
+        address_city = form.cleaned_data['address_city']
+        address_state = form.cleaned_data['address_state']
+        address_country = form.cleaned_data['address_country']
+        address = Address.objects.create(line_1=address_line_1,
+                                         line_2=address_line_2,
+                                         line_3=address_line_3,
+                                         postcode=address_postcode,
+                                         city=address_city, state=address_state,
+                                         country=address_country)
+        _ = Customer.objects.create(first_name=form.cleaned_data['first_name'],
+                                    last_name=form.cleaned_data['last_name'],
+                                    email=form.cleaned_data['email'], address=address)
+        return super().form_valid(form)
 
 
 class VendorUpdateView(UpdateView):
-    """Update an existing vendor."""
-    model = Vendor
-    fields = '__all__'
+    """Update an existing vendor. Including the bank account and address."""
+    template_name = 'invoice/vendor_form.html'
+    form_class = VendorForm
     success_url = reverse_lazy('vendor-list')
+
+    def get_context_data(self, **kwargs):
+        vendor = Vendor.objects.get(id=self.kwargs['pk'])
+        context = super().get_context_data(**kwargs)
+        form_data = vendor.dict()
+        context['form'] = VendorForm(initial=form_data)
+        return context
+
+    def form_valid(self, form):
+        """Updates the vendor including the address and bank account."""
+        vendor_id = self.kwargs['pk']
+        address_line_1 = form.cleaned_data['address_line_1']
+        address_line_2 = form.cleaned_data['address_line_2']
+        address_line_3 = form.cleaned_data['address_line_3']
+        address_postcode = form.cleaned_data['address_postcode']
+        address_city = form.cleaned_data['address_city']
+        address_state = form.cleaned_data['address_state']
+        address_country = form.cleaned_data['address_country']
+        bank_iban = form.cleaned_data['bank_iban']
+        bank_bic = form.cleaned_data['bank_bic']
+        vendor = Vendor.objects.get(id=vendor_id)
+        vendor.name = form.cleaned_data['name']
+        vendor.company_name = form.cleaned_data['company_name']
+        vendor.tax_id = form.cleaned_data['tax_id']
+        address = vendor.address
+        address.line_1 = address_line_1
+        address.line_2 = address_line_2
+        address.line_3 = address_line_3
+        address.postcode = address_postcode
+        address.city = address_city
+        address.state = address_state
+        address.country = address_country
+        bank_account = vendor.bank_account
+        bank_account.iban = bank_iban
+        bank_account.bic = bank_bic
+        address.save()
+        bank_account.save()
+        vendor.save()
+
+        return super().form_valid(form)
 
 
 class VendorDeleteView(DeleteView):
