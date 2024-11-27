@@ -190,6 +190,78 @@ class AddVendorViewTestCase(TestCase):
         self.assertEqual(vendor.bank_account, None)
 
 
+class UpdateVendorViewTestCase(TestCase):
+    def setUp(self):
+        iban = schwifty.IBAN.random()
+        vendor = Vendor.objects.create(name="John", company_name="Doe Company",
+                                       address=Address.objects.create(
+                                           line_1='Musterstraße 1',
+                                           postcode='12345', city='Musterstadt',
+                                           country='Germany'),
+                                       bank_account=BankAccount.objects.create(iban=str(iban),
+                                                                               bic=iban.bic))
+        self.url = reverse('vendor-update', args=[vendor.id])
+
+    @given((build_vendor_fields()), build_address_fields(), build_bank_fields())
+    def test_add_vendor(self, vendor_fields, address_fields, bank_fields):
+        name, company = vendor_fields
+        address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
+        iban, bic = bank_fields
+        response = self.client.post(self.url, data={
+            'name': name,
+            'company_name': company,
+            'address_line_1': address_line_1,
+            'address_line_2': address_line_2,
+            'address_line_3': address_line_3,
+            'address_city': city,
+            'address_postcode': postcode,
+            'address_state': state,
+            'address_country': country,
+            'bank_iban': str(iban),
+            'bank_bic': str(bic)
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, '/vendors/')
+        vendor = Vendor.objects.get(name=name)
+        address = Address.objects.first()
+        bank_account = BankAccount.objects.first()
+        self.assertIsNotNone(vendor)
+        self.assertEqual(vendor.company_name, company)
+        self.assertEqual(vendor.address, address)
+        self.assertEqual(vendor.bank_account, bank_account)
+
+    def test_optional_bank_account(self):
+        name = "John"
+        company = "Doe Company"
+        address_line_1 = 'Musterstraße 1'
+        address_line_2 = ''
+        address_line_3 = ''
+        city = 'Musterstadt'
+        postcode = '12345'
+        state = ''
+        country = 'Germany'
+        response = self.client.post(self.url, data={
+            'name': name,
+            'company_name': company,
+            'address_line_1': address_line_1,
+            'address_line_2': address_line_2,
+            'address_line_3': address_line_3,
+            'address_city': city,
+            'address_postcode': postcode,
+            'address_state': state,
+            'address_country': country,
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, '/vendors/')
+        vendor = Vendor.objects.get(name=name)
+        address = Address.objects.first()
+        self.assertIsNotNone(vendor)
+        self.assertEqual(vendor.company_name, company)
+        self.assertEqual(vendor.address, address)
+        self.assertEqual(0, BankAccount.objects.count())
+        self.assertEqual(vendor.bank_account, None)
+
+
 class InvoiceItemModelTestCase(TestCase):
     def setUp(self):
         address = Address.objects.create()
