@@ -63,14 +63,6 @@ class Customer(Model):
     email = EmailField(max_length=256)
     address = OneToOneField(Address, on_delete=CASCADE)
 
-    def dict(self) -> dict:
-        """
-        Get dictionary representation of customer.
-        Including the address as dictionary. Where each key gets 'address_' prefix.
-        """
-        address_dict = {f'address_{key}': value for key, value in self.address.__dict__.items()}
-        return self.__dict__ | address_dict
-
 
 class Vendor(Model):
     """Defines profiles for the invoicer."""
@@ -79,16 +71,6 @@ class Vendor(Model):
     address: Address = OneToOneField(Address, on_delete=CASCADE)
     tax_id = CharField(max_length=120, null=True, blank=True)
     bank_account: BankAccount = OneToOneField(BankAccount, on_delete=CASCADE, null=True, blank=True)
-
-    def dict(self):
-        """
-        Get dictionary representation of vendor.
-        Including the address and bank account as dictionary. Where each key gets 'address_' or
-        'bank_' prefix.
-        """
-        address_dict = {f'address_{key}': value for key, value in self.address.__dict__.items()}
-        bank_dict = {f'bank_{key}': value for key, value in self.bank_account.__dict__.items()}
-        return self.__dict__ | address_dict | bank_dict
 
 
 class Invoice(Model):
