@@ -78,7 +78,7 @@ class Vendor(Model):
     company_name = CharField(max_length=255, unique=True)
     address: Address = OneToOneField(Address, on_delete=CASCADE)
     tax_id = CharField(max_length=120, null=True, blank=True)
-    bank_account: BankAccount = ForeignKey(BankAccount, on_delete=CASCADE, null=True, blank=True)
+    bank_account: BankAccount = OneToOneField(BankAccount, on_delete=CASCADE, null=True, blank=True)
 
     def dict(self):
         """
