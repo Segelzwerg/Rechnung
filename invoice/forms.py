@@ -42,4 +42,3 @@ class VendorForm(ModelForm):
     class Meta:
         model = Vendor
         fields = '__all__'
-        exclude = ['address', 'bank_account']

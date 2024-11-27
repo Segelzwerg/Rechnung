@@ -56,6 +56,9 @@ def build_address_fields(draw):
                                             categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
                         min_size=1))
     assume(address_line_1[0] != ' ')
+    assume(country[0] != ' ')
+    assume(city[0] != ' ')
+    assume(postcode[0] != ' ')
     assume(country != '\xa0')
     return (address_line_1, address_line_2, address_line_3, city, postcode, state, country)
 
@@ -206,7 +209,7 @@ class UpdateVendorViewTestCase(TestCase):
         Vendor.objects.all().delete()
 
     @given((build_vendor_fields()), build_address_fields(), build_bank_fields())
-    def test_add_vendor(self, vendor_fields, address_fields, bank_fields):
+    def test_update_vendor(self, vendor_fields, address_fields, bank_fields):
         name, company = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
         iban, bic = bank_fields
