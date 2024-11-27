@@ -8,8 +8,8 @@ from django.views.generic import TemplateView
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table
 
-from invoice.forms import InvoiceItemForm, CustomerForm, AddressForm, BankAccountForm
-from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem, BankAccount
+from invoice.forms import InvoiceItemForm, AddressForm, BankAccountForm, CustomerForm, VendorForm
+from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem
 
 A4_WIDTH = 595
 
@@ -22,32 +22,6 @@ class StartView(TemplateView):
 class AddressListView(ListView):
     """List all addresses."""
     model = Address
-
-
-class BankAccountCreateView(CreateView):
-    """Create a new bank account."""
-    model = BankAccount
-    fields = '__all__'
-    success_url = reverse_lazy('bank-account-add')
-
-
-class BankAccountUpdateView(UpdateView):
-    """Update an existing bank account."""
-    model = BankAccount
-    fields = '__all__'
-    success_url = reverse_lazy('bank-account-update')
-
-
-class BankAccountDeleteView(DeleteView):
-    """Delete an existing bank account."""
-    model = BankAccount
-    success_url = reverse_lazy('start')
-
-
-class BankAccountListView(ListView):
-    """List all bank accounts."""
-    model = BankAccount
-
 
 class CustomerCreateView(CreateView):
     """Create a new customer."""
