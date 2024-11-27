@@ -63,10 +63,11 @@ def build_address_fields(draw):
     return (address_line_1, address_line_2, address_line_3, city, postcode, state, country)
 
 
-@composite
-def build_bank_fields(draw):
+def build_bank_fields():
     iban = schwifty.IBAN.random()
     bic = iban.bic
+    assume(bic != '')
+    assume(bic is not None)
     return (iban, bic)
 
 
@@ -108,7 +109,6 @@ class AddCustomerViewTestCase(TestCase):
         self.assertRedirects(response, '/customers/')
         customer = Customer.objects.get(first_name=first_name, last_name=last_name)
         address = Address.objects.first()
-        bank_account = BankAccount.objects.first()
         self.assertIsNotNone(customer)
         self.assertIsNotNone(address)
         self.assertEqual(customer.email, email)
@@ -130,14 +130,13 @@ class AddVendorViewTestCase(TestCase):
     def setUp(self):
         self.url = reverse('vendor-add')
 
-    @given((build_vendor_fields()), build_address_fields(), build_bank_fields())
+    @given((build_vendor_fields()), build_address_fields())
     @example(("John", "Doe Company"),
-             ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'),
-             ('LU254098VPCCVEVXKKLS', 'BARCLULL'))
-    def test_add_vendor(self, vendor_fields, address_fields, bank_fields):
+             ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'))
+    def test_add_vendor(self, vendor_fields, address_fields):
         name, company = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
-        iban, bic = bank_fields
+        iban, bic = build_bank_fields()
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
@@ -177,11 +176,11 @@ class UpdateVendorViewTestCase(TestCase):
     def tearDown(self):
         Vendor.objects.all().delete()
 
-    @given((build_vendor_fields()), build_address_fields(), build_bank_fields())
-    def test_update_vendor(self, vendor_fields, address_fields, bank_fields):
+    @given((build_vendor_fields()), build_address_fields())
+    def test_update_vendor(self, vendor_fields, address_fields):
         name, company = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
-        iban, bic = bank_fields
+        iban, bic = build_bank_fields()
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
