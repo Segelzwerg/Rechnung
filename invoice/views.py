@@ -23,11 +23,12 @@ class AddressListView(ListView):
     """List all addresses."""
     model = Address
 
+
 class CustomerCreateView(CreateView):
     """Create a new customer."""
     template_name = 'invoice/customer_form.html'
     model = Customer
-    fields = ['first_name', 'last_name', 'email']
+    form_class = CustomerForm
     success_url = reverse_lazy('customer-list')
 
     def get_context_data(self, **kwargs):
@@ -51,6 +52,7 @@ class CustomerUpdateView(UpdateView):
     """Update an existing customer."""
     template_name = 'invoice/customer_form.html'
     form_class = CustomerForm
+    model = Customer
     success_url = reverse_lazy('customer-list')
 
     def get_context_data(self, **kwargs):
@@ -167,8 +169,8 @@ class InvoiceItemCreateView(CreateView):
 class VendorCreateView(CreateView):
     """Create a new vendor. Including a bank account and a new address."""
     template_name = 'invoice/vendor_form.html'
+    form_class = VendorForm
     model = Vendor
-    fields = ['name', 'company_name', 'tax_id']
     success_url = reverse_lazy('vendor-list')
 
     def get_context_data(self, **kwargs):
@@ -196,8 +198,8 @@ class VendorCreateView(CreateView):
 class VendorUpdateView(UpdateView):
     """Update an existing vendor. Including the bank account and address."""
     template_name = 'invoice/vendor_form.html'
+    form_class = VendorForm
     model = Vendor
-    fields = ['name', 'company_name', 'tax_id']
     success_url = reverse_lazy('vendor-list')
 
     def get_context_data(self, **kwargs):
