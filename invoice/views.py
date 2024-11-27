@@ -235,7 +235,6 @@ class VendorCreateView(CreateView):
         vendor = form.save(commit=False)
         vendor.address = address
         vendor.bank_account = bank_account
-        vendor.save()
         return super().form_valid(form)
 
 
@@ -252,12 +251,12 @@ class VendorUpdateView(UpdateView):
             context['address_form'] = AddressForm(self.request.POST)
             context['bank_form'] = BankAccountForm(self.request.POST)
         else:
-            context['address_form'] = AddressForm()
-            context['bank_form'] = BankAccountForm()
+            context['address_form'] = AddressForm(initial=self.object.address.__dict__)
+            context['bank_form'] = BankAccountForm(initial=self.object.bank_account.__dict__)
         return context
 
     def form_valid(self, form):
-        """Create a new vendor, a new address and a new bank account."""
+        """Updates an existing vendor including the address and the bank account."""
         address_form = AddressForm(self.request.POST)
         address = address_form.save()
         bank_account_form = BankAccountForm(self.request.POST)
