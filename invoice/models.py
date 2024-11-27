@@ -52,7 +52,7 @@ def validate_bic(value):
 
 class BankAccount(Model):
     """Defines a bank account."""
-    iban = CharField(max_length=34, validators=[validate_iban], unique=True)
+    iban = CharField(max_length=34, validators=[validate_iban])
     bic = CharField(max_length=11, validators=[validate_bic])
 
 
