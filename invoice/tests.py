@@ -115,6 +115,42 @@ class AddCustomerViewTestCase(TestCase):
         self.assertEqual(customer.address, address)
 
 
+class UpdateCustomerViewTestCase(TestCase):
+    def setUp(self):
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com",
+                                           address=Address.objects.create(
+                                               line_1='Musterstraße 1',
+                                               postcode='12345', city='Musterstadt',
+                                               country='Germany'))
+        self.url = reverse('customer-update', args=[customer.id])
+
+    def tearDown(self):
+        Customer.objects.all().delete()
+
+    @given((build_customer_fields()), build_address_fields())
+    def test_update_vendor(self, customer_fields, address_fields):
+        first_name, last_name, email = customer_fields
+        address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
+        response = self.client.post(self.url, data={
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            'line_1': address_line_1,
+            'line_2': address_line_2,
+            'line_3': address_line_3,
+            'city': city,
+            'postcode': postcode,
+            'state': state,
+            'country': country, }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, '/customers/')
+        customer = Customer.objects.get(first_name=first_name, last_name=last_name)
+        address = Address.objects.first()
+        self.assertIsNotNone(customer)
+        self.assertEqual(customer.email, email)
+        self.assertEqual(customer.address, address)
+
+
 class CustomerModelTestCase(TestCase):
     def test_long_email(self):
         long_email = 'a' * 240 + '@' + 'b' * 20 + '.com'
