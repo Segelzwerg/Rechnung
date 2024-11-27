@@ -246,7 +246,7 @@ class VendorCreateView(FormView):
         return super().form_valid(form)
 
 
-class VendorUpdateView(UpdateView):
+class VendorUpdateView(FormView):
     """Update an existing vendor. Including the bank account and address."""
     template_name = 'invoice/vendor_form.html'
     form_class = VendorForm
