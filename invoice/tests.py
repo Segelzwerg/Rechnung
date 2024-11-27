@@ -1,6 +1,7 @@
 from decimal import Decimal
 from math import inf, nan
 
+import schwifty
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.timezone import now
@@ -9,7 +10,8 @@ from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
 from hypothesis.strategies import characters, text, emails, integers, composite, decimals
 
-from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE
+from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE, \
+    BankAccount
 
 GERMAN_TAX_RATE = Decimal('0.19')
 HUNDRED = Decimal('100')
@@ -24,6 +26,15 @@ def build_customer_fields(draw):
                           min_size=1))
     email = draw(emails(domains=domains(max_length=255, max_element_length=63)))
     return (first_name, last_name, email)
+
+
+@composite
+def build_vendor_fields(draw):
+    name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
+                     min_size=1))
+    company_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
+                             min_size=1))
+    return (name, company_name)
 
 
 @composite
@@ -47,6 +58,25 @@ def build_address_fields(draw):
     assume(address_line_1[0] != ' ')
     assume(country != '\xa0')
     return (address_line_1, address_line_2, address_line_3, city, postcode, state, country)
+
+
+@composite
+def build_bank_fields(draw):
+    iban = schwifty.IBAN.random()
+    bic = iban.bic
+    return (iban, bic)
+
+
+@composite
+def build_invoice_item(draw):
+    name = draw(text())
+    description = draw(text())
+    quantity = draw(integers(min_value=0, max_value=MAX_VALUE_DJANGO_SAVE))
+    price = draw(decimals(max_value=10000000, min_value=-1000000,
+                          places=2, allow_infinity=False, allow_nan=False))
+    tax = draw(decimals(places=2, min_value=Decimal('0.0'), max_value=ONE))
+    return InvoiceItem(name=name, description=description, quantity=quantity,
+                       price=price, tax=tax)
 
 
 class AddCustomerViewTestCase(TestCase):
@@ -75,6 +105,7 @@ class AddCustomerViewTestCase(TestCase):
         self.assertRedirects(response, '/customers/')
         customer = Customer.objects.get(first_name=first_name, last_name=last_name)
         address = Address.objects.first()
+        bank_account = BankAccount.objects.first()
         self.assertIsNotNone(customer)
         self.assertIsNotNone(address)
         self.assertEqual(customer.email, email)
@@ -96,36 +127,67 @@ class AddVendorViewTestCase(TestCase):
     def setUp(self):
         self.url = reverse('vendor-add')
 
-    @given(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           )
-    @example("John", "Doe Company")
-    def test_add_vendor(self, name, company):
-        address = Address.objects.create(line_1="Musterstraße 1", postcode="12345",
-                                         city="Musterstadt", country="Germany")
+    @given((build_vendor_fields()), build_address_fields(), build_bank_fields())
+    @example(("John", "Doe Company"),
+             ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'),
+             ('LU254098VPCCVEVXKKLS', 'BARCLULL'))
+    def test_add_vendor(self, vendor_fields, address_fields, bank_fields):
+        name, company = vendor_fields
+        address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
+        iban, bic = bank_fields
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
-            'address': 1
+            'address_line_1': address_line_1,
+            'address_line_2': address_line_2,
+            'address_line_3': address_line_3,
+            'address_city': city,
+            'address_postcode': postcode,
+            'address_state': state,
+            'address_country': country,
+            'bank_iban': str(iban),
+            'bank_bic': str(bic)
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/vendors/')
         vendor = Vendor.objects.get(name=name)
+        address = Address.objects.first()
+        bank_account = BankAccount.objects.first()
         self.assertIsNotNone(vendor)
         self.assertEqual(vendor.company_name, company)
         self.assertEqual(vendor.address, address)
+        self.assertEqual(vendor.bank_account, bank_account)
 
-
-@composite
-def build_invoice_item(draw):
-    name = draw(text())
-    description = draw(text())
-    quantity = draw(integers(min_value=0, max_value=MAX_VALUE_DJANGO_SAVE))
-    price = draw(decimals(max_value=10000000, min_value=-1000000,
-                          places=2, allow_infinity=False, allow_nan=False))
-    tax = draw(decimals(places=2, min_value=Decimal('0.0'), max_value=ONE))
-    return InvoiceItem(name=name, description=description, quantity=quantity,
-                       price=price, tax=tax)
+    def test_optional_bank_account(self):
+        name = "John"
+        company = "Doe Company"
+        address_line_1 = 'Musterstraße 1'
+        address_line_2 = ''
+        address_line_3 = ''
+        city = 'Musterstadt'
+        postcode = '12345'
+        state = ''
+        country = 'Germany'
+        response = self.client.post(self.url, data={
+            'name': name,
+            'company_name': company,
+            'address_line_1': address_line_1,
+            'address_line_2': address_line_2,
+            'address_line_3': address_line_3,
+            'address_city': city,
+            'address_postcode': postcode,
+            'address_state': state,
+            'address_country': country,
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, '/vendors/')
+        vendor = Vendor.objects.get(name=name)
+        address = Address.objects.first()
+        self.assertIsNotNone(vendor)
+        self.assertEqual(vendor.company_name, company)
+        self.assertEqual(vendor.address, address)
+        self.assertEqual(0, BankAccount.objects.count())
+        self.assertEqual(vendor.bank_account, None)
 
 
 class InvoiceItemModelTestCase(TestCase):

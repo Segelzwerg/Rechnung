@@ -227,15 +227,22 @@ class VendorCreateView(FormView):
         address_city = form.cleaned_data['address_city']
         address_state = form.cleaned_data['address_state']
         address_country = form.cleaned_data['address_country']
+        bank_iban = form.cleaned_data['bank_iban']
+        bank_bic = form.cleaned_data['bank_bic']
+
         address = Address.objects.create(line_1=address_line_1,
                                          line_2=address_line_2,
                                          line_3=address_line_3,
                                          postcode=address_postcode,
                                          city=address_city, state=address_state,
                                          country=address_country)
-        _ = Customer.objects.create(first_name=form.cleaned_data['first_name'],
-                                    last_name=form.cleaned_data['last_name'],
-                                    email=form.cleaned_data['email'], address=address)
+        vendor = Vendor.objects.create(name=form.cleaned_data['name'],
+                                       company_name=form.cleaned_data['company_name'],
+                                       tax_id=form.cleaned_data['tax_id'], address=address)
+        if bank_iban != '' and bank_bic != '':
+            bank_account = BankAccount.objects.create(iban=bank_iban, bic=bank_bic)
+            vendor.bank_account = bank_account
+            vendor.save()
         return super().form_valid(form)
 
 
