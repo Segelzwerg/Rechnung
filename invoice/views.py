@@ -8,7 +8,7 @@ from django.views.generic import TemplateView
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table
 
-from invoice.forms import InvoiceItemForm, CustomerForm, VendorForm, AddressForm
+from invoice.forms import InvoiceItemForm, CustomerForm, VendorForm, AddressForm, BankAccountForm
 from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem, BankAccount
 
 A4_WIDTH = 595
@@ -209,37 +209,32 @@ class InvoiceItemCreateView(CreateView):
     success_url = reverse_lazy('invoice-list')
 
 
-class VendorCreateView(FormView):
+class VendorCreateView(CreateView):
     """Create a new vendor. Including a bank account and a new address."""
     template_name = 'invoice/vendor_form.html'
     form_class = VendorForm
     success_url = reverse_lazy('vendor-list')
 
-    def form_valid(self, form):
-        """Create a new customer and a new address."""
-        address_line_1 = form.cleaned_data['address_line_1']
-        address_line_2 = form.cleaned_data['address_line_2']
-        address_line_3 = form.cleaned_data['address_line_3']
-        address_postcode = form.cleaned_data['address_postcode']
-        address_city = form.cleaned_data['address_city']
-        address_state = form.cleaned_data['address_state']
-        address_country = form.cleaned_data['address_country']
-        bank_iban = form.cleaned_data['bank_iban']
-        bank_bic = form.cleaned_data['bank_bic']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['address_form'] = AddressForm(self.request.POST)
+            context['bank_form'] = BankAccountForm(self.request.POST)
+        else:
+            context['address_form'] = AddressForm()
+            context['bank_form'] = BankAccountForm()
+        return context
 
-        address = Address.objects.create(line_1=address_line_1,
-                                         line_2=address_line_2,
-                                         line_3=address_line_3,
-                                         postcode=address_postcode,
-                                         city=address_city, state=address_state,
-                                         country=address_country)
-        vendor = Vendor.objects.create(name=form.cleaned_data['name'],
-                                       company_name=form.cleaned_data['company_name'],
-                                       tax_id=form.cleaned_data['tax_id'], address=address)
-        if bank_iban != '' and bank_bic != '':
-            bank_account = BankAccount.objects.create(iban=bank_iban, bic=bank_bic)
-            vendor.bank_account = bank_account
-            vendor.save()
+    def form_valid(self, form):
+        """Create a new vendor, a new address and a new bank account."""
+        address_form = AddressForm(self.request.POST)
+        address = address_form.save()
+        bank_account_form = BankAccountForm(self.request.POST)
+        bank_account = bank_account_form.save()
+        vendor = form.save(commit=False)
+        vendor.address = address
+        vendor.bank_account = bank_account
+        vendor.save()
         return super().form_valid(form)
 
 

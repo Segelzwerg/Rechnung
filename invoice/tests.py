@@ -138,15 +138,15 @@ class AddVendorViewTestCase(TestCase):
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
-            'address_line_1': address_line_1,
-            'address_line_2': address_line_2,
-            'address_line_3': address_line_3,
-            'address_city': city,
-            'address_postcode': postcode,
-            'address_state': state,
-            'address_country': country,
-            'bank_iban': str(iban),
-            'bank_bic': str(bic)
+            'line_1': address_line_1,
+            'line_2': address_line_2,
+            'line_3': address_line_3,
+            'city': city,
+            'postcode': postcode,
+            'state': state,
+            'country': country,
+            'iban': str(iban),
+            'bic': str(bic)
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/vendors/')
@@ -171,13 +171,13 @@ class AddVendorViewTestCase(TestCase):
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
-            'address_line_1': address_line_1,
-            'address_line_2': address_line_2,
-            'address_line_3': address_line_3,
-            'address_city': city,
-            'address_postcode': postcode,
-            'address_state': state,
-            'address_country': country,
+            'line_1': address_line_1,
+            'line_2': address_line_2,
+            'line_3': address_line_3,
+            'city': city,
+            'postcode': postcode,
+            'state': state,
+            'country': country,
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/vendors/')
@@ -213,15 +213,15 @@ class UpdateVendorViewTestCase(TestCase):
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
-            'address_line_1': address_line_1,
-            'address_line_2': address_line_2,
-            'address_line_3': address_line_3,
-            'address_city': city,
-            'address_postcode': postcode,
-            'address_state': state,
-            'address_country': country,
-            'bank_iban': str(iban),
-            'bank_bic': str(bic)
+            'line_1': address_line_1,
+            'line_2': address_line_2,
+            'line_3': address_line_3,
+            'city': city,
+            'postcode': postcode,
+            'state': state,
+            'country': country,
+            'iban': str(iban),
+            'bic': str(bic)
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/vendors/')
