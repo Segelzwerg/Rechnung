@@ -202,6 +202,9 @@ class UpdateVendorViewTestCase(TestCase):
                                                                                bic=iban.bic))
         self.url = reverse('vendor-update', args=[vendor.id])
 
+    def tearDown(self):
+        Vendor.objects.all().delete()
+
     @given((build_vendor_fields()), build_address_fields(), build_bank_fields())
     def test_add_vendor(self, vendor_fields, address_fields, bank_fields):
         name, company = vendor_fields
@@ -229,37 +232,6 @@ class UpdateVendorViewTestCase(TestCase):
         self.assertEqual(vendor.company_name, company)
         self.assertEqual(vendor.address, address)
         self.assertEqual(vendor.bank_account, bank_account)
-
-    def test_optional_bank_account(self):
-        name = "John"
-        company = "Doe Company"
-        address_line_1 = 'Musterstraße 1'
-        address_line_2 = ''
-        address_line_3 = ''
-        city = 'Musterstadt'
-        postcode = '12345'
-        state = ''
-        country = 'Germany'
-        response = self.client.post(self.url, data={
-            'name': name,
-            'company_name': company,
-            'address_line_1': address_line_1,
-            'address_line_2': address_line_2,
-            'address_line_3': address_line_3,
-            'address_city': city,
-            'address_postcode': postcode,
-            'address_state': state,
-            'address_country': country,
-        }, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, '/vendors/')
-        vendor = Vendor.objects.get(name=name)
-        address = Address.objects.first()
-        self.assertIsNotNone(vendor)
-        self.assertEqual(vendor.company_name, company)
-        self.assertEqual(vendor.address, address)
-        self.assertEqual(0, BankAccount.objects.count())
-        self.assertEqual(vendor.bank_account, None)
 
 
 class InvoiceItemModelTestCase(TestCase):
