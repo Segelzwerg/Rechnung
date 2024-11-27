@@ -93,13 +93,13 @@ class AddCustomerViewTestCase(TestCase):
             'first_name': first_name,
             'last_name': last_name,
             'email': email,
-            'address_line_1': address_line_1,
-            'address_line_2': address_line_2,
-            'address_line_3': address_line_3,
-            'address_city': city,
-            'address_postcode': postcode,
-            'address_state': state,
-            'address_country': country,
+            'line_1': address_line_1,
+            'line_2': address_line_2,
+            'line_3': address_line_3,
+            'city': city,
+            'postcode': postcode,
+            'state': state,
+            'country': country,
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/customers/')

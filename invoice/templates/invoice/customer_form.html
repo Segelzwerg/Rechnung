@@ -6,6 +6,7 @@
         <form method="POST" class="form-horizontal">
             {% csrf_token %}
             {% bootstrap_form form layout="floating" %}
+            {% bootstrap_form address_form layout="floating" %}
             <input type="submit" value="Create Customer">
         </form>
     </div>

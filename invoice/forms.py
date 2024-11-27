@@ -1,7 +1,7 @@
 """Forms of the invoice app"""
 from django.forms import ModelForm, Form, CharField
 
-from invoice.models import InvoiceItem
+from invoice.models import InvoiceItem, Customer, Address
 
 
 class InvoiceItemForm(ModelForm):
@@ -12,18 +12,20 @@ class InvoiceItemForm(ModelForm):
         fields = '__all__'
 
 
-class CustomerForm(Form):
-    """Form for customer including an address."""
-    first_name = CharField(max_length=120)
-    last_name = CharField(max_length=120)
-    email = CharField(max_length=256)
-    address_line_1 = CharField(max_length=200)
-    address_line_2 = CharField(max_length=200, required=False)
-    address_line_3 = CharField(max_length=200, required=False)
-    address_postcode = CharField(max_length=10)
-    address_city = CharField(max_length=120)
-    address_state = CharField(max_length=200, required=False)
-    address_country = CharField(max_length=120)
+class CustomerForm(ModelForm):
+    """Form for customer."""
+
+    class Meta:
+        model = Customer
+        fields = '__all__'
+
+
+class AddressForm(ModelForm):
+    """Form for address."""
+
+    class Meta:
+        model = Address
+        fields = '__all__'
 
 
 class VendorForm(Form):
