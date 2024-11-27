@@ -18,27 +18,6 @@ class StartView(TemplateView):
     """The start page."""
     template_name = 'invoice/start.html'
 
-
-class AddressCreateView(CreateView):
-    """Create a new address."""
-    model = Address
-    fields = '__all__'
-    success_url = reverse_lazy('address-list')
-
-
-class AddressUpdateView(UpdateView):
-    """Update an existing address."""
-    model = Address
-    fields = '__all__'
-    success_url = reverse_lazy('address-list')
-
-
-class AddressDeleteView(DeleteView):
-    """Delete an existing address."""
-    model = Address
-    success_url = reverse_lazy('address-list')
-
-
 class AddressListView(ListView):
     """List all addresses."""
     model = Address
