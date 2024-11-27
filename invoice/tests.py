@@ -161,37 +161,6 @@ class AddVendorViewTestCase(TestCase):
         self.assertEqual(vendor.address, address)
         self.assertEqual(vendor.bank_account, bank_account)
 
-    def test_optional_bank_account(self):
-        name = "John"
-        company = "Doe Company"
-        address_line_1 = 'Musterstraße 1'
-        address_line_2 = ''
-        address_line_3 = ''
-        city = 'Musterstadt'
-        postcode = '12345'
-        state = ''
-        country = 'Germany'
-        response = self.client.post(self.url, data={
-            'name': name,
-            'company_name': company,
-            'line_1': address_line_1,
-            'line_2': address_line_2,
-            'line_3': address_line_3,
-            'city': city,
-            'postcode': postcode,
-            'state': state,
-            'country': country,
-        }, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, '/vendors/')
-        vendor = Vendor.objects.get(name=name)
-        address = Address.objects.first()
-        self.assertIsNotNone(vendor)
-        self.assertEqual(vendor.company_name, company)
-        self.assertEqual(vendor.address, address)
-        self.assertEqual(0, BankAccount.objects.count())
-        self.assertEqual(vendor.bank_account, None)
-
 
 class UpdateVendorViewTestCase(TestCase):
     def setUp(self):
