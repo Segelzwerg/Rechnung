@@ -3,7 +3,7 @@ import io
 
 from django.http import FileResponse
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, DeleteView, ListView, FormView
+from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.views.generic import TemplateView
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table
@@ -73,44 +73,25 @@ class CustomerCreateView(CreateView):
         return super().form_valid(form)
 
 
-class CustomerUpdateView(FormView):
+class CustomerUpdateView(UpdateView):
     """Update an existing customer."""
     template_name = 'invoice/customer_form.html'
     form_class = CustomerForm
     success_url = reverse_lazy('customer-list')
 
     def get_context_data(self, **kwargs):
-        customer = Customer.objects.get(id=self.kwargs['pk'])
         context = super().get_context_data(**kwargs)
-        form_data = customer.dict()
-        context['form'] = CustomerForm(initial=form_data)
+        if self.request.POST:
+            context['address_form'] = AddressForm(self.request.POST)
+        else:
+            context['address_form'] = AddressForm(instance=self.object.address)
         return context
 
     def form_valid(self, form):
-        """Create a new customer and a new address."""
-        customer_id = self.kwargs['pk']
-        address_line_1 = form.cleaned_data['address_line_1']
-        address_line_2 = form.cleaned_data['address_line_2']
-        address_line_3 = form.cleaned_data['address_line_3']
-        address_postcode = form.cleaned_data['address_postcode']
-        address_city = form.cleaned_data['address_city']
-        address_state = form.cleaned_data['address_state']
-        address_country = form.cleaned_data['address_country']
-        customer = Customer.objects.get(id=customer_id)
-        customer.first_name = form.cleaned_data['first_name']
-        customer.last_name = form.cleaned_data['last_name']
-        customer.email = form.cleaned_data['email']
-        address = customer.address
-        address.line_1 = address_line_1
-        address.line_2 = address_line_2
-        address.line_3 = address_line_3
-        address.postcode = address_postcode
-        address.city = address_city
-        address.state = address_state
-        address.country = address_country
-        address.save()
-        customer.save()
-
+        """Updates an existing vendor including the address and the bank account."""
+        address_form = AddressForm(instance=self.object.address, data=self.request.POST)
+        if address_form.is_valid():
+            address_form.save()
         return super().form_valid(form)
 
 
