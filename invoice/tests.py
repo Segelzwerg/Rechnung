@@ -69,6 +69,7 @@ def build_bank_fields():
     assume(bic != '')
     assume(bic is not None)
     assume(str(bic))
+    print(bic)
     return (iban, bic)
 
 
