@@ -22,8 +22,8 @@
                 <td>{{ invoice.date }}</td>
                 <td>{{ invoice.vendor.name }} ({{ invoice.vendor.company_name }})</td>
                 <td>{{ invoice.customer.first_name }} {{ invoice.customer.last_name }}</td>
-                <td>{{ invoice.net_total }}</td>
-                <td>{{ invoice.total }}</td>
+                <td>{{ invoice.net_total|floatformat:2 }}</td>
+                <td>{{ invoice.total|floatformat:2 }}</td>
                 <td><a href="/invoice/{{ invoice.id }}/">Update</a> / <a href="/invoice/
 {{ invoice.id }}/delete/">Delete</a></td>
             </tr>
