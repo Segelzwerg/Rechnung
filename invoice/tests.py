@@ -87,6 +87,11 @@ class AddCustomerViewTestCase(TestCase):
     def setUp(self):
         self.url = reverse('customer-add')
 
+    def test_get(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'invoice/customer_form.html')
+
     @given(build_customer_fields(), build_address_fields())
     @example(('John', 'Doe', 'john@doe.com'),
              ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'))
@@ -139,6 +144,11 @@ class UpdateCustomerViewTestCase(TestCase):
 
     def tearDown(self):
         Customer.objects.all().delete()
+
+    def test_get(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'invoice/customer_form.html')
 
     @given((build_customer_fields()), build_address_fields())
     def test_update_vendor(self, customer_fields, address_fields):
@@ -204,6 +214,11 @@ class CustomerModelTestCase(TestCase):
 class AddVendorViewTestCase(TestCase):
     def setUp(self):
         self.url = reverse('vendor-add')
+
+    def test_get(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'invoice/vendor_form.html')
 
     @given((build_vendor_fields()), build_address_fields())
     @example(("John", "Doe Company"),
@@ -274,6 +289,11 @@ class UpdateVendorViewTestCase(TestCase):
 
     def tearDown(self):
         Vendor.objects.all().delete()
+
+    def test_get(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'invoice/vendor_form.html')
 
     @given((build_vendor_fields()), build_address_fields())
     def test_update_vendor(self, vendor_fields, address_fields):
