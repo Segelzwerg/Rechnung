@@ -8,7 +8,8 @@ from django.utils.timezone import now
 from hypothesis import given, example, assume
 from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
-from hypothesis.strategies import characters, text, emails, integers, composite, decimals
+from hypothesis.strategies import characters, text, emails, integers, composite, decimals, \
+    sampled_from
 
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE, \
     BankAccount
@@ -63,12 +64,13 @@ def build_address_fields(draw):
     return (address_line_1, address_line_2, address_line_3, city, postcode, state, country)
 
 
-def build_bank_fields():
-    iban = schwifty.IBAN.random()
+@composite
+def build_bank_fields(draw):
+    country_code = draw(sampled_from(['DE', 'AT', 'CH', 'GB', 'LU', 'NL', 'PL', 'SE', 'LT', 'PL']))
+    iban = schwifty.IBAN.random(country_code=country_code, )
     bic = iban.bic
     assume(bic != '')
     assume(bic is not None)
-    assume(str(bic))
     return (iban, bic)
 
 
@@ -221,13 +223,14 @@ class AddVendorViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/vendor_form.html')
 
-    @given((build_vendor_fields()), build_address_fields())
+    @given((build_vendor_fields()), build_address_fields(), build_bank_fields())
     @example(("John", "Doe Company"),
-             ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'))
-    def test_add_vendor(self, vendor_fields, address_fields):
+             ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'),
+             ('ES9620686250804690656114', 'CAHMESMM'))
+    def test_add_vendor(self, vendor_fields, address_fields, bank_fields):
         name, company = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
-        iban, bic = build_bank_fields()
+        iban, bic = bank_fields
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
@@ -278,7 +281,7 @@ class AddVendorViewTestCase(TestCase):
 
 class UpdateVendorViewTestCase(TestCase):
     def setUp(self):
-        iban, bic = build_bank_fields()
+        iban, bic = build_bank_fields().example()
         vendor = Vendor.objects.create(name="John", company_name="Doe Company",
                                        address=Address.objects.create(
                                            line_1='Musterstraße 1',
@@ -296,11 +299,11 @@ class UpdateVendorViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/vendor_form.html')
 
-    @given((build_vendor_fields()), build_address_fields())
-    def test_update_vendor(self, vendor_fields, address_fields):
+    @given((build_vendor_fields()), build_address_fields(), build_bank_fields())
+    def test_update_vendor(self, vendor_fields, address_fields, bank_fields):
         name, company = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
-        iban, bic = build_bank_fields()
+        iban, bic = bank_fields
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
