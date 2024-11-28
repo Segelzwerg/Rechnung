@@ -152,19 +152,18 @@ class InvoiceItem(Model):
     @property
     def net_total(self) -> Decimal:
         """Get the sum of the item excluding taxes."""
-        return round(self.price * self.quantity, 2)
+        return self.price * self.quantity
 
     @property
     def total(self) -> Decimal:
         """Get the sum of the item including taxes."""
-        return round(self.net_total * (Decimal('1.0') + self.tax), 2)
+        return self.net_total * (Decimal('1.0') + self.tax)
 
     @property
     def list_export(self):
         """Get the fields as list."""
         return [self.name, self.description, self.quantity, self.price, self.tax_string,
-                self.net_total,
-                self.total]
+                f'{self.net_total:.2f}', f'{self.total:.2f}']
 
     @property
     def tax_string(self) -> str:
