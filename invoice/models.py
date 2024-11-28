@@ -67,10 +67,15 @@ class Customer(Model):
 class Vendor(Model):
     """Defines profiles for the invoicer."""
     name = CharField(max_length=255)
-    company_name = CharField(max_length=255, unique=True)
+    company_name = CharField(max_length=255, null=True, blank=True)
     address: Address = OneToOneField(Address, on_delete=CASCADE)
     tax_id = CharField(max_length=120, null=True, blank=True)
     bank_account: BankAccount = OneToOneField(BankAccount, on_delete=CASCADE, null=True, blank=True)
+
+    class Meta:
+        """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""
+        constraints = [UniqueConstraint(fields=['name', 'company_name'],
+                                        name='unique_name_and_company_name')]
 
 
 class Invoice(Model):
