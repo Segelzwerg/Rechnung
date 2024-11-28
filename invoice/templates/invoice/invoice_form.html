@@ -15,7 +15,8 @@
                 <div class="row">
                     <div class="col">
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                data-bs-target="#InvoiceItemModal">
+                                data-bs-target="#InvoiceItemModal"
+                                {% if not invoice %}disabled{% endif %}>
                             Add line item
                         </button>
                     </div>
