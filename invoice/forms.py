@@ -1,5 +1,5 @@
 """Forms of the invoice app"""
-from django.forms import ModelForm
+from django.forms import ModelForm, HiddenInput
 
 from invoice.models import InvoiceItem, Customer, Address, BankAccount, Vendor
 
@@ -10,6 +10,7 @@ class InvoiceItemForm(ModelForm):
     class Meta:
         model = InvoiceItem
         fields = '__all__'
+        widgets = {'invoice': HiddenInput()}
 
 
 class CustomerForm(ModelForm):
