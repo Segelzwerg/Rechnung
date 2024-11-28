@@ -6,30 +6,28 @@ authors = ["Segelzwerg <25705862+Segelzwerg@users.noreply.github.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.13"
-django = "^5.1.2"
+python = "^3.12"
+django = "^5.1"
 django-bootstrap5 = "^24.3"
-reportlab = "^4.2.5"
-schwifty = "^2024.11.0"
-gunicorn = "^23.0.0"
-psycopg = { extras = ["binary"], version = "^3.2.3" }
-
+reportlab = "^4.2"
+schwifty = "^2024.11"
+gunicorn = "^23.0"
+psycopg = { extras = ["binary"], version = "^3.2" }
 
 [tool.poetry.group.dev.dependencies]
-pylint = "^3.3.1"
-bandit = "^1.7.10"
-flake8 = "^7.1.1"
-coverage = "^7.6.4"
-pylint-django = "^2.6.1"
-hypothesis = "^6.119.1"
+pylint = "^3.3"
+bandit = "^1.8"
+flake8 = "^7.1"
+coverage = "^7.6"
+pylint-django = "^2.6"
+hypothesis = "^6.121"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.bandit]
-exclude_dirs = ["*/tests.py"]
-exlude = "rechnung/test_settings.py"
+exclude_dirs = ["*/migrations", "*/tests.py", "*/*settings.py"]
 
 [tool.pylint]
 max-line-length = 120
