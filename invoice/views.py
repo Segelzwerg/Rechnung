@@ -130,7 +130,8 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
     invoice = Invoice.objects.get(id=invoice_id)
     table_y_start = 600
     pdf_object.drawString(100, 800, invoice.vendor.name)
-    pdf_object.drawString(100, 780, invoice.vendor.company_name)
+    if invoice.vendor.company_name:
+        pdf_object.drawString(100, 780, invoice.vendor.company_name)
     pdf_object.drawString(100, 760, invoice.vendor.address.line_1)
     if invoice.vendor.address.line_2:
         pdf_object.drawString(100, 740, invoice.vendor.address.line_2)
