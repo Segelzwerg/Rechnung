@@ -102,7 +102,10 @@ class InvoiceCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+        if self.request.POST:
+            context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+        else:
+            context['invoice_item_form'] = InvoiceItemForm()
         return context
 
 
@@ -114,7 +117,10 @@ class InvoiceUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+        if self.request.POST:
+            context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+        else:
+            context['invoice_item_form'] = InvoiceItemForm()
         return context
 
 
