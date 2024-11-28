@@ -17,8 +17,7 @@ class CustomerForm(ModelForm):
 
     class Meta:
         model = Customer
-        fields = '__all__'
-        exclude = ['address']
+        fields = ['first_name', 'last_name', 'email']
 
 
 class AddressForm(ModelForm):
@@ -42,5 +41,4 @@ class VendorForm(ModelForm):
 
     class Meta:
         model = Vendor
-        fields = '__all__'
-        exclude = ['address', 'bank_account']
+        fields = ['name', 'company_name', 'tax_id']
