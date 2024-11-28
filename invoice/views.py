@@ -8,8 +8,8 @@ from django.views.generic import TemplateView
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table
 
-from invoice.forms import InvoiceItemForm
-from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem, BankAccount
+from invoice.forms import InvoiceItemForm, AddressForm, BankAccountForm, CustomerForm, VendorForm
+from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem
 
 A4_WIDTH = 595
 
@@ -19,68 +19,59 @@ class StartView(TemplateView):
     template_name = 'invoice/start.html'
 
 
-class AddressCreateView(CreateView):
-    """Create a new address."""
-    model = Address
-    fields = '__all__'
-    success_url = reverse_lazy('address-list')
-
-
-class AddressUpdateView(UpdateView):
-    """Update an existing address."""
-    model = Address
-    fields = '__all__'
-    success_url = reverse_lazy('address-list')
-
-
-class AddressDeleteView(DeleteView):
-    """Delete an existing address."""
-    model = Address
-    success_url = reverse_lazy('address-list')
-
-
 class AddressListView(ListView):
     """List all addresses."""
     model = Address
 
 
-class BankAccountCreateView(CreateView):
-    """Create a new bank account."""
-    model = BankAccount
-    fields = '__all__'
-    success_url = reverse_lazy('bank-account-add')
-
-
-class BankAccountUpdateView(UpdateView):
-    """Update an existing bank account."""
-    model = BankAccount
-    fields = '__all__'
-    success_url = reverse_lazy('bank-account-update')
-
-
-class BankAccountDeleteView(DeleteView):
-    """Delete an existing bank account."""
-    model = BankAccount
-    success_url = reverse_lazy('start')
-
-
-class BankAccountListView(ListView):
-    """List all bank accounts."""
-    model = BankAccount
-
-
 class CustomerCreateView(CreateView):
     """Create a new customer."""
+    template_name = 'invoice/customer_form.html'
     model = Customer
-    fields = '__all__'
+    form_class = CustomerForm
     success_url = reverse_lazy('customer-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['address_form'] = AddressForm(self.request.POST)
+        else:
+            context['address_form'] = AddressForm()
+        return context
+
+    def form_valid(self, form):
+        """Create a new customer and a new address."""
+        address_form = AddressForm(self.request.POST)
+        if not address_form.is_valid():
+            return self.form_invalid(address_form)
+        address = address_form.save()
+        customer = form.save(commit=False)
+        customer.address = address
+        return super().form_valid(form)
 
 
 class CustomerUpdateView(UpdateView):
     """Update an existing customer."""
+    template_name = 'invoice/customer_form.html'
+    form_class = CustomerForm
     model = Customer
-    fields = '__all__'
     success_url = reverse_lazy('customer-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['address_form'] = AddressForm(self.request.POST)
+        else:
+            context['address_form'] = AddressForm(instance=self.object.address)
+        return context
+
+    def form_valid(self, form):
+        """Updates an existing customer including the address."""
+        address_form = AddressForm(instance=self.object.address, data=self.request.POST)
+        if not address_form.is_valid():
+            return self.form_invalid(address_form)
+        address_form.save()
+        return super().form_valid(form)
 
 
 class CustomerDeleteView(DeleteView):
@@ -143,10 +134,15 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
     table_y_start = 600
     pdf_object.drawString(100, 800, invoice.vendor.name)
     pdf_object.drawString(100, 780, invoice.vendor.company_name)
-    pdf_object.drawString(100, 760, invoice.vendor.address.street)
-    pdf_object.drawString(100, 740, f'{invoice.vendor.address.postcode} {invoice.vendor.address.city}')
-    pdf_object.drawString(100, 720, invoice.vendor.address.country)
-    pdf_object.drawString(100, 660, 'Rechnung')
+    pdf_object.drawString(100, 760, invoice.vendor.address.line_1)
+    if invoice.vendor.address.line_2:
+        pdf_object.drawString(100, 740, invoice.vendor.address.line_2)
+    if invoice.vendor.address.line_3:
+        pdf_object.drawString(100, 720, invoice.vendor.address.line_3)
+    pdf_object.drawString(100, 700,
+                          f'{invoice.vendor.address.postcode} {invoice.vendor.address.city}')
+    pdf_object.drawString(100, 680, invoice.vendor.address.country)
+    pdf_object.drawString(100, 640, 'Rechnung')
     data = Invoice.objects.get(id=invoice_id).table_export
     table = Table(data=data)
     _, table_height = table.wrapOn(pdf_object, 0, 0)
@@ -174,17 +170,67 @@ class InvoiceItemCreateView(CreateView):
 
 
 class VendorCreateView(CreateView):
-    """Create a new vendor."""
+    """Create a new vendor. Including a bank account and a new address."""
+    template_name = 'invoice/vendor_form.html'
+    form_class = VendorForm
     model = Vendor
-    fields = '__all__'
     success_url = reverse_lazy('vendor-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['address_form'] = AddressForm(self.request.POST)
+            context['bank_form'] = BankAccountForm(self.request.POST)
+        else:
+            context['address_form'] = AddressForm()
+            context['bank_form'] = BankAccountForm()
+        return context
+
+    def form_valid(self, form):
+        """Create a new vendor, a new address and a new bank account."""
+        address_form = AddressForm(self.request.POST)
+        if not address_form.is_valid():
+            return self.form_invalid(address_form)
+        address = address_form.save()
+        bank_account_form = BankAccountForm(self.request.POST)
+        if not bank_account_form.is_valid():
+            return self.form_invalid(bank_account_form)
+        bank_account = bank_account_form.save()
+        vendor = form.save(commit=False)
+        vendor.address = address
+        vendor.bank_account = bank_account
+        return super().form_valid(form)
 
 
 class VendorUpdateView(UpdateView):
-    """Update an existing vendor."""
+    """Update an existing vendor. Including the bank account and address."""
+    template_name = 'invoice/vendor_form.html'
+    form_class = VendorForm
     model = Vendor
-    fields = '__all__'
     success_url = reverse_lazy('vendor-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['address_form'] = AddressForm(self.request.POST)
+            context['bank_form'] = BankAccountForm(self.request.POST)
+        else:
+            context['address_form'] = AddressForm(instance=self.object.address)
+            context['bank_form'] = BankAccountForm(instance=self.object.bank_account)
+        return context
+
+    def form_valid(self, form):
+        """Updates an existing vendor including the address and the bank account."""
+        address_form = AddressForm(instance=self.object.address, data=self.request.POST)
+        if not address_form.is_valid():
+            return self.form_invalid(address_form)
+        address_form.save()
+        bank_account_form = BankAccountForm(instance=self.object.bank_account,
+                                            data=self.request.POST)
+        if not bank_account_form.is_valid():
+            return self.form_invalid(bank_account_form)
+        bank_account_form.save()
+        return super().form_valid(form)
 
 
 class VendorDeleteView(DeleteView):

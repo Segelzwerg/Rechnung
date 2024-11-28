@@ -6,7 +6,7 @@ from warnings import deprecated
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
-    DateField, UniqueConstraint
+    DateField, UniqueConstraint, OneToOneField
 from django.db.models.fields import DecimalField
 from schwifty import IBAN, BIC
 
@@ -15,10 +15,22 @@ MAX_VALUE_DJANGO_SAVE = 2147483647
 
 class Address(Model):
     """Defines any type of address. For vendors as well as customers."""
-    street = CharField(max_length=200)
+    line_1 = CharField(max_length=200)
+    line_2 = CharField(max_length=200, null=True, blank=True)
+    line_3 = CharField(max_length=200, null=True, blank=True)
     postcode = CharField(max_length=10)
     city = CharField(max_length=120)
+    state = CharField(max_length=200, null=True, blank=True)
     country = CharField(max_length=120)
+
+    def __str__(self):
+        export = self.line_1
+        if self.line_2:
+            export += f' {self.line_2}'
+        if self.line_3:
+            export += f' {self.line_3}'
+        export += f', {self.postcode} {self.city}, {self.country}'
+        return export
 
 
 def validate_iban(value):
@@ -40,7 +52,7 @@ def validate_bic(value):
 
 class BankAccount(Model):
     """Defines a bank account."""
-    iban = CharField(max_length=34, validators=[validate_iban], unique=True)
+    iban = CharField(max_length=34, validators=[validate_iban])
     bic = CharField(max_length=11, validators=[validate_bic])
 
 
@@ -49,16 +61,16 @@ class Customer(Model):
     first_name = CharField(max_length=120)
     last_name = CharField(max_length=120)
     email = EmailField(max_length=256)
-    address = ForeignKey(Address, on_delete=CASCADE)
+    address = OneToOneField(Address, on_delete=CASCADE)
 
 
 class Vendor(Model):
     """Defines profiles for the invoicer."""
     name = CharField(max_length=255)
     company_name = CharField(max_length=255, unique=True)
-    address: Address = ForeignKey(Address, on_delete=CASCADE)
+    address: Address = OneToOneField(Address, on_delete=CASCADE)
     tax_id = CharField(max_length=120, null=True, blank=True)
-    bank_account: BankAccount = ForeignKey(BankAccount, on_delete=CASCADE, null=True, blank=True)
+    bank_account: BankAccount = OneToOneField(BankAccount, on_delete=CASCADE, null=True, blank=True)
 
 
 class Invoice(Model):

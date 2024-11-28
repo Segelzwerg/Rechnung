@@ -7,14 +7,6 @@ urlpatterns = [
     path("", views.StartView.as_view(), name="start"),
 
     path("addresses/", views.AddressListView.as_view(), name="address-list"),
-    path("address/add/", views.AddressCreateView.as_view(), name="address-add"),
-    path("address/<int:pk>/", views.AddressUpdateView.as_view(), name="address-update"),
-    path("address/<int:pk>/delete/", views.AddressDeleteView.as_view(), name="address-delete"),
-
-    path("bankaccounts/", views.BankAccountListView.as_view(), name="bank-account-list"),
-    path('bankaccount/add/', views.BankAccountCreateView.as_view(), name='bank-account-add'),
-    path("bankaccount/<int:pk>/", views.BankAccountUpdateView.as_view(), name="bank-account-update"),
-    path("bankaccount/<int:pk>/delete/", views.BankAccountDeleteView.as_view(), name="bank-account-delete"),
 
     path("customers/", views.CustomerListView.as_view(), name="customer-list"),
     path("customer/add/", views.CustomerCreateView.as_view(), name="customer-add"),

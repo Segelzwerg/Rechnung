@@ -1,103 +1,74 @@
 from decimal import Decimal
 from math import inf, nan
 
+import schwifty
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.timezone import now
-from hypothesis import given, example
+from hypothesis import given, example, assume
 from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
 from hypothesis.strategies import characters, text, emails, integers, composite, decimals
 
-from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE
+from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE, \
+    BankAccount
 
 GERMAN_TAX_RATE = Decimal('0.19')
 HUNDRED = Decimal('100')
 ONE = Decimal('1')
 
 
-class AddAddressViewTestCase(TestCase):
-    def setUp(self):
-        self.url = reverse('address-add')
-
-    @given(street=text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           postcode=text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']), min_size=1, max_size=10),
-           city=text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           country=text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1))
-    @example(street="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany")
-    @example(street='0', postcode='0', city='0', country='\r').xfail(reason='"\r" is not a valid input.')
-    def test_add_address(self, street, postcode, city, country):
-        response = self.client.post(self.url, data={
-            'street': street,
-            'postcode': postcode,
-            'city': city,
-            'country': country
-        }, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, '/addresses/')
-        address = Address.objects.get(street=street, postcode=postcode)
-        self.assertIsNotNone(address)
-        self.assertEqual(address.street, street)
-        self.assertEqual(address.postcode, postcode)
-        self.assertEqual(address.city, city)
-        self.assertEqual(address.country, country)
+@composite
+def build_customer_fields(draw):
+    first_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
+                           min_size=1))
+    last_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
+                          min_size=1))
+    email = draw(emails(domains=domains(max_length=255, max_element_length=63)))
+    return (first_name, last_name, email)
 
 
-class AddCustomerViewTestCase(TestCase):
-    def setUp(self):
-        self.url = reverse('customer-add')
-
-    @given(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           emails(domains=domains(max_length=255, max_element_length=63)))
-    @example("John", "Doe", "john@doe.com")
-    def test_add_customer(self, first_name, last_name, email):
-        address = Address.objects.create(street="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany")
-        response = self.client.post(self.url, data={
-            'first_name': first_name,
-            'last_name': last_name,
-            'email': email,
-            'address': address.id
-        }, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, '/customers/')
-        customer = Customer.objects.get(first_name=first_name, last_name=last_name)
-        self.assertIsNotNone(customer)
-        self.assertEqual(customer.email, email)
-        self.assertEqual(customer.address, address)
+@composite
+def build_vendor_fields(draw):
+    name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
+                     min_size=1))
+    company_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
+                             min_size=1))
+    return (name, company_name)
 
 
-class CustomerModelTestCase(TestCase):
-    def test_long_email(self):
-        long_email = 'a' * 240 + '@' + 'b' * 20 + '.com'
-        address = Address.objects.create(street="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany")
-        customer = Customer.objects.create(first_name='John', last_name='Doe', email=long_email,
-                                           address=address)
-        with self.assertRaises(ValidationError):
-            customer.full_clean()
+@composite
+def build_address_fields(draw):
+    address_line_1 = draw(text(
+        alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']), min_size=1))
+    address_line_2 = draw(text(
+        alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
+    address_line_3 = draw(text(
+        alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
+    city = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
+                     min_size=1))
+    postcode = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs',
+                                                                        'Pd']),
+                         min_size=1, max_size=10))
+    state = draw(text(alphabet=characters(codec='utf-8',
+                                          categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
+    country = draw(text(alphabet=characters(codec='utf-8',
+                                            categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
+                        min_size=1))
+    assume(address_line_1[0] != ' ')
+    assume(country[0] != ' ')
+    assume(city[0] != ' ')
+    assume(postcode[0] != ' ')
+    assume(country != '\xa0')
+    return (address_line_1, address_line_2, address_line_3, city, postcode, state, country)
 
 
-class AddVendorViewTestCase(TestCase):
-    def setUp(self):
-        self.url = reverse('vendor-add')
-
-    @given(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1),
-           )
-    @example("John", "Doe Company")
-    def test_add_vendor(self, name, company):
-        address = Address.objects.create(street="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany")
-        response = self.client.post(self.url, data={
-            'name': name,
-            'company_name': company,
-            'address': 1
-        }, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, '/vendors/')
-        vendor = Vendor.objects.get(name=name)
-        self.assertIsNotNone(vendor)
-        self.assertEqual(vendor.company_name, company)
-        self.assertEqual(vendor.address, address)
+def build_bank_fields():
+    iban = schwifty.IBAN.random()
+    bic = iban.bic
+    assume(bic != '')
+    assume(bic is not None)
+    return (iban, bic)
 
 
 @composite
@@ -110,6 +81,271 @@ def build_invoice_item(draw):
     tax = draw(decimals(places=2, min_value=Decimal('0.0'), max_value=ONE))
     return InvoiceItem(name=name, description=description, quantity=quantity,
                        price=price, tax=tax)
+
+
+class AddCustomerViewTestCase(TestCase):
+    def setUp(self):
+        self.url = reverse('customer-add')
+
+    def test_get(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'invoice/customer_form.html')
+
+    @given(build_customer_fields(), build_address_fields())
+    @example(('John', 'Doe', 'john@doe.com'),
+             ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'))
+    def test_add_customer(self, customer_fields, address_fields):
+        first_name, last_name, email = customer_fields
+        address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
+        response = self.client.post(self.url, data={
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            'line_1': address_line_1,
+            'line_2': address_line_2,
+            'line_3': address_line_3,
+            'city': city,
+            'postcode': postcode,
+            'state': state,
+            'country': country,
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, '/customers/')
+        customer = Customer.objects.get(first_name=first_name, last_name=last_name)
+        address = Address.objects.first()
+        self.assertIsNotNone(customer)
+        self.assertIsNotNone(address)
+        self.assertEqual(customer.email, email)
+        self.assertEqual(customer.address, address)
+
+    def test_update_invalid_input_address(self):
+        response = self.client.post(self.url, data={
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'email': 'john@doe.com',
+            'line_1': '',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'line_1',
+                             errors=['This field is required.'])
+
+
+class UpdateCustomerViewTestCase(TestCase):
+    def setUp(self):
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com",
+                                           address=Address.objects.create(
+                                               line_1='Musterstraße 1',
+                                               postcode='12345', city='Musterstadt',
+                                               country='Germany'))
+        self.url = reverse('customer-update', args=[customer.id])
+
+    def tearDown(self):
+        Customer.objects.all().delete()
+
+    def test_get(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'invoice/customer_form.html')
+
+    @given((build_customer_fields()), build_address_fields())
+    def test_update_vendor(self, customer_fields, address_fields):
+        first_name, last_name, email = customer_fields
+        address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
+        response = self.client.post(self.url, data={
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            'line_1': address_line_1,
+            'line_2': address_line_2,
+            'line_3': address_line_3,
+            'city': city,
+            'postcode': postcode,
+            'state': state,
+            'country': country, }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, '/customers/')
+        customer = Customer.objects.get(first_name=first_name, last_name=last_name)
+        address = Address.objects.first()
+        self.assertIsNotNone(customer)
+        self.assertEqual(customer.email, email)
+        self.assertEqual(customer.address, address)
+
+    def test_update_invalid_input_customer(self):
+        response = self.client.post(self.url, data={
+            'first_name': 'John',
+            'last_name': '',
+            'email': 'john@doe.com',
+            'line_1': 'Musterstraße 1',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'last_name',
+                             errors=['This field is required.'])
+
+    def test_update_invalid_input_address(self):
+        response = self.client.post(self.url, data={
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'email': 'john@doe.com',
+            'line_1': '',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'line_1',
+                             errors=['This field is required.'])
+
+
+class CustomerModelTestCase(TestCase):
+    def test_long_email(self):
+        long_email = 'a' * 240 + '@' + 'b' * 20 + '.com'
+        address = Address.objects.create(line_1="Musterstraße 1", postcode="12345",
+                                         city="Musterstadt", country="Germany")
+        customer = Customer.objects.create(first_name='John', last_name='Doe', email=long_email,
+                                           address=address)
+        with self.assertRaises(ValidationError):
+            customer.full_clean()
+
+
+class AddVendorViewTestCase(TestCase):
+    def setUp(self):
+        self.url = reverse('vendor-add')
+
+    def test_get(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'invoice/vendor_form.html')
+
+    @given((build_vendor_fields()), build_address_fields())
+    @example(("John", "Doe Company"),
+             ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'))
+    def test_add_vendor(self, vendor_fields, address_fields):
+        name, company = vendor_fields
+        address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
+        iban, bic = build_bank_fields()
+        response = self.client.post(self.url, data={
+            'name': name,
+            'company_name': company,
+            'line_1': address_line_1,
+            'line_2': address_line_2,
+            'line_3': address_line_3,
+            'city': city,
+            'postcode': postcode,
+            'state': state,
+            'country': country,
+            'iban': str(iban),
+            'bic': str(bic)
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, '/vendors/')
+        vendor = Vendor.objects.get(name=name)
+        address = Address.objects.first()
+        bank_account = BankAccount.objects.first()
+        self.assertIsNotNone(vendor)
+        self.assertEqual(vendor.company_name, company)
+        self.assertEqual(vendor.address, address)
+        self.assertEqual(vendor.bank_account, bank_account)
+
+    def test_update_invalid_input_address(self):
+        response = self.client.post(self.url, data={
+            'name': 'John',
+            'company_name': 'John Doe Company',
+            'line_1': '',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'line_1',
+                             errors=['This field is required.'])
+
+    def test_update_invalid_input_bank_account(self):
+        response = self.client.post(self.url, data={
+            'name': 'John',
+            'company_name': 'John Doe Company',
+            'line_1': 'Musterstraße 1',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'iban',
+                             errors=['This field is required.'])
+
+
+class UpdateVendorViewTestCase(TestCase):
+    def setUp(self):
+        iban = schwifty.IBAN.random()
+        vendor = Vendor.objects.create(name="John", company_name="Doe Company",
+                                       address=Address.objects.create(
+                                           line_1='Musterstraße 1',
+                                           postcode='12345', city='Musterstadt',
+                                           country='Germany'),
+                                       bank_account=BankAccount.objects.create(iban=str(iban),
+                                                                               bic=iban.bic))
+        self.url = reverse('vendor-update', args=[vendor.id])
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
+
+    def test_get(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'invoice/vendor_form.html')
+
+    @given((build_vendor_fields()), build_address_fields())
+    def test_update_vendor(self, vendor_fields, address_fields):
+        name, company = vendor_fields
+        address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
+        iban, bic = build_bank_fields()
+        response = self.client.post(self.url, data={
+            'name': name,
+            'company_name': company,
+            'line_1': address_line_1,
+            'line_2': address_line_2,
+            'line_3': address_line_3,
+            'city': city,
+            'postcode': postcode,
+            'state': state,
+            'country': country,
+            'iban': str(iban),
+            'bic': str(bic)
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, '/vendors/')
+        vendor = Vendor.objects.get(name=name)
+        address = Address.objects.first()
+        bank_account = BankAccount.objects.first()
+        self.assertIsNotNone(vendor)
+        self.assertEqual(vendor.company_name, company)
+        self.assertEqual(vendor.address, address)
+        self.assertEqual(vendor.bank_account, bank_account)
+
+    def test_update_invalid_input_address(self):
+        response = self.client.post(self.url, data={
+            'name': 'John',
+            'company_name': 'John Doe Company',
+            'line_1': '',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'line_1',
+                             errors=['This field is required.'])
+
+    def test_update_invalid_input_bank_account(self):
+        response = self.client.post(self.url, data={
+            'name': 'John',
+            'company_name': 'John Doe Company',
+            'line_1': 'Musterstraße 1',
+            'city': 'Musterstadt',
+            'postcode': '12345',
+            'country': 'Germany', }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context_data['form'], 'iban',
+                             errors=['This field is required.'])
 
 
 class InvoiceItemModelTestCase(TestCase):
