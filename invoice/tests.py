@@ -60,6 +60,8 @@ def build_address_fields(draw):
     assume(country[0] != ' ')
     assume(city[0] != ' ')
     assume(postcode[0] != ' ')
+    assume(city != '\xa0')
+    assume(postcode != '\xa0')
     assume(country != '\xa0')
     return (address_line_1, address_line_2, address_line_3, city, postcode, state, country)
 
