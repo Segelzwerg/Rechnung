@@ -84,7 +84,9 @@ class InvoiceCreateView(CreateView):
     """Create a new invoice."""
     model = Invoice
     fields = '__all__'
-    success_url = reverse_lazy('invoice-list')
+
+    def get_success_url(self):
+        return reverse_lazy('invoice-update', kwargs={'pk': self.object.id})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
