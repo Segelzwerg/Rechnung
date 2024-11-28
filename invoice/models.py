@@ -161,7 +161,7 @@ class InvoiceItem(Model):
 
     @property
     def list_export(self):
-        """Get the fields as list."""
+        """Get the fields as list with formatted fields of totals."""
         return [self.name, self.description, self.quantity, self.price, self.tax_string,
                 f'{self.net_total:.2f}', f'{self.total:.2f}']
 
