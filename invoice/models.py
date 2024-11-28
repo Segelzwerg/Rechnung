@@ -114,9 +114,9 @@ class Invoice(Model):
         return Decimal(sum(item.net_total for item in self.items))
 
     @property
-    def total(self):
+    def total(self) -> Decimal:
         """Get the sum of total."""
-        return sum(item.total for item in self.items)
+        return Decimal(sum(item.total for item in self.items))
 
 
 @deprecated('Deprecated in 0.1 and remove in 1.0')
@@ -152,12 +152,12 @@ class InvoiceItem(Model):
     @property
     def net_total(self) -> Decimal:
         """Get the sum of the item excluding taxes."""
-        return self.price * self.quantity
+        return round(self.price * self.quantity, 2)
 
     @property
     def total(self) -> Decimal:
         """Get the sum of the item including taxes."""
-        return self.net_total * (Decimal('1.0') + self.tax)
+        return round(self.net_total * (Decimal('1.0') + self.tax), 2)
 
     @property
     def list_export(self):
