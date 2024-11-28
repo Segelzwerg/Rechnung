@@ -279,14 +279,14 @@ class AddVendorViewTestCase(TestCase):
 
 class UpdateVendorViewTestCase(TestCase):
     def setUp(self):
-        iban = schwifty.IBAN.random()
+        iban, bic = build_bank_fields()
         vendor = Vendor.objects.create(name="John", company_name="Doe Company",
                                        address=Address.objects.create(
                                            line_1='Musterstraße 1',
                                            postcode='12345', city='Musterstadt',
                                            country='Germany'),
-                                       bank_account=BankAccount.objects.create(iban=str(iban),
-                                                                               bic=iban.bic))
+                                       bank_account=BankAccount.objects.create(iban=iban,
+                                                                               bic=bic))
         self.url = reverse('vendor-update', args=[vendor.id])
 
     def tearDown(self):
