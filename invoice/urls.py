@@ -6,8 +6,6 @@ from invoice import views
 urlpatterns = [
     path("", views.StartView.as_view(), name="start"),
 
-    path("addresses/", views.AddressListView.as_view(), name="address-list"),
-
     path("customers/", views.CustomerListView.as_view(), name="customer-list"),
     path("customer/add/", views.CustomerCreateView.as_view(), name="customer-add"),
     path("customer/<int:pk>/", views.CustomerUpdateView.as_view(), name="customer-update"),

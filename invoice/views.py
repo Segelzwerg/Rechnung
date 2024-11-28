@@ -9,7 +9,7 @@ from reportlab.pdfgen import canvas
 from reportlab.platypus import Table
 
 from invoice.forms import InvoiceItemForm, AddressForm, BankAccountForm, CustomerForm, VendorForm
-from invoice.models import Address, Vendor, Customer, Invoice, InvoiceItem
+from invoice.models import Vendor, Customer, Invoice, InvoiceItem
 
 A4_WIDTH = 595
 
@@ -17,11 +17,6 @@ A4_WIDTH = 595
 class StartView(TemplateView):
     """The start page."""
     template_name = 'invoice/start.html'
-
-
-class AddressListView(ListView):
-    """List all addresses."""
-    model = Address
 
 
 class CustomerCreateView(CreateView):
