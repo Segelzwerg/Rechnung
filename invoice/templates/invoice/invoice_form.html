@@ -14,10 +14,18 @@
             <div class="col">
                 <div class="row">
                     <div class="col">
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                data-bs-target="#InvoiceItemModal">
-                            Add line item
-                        </button>
+                        <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip"
+                                {% if invoice %}
+                              title="Create a line item for this invoice."
+                                {% else %}
+                              title="Create an invoice first."
+                                {% endif %}>
+                          <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                  data-bs-target="#InvoiceItemModal"
+                                  {% if not invoice %} disabled {% endif %}>
+                                Add line item
+                            </button>
+                        </span>
                     </div>
                 </div>
                 {% if invoice.items %}
