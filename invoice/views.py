@@ -166,6 +166,13 @@ class InvoiceItemCreateView(CreateView):
     fields = '__all__'
     success_url = reverse_lazy('invoice-list')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form: InvoiceItemForm = kwargs['form']
+        form.fields['invoice'].initial = self.kwargs['pk']
+        context['form'] = form
+        return context
+
 
 class VendorCreateView(CreateView):
     """Create a new vendor. Including a bank account and a new address."""
