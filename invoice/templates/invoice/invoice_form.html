@@ -46,10 +46,10 @@
                                 <tr>
                                     <td>{{ item.name }}</td>
                                     <td>{{ item.description }}</td>
-                                    <td>{{ item.quantity }}</td>
-                                    <td>{{ item.price|floatformat:2 }}</td>
-                                    <td>{{ item.tax_string }}</td>
-                                    <td>{{ item.total|floatformat:2 }}</td>
+                                    <td class="text-end">{{ item.quantity }}</td>
+                                    <td class="text-end">{{ item.price|floatformat:2 }}</td>
+                                    <td class="text-end">{{ item.tax_string }}</td>
+                                    <td class="text-end">{{ item.total|floatformat:2 }}</td>
                                 </tr>
                             {% endfor %}
                             </tbody>
