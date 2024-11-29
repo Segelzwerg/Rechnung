@@ -69,6 +69,7 @@ class Customer(Model):
 
     @property
     def full_name(self):
+        """Get the full name of the customer (first name + last name)."""
         return f'{self.first_name} {self.last_name}'
 
     def __str__(self):
