@@ -17,7 +17,8 @@ urlpatterns = [
     path("invoice/<int:invoice_id>/pdf/", views.pdf_invoice, name="invoice-pdf"),
     path("invoice/<int:pk>/delete/", views.InvoiceDeleteView.as_view(), name="invoice-delete"),
 
-    path('invoice-item/add/', views.InvoiceItemCreateView.as_view(), name='invoice-item-add'),
+    path('invoice/<int:pk>/add_item/', views.InvoiceItemCreateView.as_view(),
+         name='invoice-item-add'),
 
     path("vendors/", views.VendorListView.as_view(), name="vendor-list"),
     path("vendor/add/", views.VendorCreateView.as_view(), name="vendor-add"),
