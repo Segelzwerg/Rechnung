@@ -123,31 +123,55 @@ class InvoiceListView(ListView):
     model = Invoice
 
 
+def get_y_position(y_print_start, y_step, y_steps):
+    """Calculate the y position of the next line on pdf canvas."""
+    return y_print_start - y_step * y_steps
+
+
 def pdf_invoice(request, invoice_id) -> FileResponse:
     """Generate an invoice as PDF file."""
     buffer = io.BytesIO()
     pdf_object = canvas.Canvas(buffer)
     invoice = Invoice.objects.get(id=invoice_id)
-    table_y_start = 600
-    pdf_object.drawString(100, 800, invoice.vendor.name)
+    y_print_start = 800
+    y_step = 20
+    y_steps = 0
+    pdf_object.drawString(100, get_y_position(y_print_start, y_step, y_steps), invoice.vendor.name)
+    y_steps += 1
     if invoice.vendor.company_name:
-        pdf_object.drawString(100, 780, invoice.vendor.company_name)
-    pdf_object.drawString(100, 760, invoice.vendor.address.line_1)
+        pdf_object.drawString(100, get_y_position(y_print_start, y_step, y_steps),
+                              invoice.vendor.company_name)
+        y_steps += 1
+    pdf_object.drawString(100, get_y_position(y_print_start, y_step, y_steps),
+                          invoice.vendor.address.line_1)
+    y_steps += 1
     if invoice.vendor.address.line_2:
-        pdf_object.drawString(100, 740, invoice.vendor.address.line_2)
+        pdf_object.drawString(100, get_y_position(y_print_start, y_step, y_steps),
+                              invoice.vendor.address.line_2)
+        y_steps += 1
     if invoice.vendor.address.line_3:
-        pdf_object.drawString(100, 720, invoice.vendor.address.line_3)
-    pdf_object.drawString(100, 700,
+        pdf_object.drawString(100, get_y_position(y_print_start, y_step, y_steps),
+                              invoice.vendor.address.line_3)
+        y_steps += 1
+    pdf_object.drawString(100, get_y_position(y_print_start, y_step, y_steps),
                           f'{invoice.vendor.address.postcode} {invoice.vendor.address.city}')
-    pdf_object.drawString(100, 680, invoice.vendor.address.country)
-    pdf_object.drawString(100, 640, 'Rechnung')
+    y_steps += 1
+    pdf_object.drawString(100, get_y_position(y_print_start, y_step, y_steps),
+                          invoice.vendor.address.country)
+    y_steps += 1
+    pdf_object.drawString(100, get_y_position(y_print_start, y_step, y_steps), 'Rechnung')
+    y_steps += 1
+
     data = Invoice.objects.get(id=invoice_id).table_export
     table = Table(data=data)
     _, table_height = table.wrapOn(pdf_object, 0, 0)
-    table.drawOn(pdf_object, x=100, y=table_y_start)
-    pdf_object.drawString(A4_WIDTH - 250, table_y_start - table_height,
+
+    table_y_start = get_y_position(y_print_start, y_step, y_steps)
+    table.drawOn(pdf_object, x=100, y=table_y_start - table_height)
+
+    pdf_object.drawString(A4_WIDTH - 250, table_y_start - table_height - y_step,
                           f'Net Total: {invoice.net_total:.2f}')
-    pdf_object.drawString(A4_WIDTH - 250, table_y_start - table_height - 20,
+    pdf_object.drawString(A4_WIDTH - 250, table_y_start - table_height - y_step * 2,
                           f'Total: {invoice.total:.2f}')
     if invoice.vendor.tax_id:
         pdf_object.drawString(100, 100, f'Tax ID: {invoice.vendor.tax_id}')
