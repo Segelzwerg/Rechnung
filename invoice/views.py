@@ -5,6 +5,7 @@ from django.http import FileResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.views.generic import TemplateView
+from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table
 
@@ -163,16 +164,25 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
     y_steps += 1
 
     data = Invoice.objects.get(id=invoice_id).table_export
-    table = Table(data=data)
+    table = Table(
+        data=data,
+        style=[
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('LEADING', (0, 0), (-1, 0), 10),
+            ('ALIGNMENT', (2, 1), (6, -1), "RIGHT"),
+        ]
+    )
     _, table_height = table.wrapOn(pdf_object, 0, 0)
 
     table_y_start = get_y_position(y_print_start, y_step, y_steps)
     table.drawOn(pdf_object, x=100, y=table_y_start - table_height)
 
-    pdf_object.drawString(A4_WIDTH - 250, table_y_start - table_height - y_step,
-                          f'Net Total: {invoice.net_total:.2f}')
-    pdf_object.drawString(A4_WIDTH - 250, table_y_start - table_height - y_step * 2,
-                          f'Total: {invoice.total:.2f}')
+    pdf_object.drawString(A4_WIDTH - 280, table_y_start - table_height - y_step,'Net Total:')
+    pdf_object.drawAlignedString(A4_WIDTH - 195, table_y_start - table_height - y_step,f'{invoice.net_total:.2f}')
+
+    pdf_object.drawString(A4_WIDTH - 280, table_y_start - table_height - y_step * 2, 'Total:')
+    pdf_object.drawAlignedString(A4_WIDTH - 195, table_y_start - table_height - y_step * 2, f'{invoice.total:.2f}')
+
     if invoice.vendor.tax_id:
         pdf_object.drawString(100, 100, f'Tax ID: {invoice.vendor.tax_id}')
     if invoice.vendor.bank_account:
