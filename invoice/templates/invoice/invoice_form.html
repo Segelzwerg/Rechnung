@@ -75,7 +75,6 @@
                     {% csrf_token %}
                     <div class="modal-body">
                         {% bootstrap_form invoice_item_form layout="floating" exclude="invoice" %}
-                        <input type="hidden" name="invoice" value="{{ invoice.id }}">
                         <div class="modal-footer">
                             {% bootstrap_button button_type="reset" content="Reset" %}
                             {% bootstrap_button button_type="submit" content="Save" %}

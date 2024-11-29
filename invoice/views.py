@@ -166,7 +166,13 @@ class InvoiceItemCreateView(CreateView):
     fields = '__all__'
 
     def get_success_url(self):
-        return reverse_lazy('invoice-update', kwargs={'pk': self.object.invoice.id})
+        return reverse_lazy('invoice-update', kwargs={'pk': self.kwargs['pk']})
+
+    def form_valid(self, form):
+        invoice_item = form.save(commit=False)
+        invoice_item.invoice = Invoice.objects.get(id=self.kwargs['pk'])
+        invoice_item.save()
+        return HttpResponseRedirect(self.get_success_url())
 
     def form_invalid(self, form):
         return HttpResponseRedirect(
