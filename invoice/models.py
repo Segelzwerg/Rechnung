@@ -1,6 +1,7 @@
 """Models for invoice app."""
 from decimal import Decimal
 from math import isnan, isinf
+
 try:
     from warnings import deprecated
 except ImportError:
@@ -66,6 +67,14 @@ class Customer(Model):
     email = EmailField(max_length=256)
     address = OneToOneField(Address, on_delete=CASCADE)
 
+    @property
+    def full_name(self):
+        """Get the full name of the customer (first name + last name)."""
+        return f'{self.first_name} {self.last_name}'
+
+    def __str__(self):
+        return self.full_name
+
 
 class Vendor(Model):
     """Defines profiles for the invoicer."""
@@ -79,6 +88,11 @@ class Vendor(Model):
         """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""
         constraints = [UniqueConstraint(fields=['name', 'company_name'],
                                         name='unique_name_and_company_name')]
+
+    def __str__(self):
+        if self.company_name:
+            return self.company_name
+        return self.name
 
 
 class Invoice(Model):
