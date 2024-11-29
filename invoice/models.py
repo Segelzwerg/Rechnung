@@ -91,8 +91,7 @@ class Vendor(Model):
     def __str__(self):
         if self.company_name:
             return self.company_name
-        else:
-            return self.name
+        return self.name
 
 
 class Invoice(Model):
