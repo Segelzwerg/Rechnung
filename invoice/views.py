@@ -146,9 +146,9 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
     _, table_height = table.wrapOn(pdf_object, 0, 0)
     table.drawOn(pdf_object, x=100, y=table_y_start)
     pdf_object.drawString(A4_WIDTH - 250, table_y_start - table_height,
-                          f'Net Total: {invoice.net_total}')
+                          f'Net Total: {invoice.net_total:.2f}')
     pdf_object.drawString(A4_WIDTH - 250, table_y_start - table_height - 20,
-                          f'Total: {invoice.total}')
+                          f'Total: {invoice.total:.2f}')
     if invoice.vendor.tax_id:
         pdf_object.drawString(100, 100, f'Tax ID: {invoice.vendor.tax_id}')
     if invoice.vendor.bank_account:
