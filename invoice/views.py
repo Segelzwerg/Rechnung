@@ -1,7 +1,7 @@
 """Defines the views of the invoice app."""
 import io
 
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.views.generic import TemplateView
@@ -164,7 +164,19 @@ class InvoiceItemCreateView(CreateView):
     """Create a new invoice item."""
     model = InvoiceItem
     fields = '__all__'
-    success_url = reverse_lazy('invoice-list')
+
+    def get_success_url(self):
+        return reverse_lazy('invoice-update', kwargs={'pk': self.kwargs['pk']})
+
+    def form_valid(self, form):
+        invoice_item = form.save(commit=False)
+        invoice_item.invoice = Invoice.objects.get(id=self.kwargs['pk'])
+        invoice_item.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def form_invalid(self, form):
+        return HttpResponseRedirect(
+            reverse_lazy('invoice-update', kwargs={'pk': self.kwargs['pk']}))
 
 
 class VendorCreateView(CreateView):

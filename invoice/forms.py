@@ -9,7 +9,7 @@ class InvoiceItemForm(ModelForm):
 
     class Meta:
         model = InvoiceItem
-        fields = '__all__'
+        fields = ['name', 'description', 'quantity', 'price', 'tax']
 
 
 class CustomerForm(ModelForm):

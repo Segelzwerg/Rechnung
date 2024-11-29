@@ -71,15 +71,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                             aria-label="Close"></button>
                 </div>
-                <form role="form" method="post" action="/invoice-item/add/">
+                <form role="form" method="post" action="/invoice/{{ invoice.id }}/add_item/">
                     {% csrf_token %}
                     <div class="modal-body">
                         {% bootstrap_form invoice_item_form layout="floating" %}
-                    </div>
-                    <div class="modal-footer">
-                        {% bootstrap_button button_type="reset" content="Reset" %}
-                        {% bootstrap_button button_type="submit" content="Save" %}
-                    </div>
+                        <div class="modal-footer">
+                            {% bootstrap_button button_type="reset" content="Reset" %}
+                            {% bootstrap_button button_type="submit" content="Save" %}
+                        </div>
                 </form>
 
             </div>
