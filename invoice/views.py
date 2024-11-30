@@ -9,7 +9,7 @@ from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.views.generic import TemplateView
 
 from invoice import pdf_generator
-from invoice.forms import InvoiceItemForm, AddressForm, BankAccountForm, CustomerForm, VendorForm
+from invoice.forms import InvoiceItemForm, AddressForm, BankAccountForm, CustomerForm, VendorForm, InvoiceForm
 from invoice.models import Vendor, Customer, Invoice, InvoiceItem
 
 
@@ -51,7 +51,7 @@ class CustomerUpdateView(SuccessMessageMixin, UpdateView):
     form_class = CustomerForm
     model = Customer
     success_url = reverse_lazy('customer-list')
-    scecess_message = 'Customer was updated successfully.'
+    success_message = 'Customer was updated successfully.'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -84,8 +84,8 @@ class CustomerListView(ListView):
 
 class InvoiceCreateView(SuccessMessageMixin, CreateView):
     """Create a new invoice."""
+    form_class = InvoiceForm
     model = Invoice
-    fields = '__all__'
     success_message = 'Invoice was created successfully.'
 
     def get_success_url(self):
@@ -102,8 +102,8 @@ class InvoiceCreateView(SuccessMessageMixin, CreateView):
 
 class InvoiceUpdateView(SuccessMessageMixin, UpdateView):
     """Update an existing invoice."""
+    form_class = InvoiceForm
     model = Invoice
-    fields = '__all__'
     success_url = reverse_lazy('invoice-list')
     success_message = 'Invoice was updated successfully.'
 
@@ -139,8 +139,8 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
 
 class InvoiceItemCreateView(SuccessMessageMixin, CreateView):
     """Create a new invoice item."""
+    form_class = InvoiceItemForm
     model = InvoiceItem
-    fields = '__all__'
     success_message = 'Invoice item was created successfully.'
 
     def get_success_url(self):
