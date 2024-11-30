@@ -11,7 +11,7 @@ from reportlab.platypus import Table
 def gen_invoice_pdf(invoice, filename_or_io):
     """Generate the invoice pdf document."""
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,too-many-arguments,too-many-positional-arguments
 
     pdf_object = canvas.Canvas(filename_or_io)
 
