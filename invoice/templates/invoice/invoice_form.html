@@ -14,14 +14,14 @@
             <div class="col">
                 <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip"
                         {% if invoice %}
-                      title="Create a line item for this invoice."
+                      title="Create an item for this invoice."
                         {% else %}
                       title="Create an invoice first."
                         {% endif %}>
                   <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                           data-bs-target="#InvoiceItemModal"
                           {% if not invoice %} disabled {% endif %}>
-                        Add line item
+                        Add invoice item
                     </button>
                 </span>
 
@@ -69,7 +69,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="InvoiceItemModalLabel">Add line item</h1>
+                        <h1 class="modal-title fs-5" id="InvoiceItemModalLabel">Add invoice item</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Close"></button>
                     </div>
@@ -81,8 +81,8 @@
                                 {% bootstrap_button button_type="reset" content="Reset" %}
                                 {% bootstrap_button button_type="submit" content="Save" %}
                             </div>
+                        </div>
                     </form>
-
                 </div>
             </div>
         </div>

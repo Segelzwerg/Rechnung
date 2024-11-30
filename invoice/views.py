@@ -1,10 +1,11 @@
 """Defines the views of the invoice app."""
 import io
 
+from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import FileResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.views.generic import TemplateView
 
@@ -139,22 +140,24 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
 
 class InvoiceItemCreateView(SuccessMessageMixin, CreateView):
     """Create a new invoice item."""
+    # template_name = 'invoice/invoice_form.html'
     form_class = InvoiceItemForm
     model = InvoiceItem
     success_message = 'Invoice item was created successfully.'
 
     def get_success_url(self):
-        return reverse_lazy('invoice-update', kwargs={'pk': self.kwargs['pk']})
+        return reverse('invoice-update', kwargs={'pk': self.kwargs['pk']})
 
     def form_valid(self, form):
+        invoice = get_object_or_404(Invoice, id=self.kwargs['pk'])
         invoice_item = form.save(commit=False)
-        invoice_item.invoice = Invoice.objects.get(id=self.kwargs['pk'])
+        invoice_item.invoice = invoice
         invoice_item.save()
-        return HttpResponseRedirect(self.get_success_url())
+        return super().form_valid(form)
 
     def form_invalid(self, form):
-        return HttpResponseRedirect(
-            reverse_lazy('invoice-update', kwargs={'pk': self.kwargs['pk']}))
+        messages.error(self.request, "Error adding invoice item!")
+        return HttpResponseRedirect(reverse('invoice-update', kwargs={'pk': self.kwargs['pk']}))
 
 
 class VendorCreateView(SuccessMessageMixin, CreateView):
