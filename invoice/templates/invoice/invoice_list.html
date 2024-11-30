@@ -2,7 +2,7 @@
 {% load django_bootstrap5 %}
 
 {% block content %}
-    {% bootstrap_button button_type="link" href="/invoice/add" content="Add invoice" %}
+    <a class="btn btn-primary" role="button" href="{% url "invoice-add" %}">Add invoice</a>
     <table class="table">
         <thead>
         <tr>
@@ -24,8 +24,11 @@
                 <td>{{ invoice.customer.first_name }} {{ invoice.customer.last_name }}</td>
                 <td class="text-end">{{ invoice.net_total|floatformat:2 }}</td>
                 <td class="text-end">{{ invoice.total|floatformat:2 }}</td>
-                <td><a href="/invoice/{{ invoice.id }}/">Update</a> / <a href="/invoice/
-{{ invoice.id }}/delete/">Delete</a></td>
+                <td>
+                    <a href={% url "invoice-update" invoice.id %}>Update</a> /
+                    <a href={% url "invoice-delete" invoice.id %}>Delete</a> /
+                    <a href={% url "invoice-pdf" invoice.id %}>PDF</a>
+                </td>
             </tr>
         {% endfor %}
         </tbody>

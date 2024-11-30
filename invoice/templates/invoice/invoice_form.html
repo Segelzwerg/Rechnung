@@ -5,83 +5,86 @@
     <div class="container">
         <div class="row">
             <div class="col w-25">
-                <form method="POST" class="form-horizontal">
+                <form method="post" class="form-horizontal">
                     {% csrf_token %}
                     {% bootstrap_form form layout="floating" %}
                     {% bootstrap_button button_type="submit" content="Create Invoice" %}
                 </form>
             </div>
             <div class="col">
-                <div class="row">
-                    <div class="col">
-                        <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip"
-                                {% if invoice %}
-                              title="Create a line item for this invoice."
-                                {% else %}
-                              title="Create an invoice first."
-                                {% endif %}>
-                          <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                  data-bs-target="#InvoiceItemModal"
-                                  {% if not invoice %} disabled {% endif %}>
-                                Add line item
-                            </button>
-                        </span>
-                    </div>
-                </div>
-                {% if invoice.items %}
-                    <div class="col">
-                        <table class="table">
-                            <thead>
+                <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip"
+                        {% if invoice %}
+                      title="Create a line item for this invoice."
+                        {% else %}
+                      title="Create an invoice first."
+                        {% endif %}>
+                  <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                          data-bs-target="#InvoiceItemModal"
+                          {% if not invoice %} disabled {% endif %}>
+                        Add line item
+                    </button>
+                </span>
+
+                {% if invoice %}
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Tax</th>
+                            <th scope="col">Total</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in invoice.items %}
                             <tr>
-                                <th scope="col">Name</th>
-                                <th scope="col">Description</th>
-                                <th scope="col">Quantity</th>
-                                <th scope="col">Price</th>
-                                <th scope="col">Tax</th>
-                                <th scope="col">Total</th>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.description }}</td>
+                                <td class="text-end">{{ item.quantity }}</td>
+                                <td class="text-end">{{ item.price|floatformat:2 }}</td>
+                                <td class="text-end">{{ item.tax_string }}</td>
+                                <td class="text-end">{{ item.total|floatformat:2 }}</td>
                             </tr>
-                            </thead>
-                            <tbody>
-                            {% for item in invoice.items %}
-                                <tr>
-                                    <td>{{ item.name }}</td>
-                                    <td>{{ item.description }}</td>
-                                    <td class="text-end">{{ item.quantity }}</td>
-                                    <td class="text-end">{{ item.price|floatformat:2 }}</td>
-                                    <td class="text-end">{{ item.tax_string }}</td>
-                                    <td class="text-end">{{ item.total|floatformat:2 }}</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                 {% endif %}
             </div>
         </div>
-
-    </div>
-
-    <div class="modal fade" id="InvoiceItemModal" tabindex="-1"
-         aria-labelledby="InvoiceItemModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="InvoiceItemModalLabel">Add line item</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                </div>
-                <form role="form" method="post" action="/invoice/{{ invoice.id }}/add_item/">
-                    {% csrf_token %}
-                    <div class="modal-body">
-                        {% bootstrap_form invoice_item_form layout="floating" %}
-                        <div class="modal-footer">
-                            {% bootstrap_button button_type="reset" content="Reset" %}
-                            {% bootstrap_button button_type="submit" content="Save" %}
-                        </div>
-                </form>
-
+        <div class="row">
+            <div class="col">
+                {% if invoice %}
+                    <a class="btn btn-primary" role="button" href={% url "invoice-pdf" invoice.id %}>Show PDF</a>
+                {% endif %}
             </div>
         </div>
     </div>
+
+    {% if invoice %}
+        <div class="modal fade" id="InvoiceItemModal" tabindex="-1"
+             aria-labelledby="InvoiceItemModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="InvoiceItemModalLabel">Add line item</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <form role="form" method="post" action={% url "invoice-item-add" invoice.id %}>
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            {% bootstrap_form invoice_item_form layout="floating" %}
+                            <div class="modal-footer">
+                                {% bootstrap_button button_type="reset" content="Reset" %}
+                                {% bootstrap_button button_type="submit" content="Save" %}
+                            </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    {% endif %}
 {% endblock content %}
