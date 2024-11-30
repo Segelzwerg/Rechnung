@@ -102,4 +102,3 @@ def gen_invoice_pdf(invoice, filename_or_io):
 
     pdf_object.showPage()
     pdf_object.save()
-    return pdf_object

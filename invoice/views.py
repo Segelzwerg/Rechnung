@@ -125,7 +125,7 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
     """Generate an invoice as PDF file."""
     invoice = get_object_or_404(Invoice, pk=invoice_id)
     buffer = io.BytesIO()
-    _ = pdf_generator.gen_invoice_pdf(invoice, buffer)
+    pdf_generator.gen_invoice_pdf(invoice, buffer)
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=False, filename="invoice.pdf")
 
