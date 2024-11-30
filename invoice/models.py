@@ -1,5 +1,6 @@
 """Models for invoice app."""
 from decimal import Decimal
+from enum import Enum
 from math import isnan, isinf
 
 try:
@@ -16,6 +17,9 @@ from schwifty import IBAN, BIC
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
 
+
+class CurrencyEnum(Enum):
+    EUR = 'EUR'
 
 class Address(Model):
     """Defines any type of address. For vendors as well as customers."""
