@@ -58,9 +58,11 @@ def gen_invoice_pdf(invoice, filename_or_io):
     # Customer address
     render_address(A4_WIDTH - 200, y_top, invoice.customer.address, prefix_lines=[invoice.customer.full_name])
 
-    # Title
+    # Title, number, date
     y_top = A4_HEIGHT - 200
     pdf_object.drawString(x_left, next_y(), "Invoice")
+    pdf_object.drawString(x_left, next_y(), f"Number: {invoice.invoice_number}")
+    pdf_object.drawString(x_left, next_y(), f"Date: {invoice.date}")
 
     # Invoice Items
     data = invoice.table_export
