@@ -24,8 +24,9 @@
                 <td>{{ invoice.customer.first_name }} {{ invoice.customer.last_name }}</td>
                 <td class="text-end">{{ invoice.net_total|floatformat:2 }}</td>
                 <td class="text-end">{{ invoice.total|floatformat:2 }}</td>
-                <td><a href="/invoice/{{ invoice.id }}/">Update</a> / <a href="/invoice/
-{{ invoice.id }}/delete/">Delete</a></td>
+                <td><a href="/invoice/{{ invoice.id }}">Update</a> / <a href="/invoice/
+{{ invoice.id }}/delete">Delete</a> / <a href="/invoice/
+{{ invoice.id }}/pdf">PDF</a></td>
             </tr>
         {% endfor %}
         </tbody>
