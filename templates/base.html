@@ -85,7 +85,11 @@
         </div>
     </nav>
 {% endblock navbar %}
-
+{% block messages %}
+    {% if messages %}
+        {% bootstrap_messages %}
+    {% endif %}
+{% endblock messages %}
 <div id="content">
     {% block content %}
     {% endblock content %}
