@@ -127,7 +127,7 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
     buffer = io.BytesIO()
     _ = pdf_generator.gen_invoice_pdf(invoice, buffer)
     buffer.seek(0)
-    return FileResponse(buffer, as_attachment=False, filename='invoice.pdf')
+    return FileResponse(buffer, as_attachment=False, filename="invoice.pdf")
 
 
 class InvoiceItemCreateView(CreateView):

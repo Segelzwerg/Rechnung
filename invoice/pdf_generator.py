@@ -10,35 +10,57 @@ from reportlab.platypus import Table
 
 def gen_invoice_pdf(invoice, filename_or_io):
     """Generate the invoice pdf document."""
+
+    # pylint: disable=too-many-locals
+
     pdf_object = canvas.Canvas(filename_or_io)
 
-    y_top = 800
+    y_top = A4_HEIGHT - 50
     y_step = 20
     y_steps = 0
 
     def next_y():
         """Calculate the y position of the next line on pdf canvas."""
-        nonlocal y_steps
+        nonlocal y_top, y_step, y_steps
 
         y = y_top - y_step * y_steps
         y_steps += 1
         return y
 
-    x_left = 100
+    def render_address(x, y, address, prefix_lines=(), suffix_lines=(), line_height=20):
+        """Render an address."""
+        line_count = 0
+        for line in prefix_lines:
+            if line:
+                pdf_object.drawString(x, y - line_count * line_height, line)
+                line_count += 1
+        for line in [
+            address.line_1,
+            address.line_2,
+            address.line_3,
+            f"{address.postcode} {address.city}",
+            address.country
+        ]:
+            if line:
+                pdf_object.drawString(x, y - line_count * line_height, line)
+                line_count += 1
+        for line in suffix_lines:
+            if line:
+                pdf_object.drawString(x, y - line_count * line_height, line)
+                line_count += 1
+
+    x_left = 80
 
     # Vendor address
-    pdf_object.drawString(x_left, next_y(), invoice.vendor.name)
-    if invoice.vendor.company_name:
-        pdf_object.drawString(x_left, next_y(), invoice.vendor.company_name)
-    for line in [invoice.vendor.address.line_1, invoice.vendor.address.line_2, invoice.vendor.address.line_3]:
-        if line:
-            pdf_object.drawString(x_left, next_y(), line)
-    pdf_object.drawString(x_left, next_y(), f'{invoice.vendor.address.postcode} {invoice.vendor.address.city}')
-    pdf_object.drawString(x_left, next_y(), invoice.vendor.address.country)
+    render_address(x_left, y_top, invoice.vendor.address,
+                   prefix_lines=[invoice.vendor.name, invoice.vendor.company_name])
+
+    # Customer address
+    render_address(A4_WIDTH - 200, y_top, invoice.customer.address, prefix_lines=[invoice.customer.full_name])
 
     # Title
-    next_y()
-    pdf_object.drawString(x_left, next_y(), "Rechnung")
+    y_top = A4_HEIGHT - 200
+    pdf_object.drawString(x_left, next_y(), "Invoice")
 
     # Invoice Items
     data = invoice.table_export
@@ -51,14 +73,14 @@ def gen_invoice_pdf(invoice, filename_or_io):
         ]
     )
     _, table_height = table.wrapOn(pdf_object, 0, 0)
-
     table_y_start = next_y()
-    table.drawOn(pdf_object, x=x_left, y=table_y_start - table_height)
+    table_y_end = table_y_start - table_height
+    table.drawOn(pdf_object, x=x_left, y=table_y_end)
 
     # Totals
     x_right = A4_WIDTH - 280
     x_right_2 = A4_WIDTH - 195
-    y_top = table_y_start - table_height
+    y_top = table_y_end
     y_steps = 1
 
     y = next_y()
