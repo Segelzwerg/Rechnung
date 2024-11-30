@@ -16,7 +16,7 @@ services:
       - DB_PORT=$DB_PORT
       - DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
   postgres:
-    image: postgres:16.4
+    image: postgres:17
     volumes:
       #- <external_path>:/var/lib/postgresql/data/ # Enable if you want to use an external drive
       - /var/lib/postgresql/data/
