@@ -39,9 +39,10 @@ def gen_invoice_pdf(invoice, filename_or_io):
 
     def render_lines_left_right(x, y, lines, line_offset=0, line_height=16):
         """Render two-part lines left- and right-aligned.
-        Expects lines to be a tuple with two elements. The first element will be left-aligned, the second element will be right-aligned."""
-        max_width = (max(map(lambda s: pdf_object.stringWidth(s), [row[0] for row in lines])) +
-                     max(map(lambda s: pdf_object.stringWidth(s), [row[1] for row in lines])))
+        Expects lines to be a tuple with two elements.
+        The first element will be left-aligned, the second element will be right-aligned."""
+        max_width = (max(map(pdf_object.stringWidth, [row[0] for row in lines])) +
+                     max(map(pdf_object.stringWidth, [row[1] for row in lines])))
         if x < 0:
             x = -x - max_width
         for i, (text_l, text_r) in enumerate(lines):
@@ -93,11 +94,14 @@ def gen_invoice_pdf(invoice, filename_or_io):
     ], line_offset=1)
 
     # Tax ID and bank account info
-    render_lines_left_right(x_left, 100, [
-        ["Tax ID: ", f"{invoice.vendor.tax_id}"],
-        ["IBAN: ", f"{IBAN(invoice.vendor.bank_account.iban).formatted}"],
-        ["BIC: ", f"{BIC(invoice.vendor.bank_account.bic)}"]
-    ])
+    lines = []
+    if invoice.vendor.tax_id:
+        lines += [["Tax ID: ", f"{invoice.vendor.tax_id}"]]
+    if invoice.vendor.bank_account:
+        lines += [["IBAN: ", f"{IBAN(invoice.vendor.bank_account.iban).formatted}"],
+                  ["BIC: ", f"{BIC(invoice.vendor.bank_account.bic)}"]]
+    if lines:
+        render_lines_left_right(x_left, 100, lines)
 
     pdf_object.showPage()
     pdf_object.save()
