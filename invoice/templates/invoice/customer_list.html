@@ -2,7 +2,7 @@
 {% load django_bootstrap5 %}
 
 {% block content %}
-    {% bootstrap_button button_type="link" href="/customer/add" content="Add customer" %}
+    <a class="btn btn-primary" role="button" href="{% url "customer-add" %}">Add customer</a>
     <table class="table">
         <thead>
         <tr>
@@ -20,8 +20,10 @@
                 <td>{{ customer.last_name }}</td>
                 <td>{{ customer.email }}</td>
                 <td>{{ customer.address }}</td>
-                <td><a href="/customer/{{ customer.id }}/">Update</a> / <a href="/customer/
-{{ customer.id }}/delete/">Delete</a></td>
+                <td>
+                    <a href="{% url "customer-update" customer.id %}">Update</a> /
+                    <a href="{% url "customer-delete" customer.id %}">Delete</a>
+                </td>
             </tr>
         {% endfor %}
         </tbody>

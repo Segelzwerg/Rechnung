@@ -17,14 +17,9 @@
 
 {% block navbar %}
     <nav class="navbar navbar-expand-md bg-dark" data-bs-theme="dark">
+        <a class="navbar-brand" href="{% url "start" %}">Rechnung</a>
         <div class="container-fluid">
             <ul class="navbar-nav justify-content">
-                {% if nav_logo %}
-                    <a class="navbar-brand" href="{{ nav_logo.url }}">
-                        <img height="45" src="{{ nav_logo.image.url }}"
-                             alt="{{ nav_logo.alt_text }}">
-                    </a>
-                {% endif %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#"
                        role="button" data-bs-toggle="dropdown"
@@ -32,11 +27,11 @@
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="/invoices">List</a>
+                               href="{% url "invoice-list" %}">List</a>
                         </li>
                         <li>
                             <a class="dropdown-item"
-                               href="/invoice/add/">Add</a>
+                               href="{% url "invoice-add" %}">Add</a>
                         </li>
                     </ul>
                 </li>
@@ -47,11 +42,11 @@
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="/customers">List</a>
+                               href="{% url "customer-list" %}">List</a>
                         </li>
                         <li>
                             <a class="dropdown-item"
-                               href="/customer/add/">Add</a>
+                               href="{% url "customer-add" %}">Add</a>
                         </li>
                     </ul>
                 </li>
@@ -62,11 +57,11 @@
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="/vendors">List</a>
+                               href="{% url "vendor-list" %}">List</a>
                         </li>
                         <li>
                             <a class="dropdown-item"
-                               href="/vendor/add/">Add</a>
+                               href="{% url "vendor-add" %}">Add</a>
                         </li>
                     </ul>
                 </li>
@@ -76,7 +71,7 @@
                     <span class="navbar-text">
                         {{ user.username }}
                     </span>
-                    <form id="logoutform" method="POST" action="/accounts/logout" class="d-flex">
+                    <form id="logoutform" method="post" action="/accounts/logout/" class="d-flex">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-info">{% translate "Logout" %}</button>
                     </form>
