@@ -3,11 +3,20 @@
 
 {% block content %}
     <div class="w-50">
-        <form method="post" class="form-horizontal">
+        <form method="post" class="form-horizontal"
+                {% if customer %}
+              action="{% url "customer-update" customer.id %}"
+                {% else %}
+              action="{% url "customer-create" %}"
+                {% endif %}>
             {% csrf_token %}
             {% bootstrap_form form layout="floating" %}
             {% bootstrap_form address_form layout="floating" %}
-            <input type="submit" value="Create Customer">
+            <input type="submit" class="btn btn-primary"
+                    {% if customer %}
+                   value="Update Customer"
+                    {% else %}
+                   value="Create Customer"{% endif %}>
         </form>
     </div>
 {% endblock content %}
