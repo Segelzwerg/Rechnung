@@ -3,8 +3,6 @@ from decimal import Decimal
 from enum import Enum
 from math import isnan, isinf
 
-from django.db.models.constraints import CheckConstraint
-
 try:
     from warnings import deprecated
 except ImportError:
@@ -14,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
     DateField, UniqueConstraint, OneToOneField, Q, F
+from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
 from schwifty import IBAN, BIC
 
