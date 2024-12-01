@@ -99,6 +99,7 @@ class Vendor(Model):
 class Invoice(Model):
     """Defines an invoice."""
 
+    # pylint: disable=too-many-ancestors
     class Currency(TextChoices):
         """Definition of commonly used currencies."""
         EUR = 'EUR', 'Euro'
