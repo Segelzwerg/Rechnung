@@ -136,12 +136,9 @@ class InvoiceItemCreateView(SuccessMessageMixin, CreateView):
     model = InvoiceItem
     success_message = 'Invoice item was created successfully.'
 
-    def get_invoice(self):
-        return get_object_or_404(Invoice, pk=self.kwargs['invoice_id'])
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        invoice = self.get_invoice()
+        invoice = get_object_or_404(Invoice, pk=self.kwargs['invoice_id'])
         context['invoice'] = invoice
         context['form'] = InvoiceForm(instance=invoice)
         if self.request.POST:
@@ -154,7 +151,7 @@ class InvoiceItemCreateView(SuccessMessageMixin, CreateView):
         return reverse('invoice-update', kwargs={'pk': self.kwargs['invoice_id']})
 
     def form_valid(self, form):
-        invoice = self.get_invoice()
+        invoice = get_object_or_404(Invoice, pk=self.kwargs['invoice_id'])
         invoice_item = form.save(commit=False)
         invoice_item.invoice = invoice
         invoice_item.save()
@@ -190,12 +187,9 @@ class InvoiceItemDeleteView(SuccessMessageMixin, DeleteView):
     pk_url_kwarg = 'invoice_item_id'
     success_message = 'Invoice item was deleted successfully.'
 
-    def get_invoice(self):
-        return get_object_or_404(Invoice, pk=self.kwargs['invoice_id'])
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        invoice = self.get_invoice()
+        invoice = get_object_or_404(Invoice, pk=self.kwargs['invoice_id'])
         context['invoice'] = invoice
         context['form'] = InvoiceForm(instance=invoice)
         if self.request.POST:
