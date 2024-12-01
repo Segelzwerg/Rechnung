@@ -56,6 +56,14 @@
                         {% endfor %}
                         </tbody>
                     </table>
+                    <div class="row">
+                        <div class="col">Net Total:</div>
+                        <div class="col"><span>{{ invoice.net_total|floatformat:"2g" }}</span></div>
+                    </div>
+                    <div class="row">
+                        <div class="col">Total:</div>
+                        <div class="col"><span>{{ invoice.total|floatformat:"2g" }}</span></div>
+                    </div>
                 {% endif %}
             </div>
         </div>
