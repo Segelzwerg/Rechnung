@@ -153,14 +153,15 @@ class InvoiceItem(Model):
     """Line item of an invoice."""
     name = CharField(max_length=120)
     description = CharField(max_length=1000)
-    quantity = IntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
+    quantity = DecimalField(max_digits=19, decimal_places=2,
+                            validators=[MinValueValidator(Decimal('0.00')),
+                                        MaxValueValidator(Decimal('1000000.00'))])
     price = DecimalField(max_digits=19, decimal_places=2,
-                         validators=[MinValueValidator(-1000000),
-                                     MaxValueValidator(1000000)])
-    tax = DecimalField(max_digits=3, decimal_places=2,
-                       validators=[MinValueValidator(0.00),
-                                   MaxValueValidator(1.00)])
+                         validators=[MinValueValidator(Decimal('-1000000.00')),
+                                     MaxValueValidator(Decimal('1000000.00'))])
+    tax = DecimalField(max_digits=5, decimal_places=4,
+                       validators=[MinValueValidator(Decimal('0.0000')),
+                                   MaxValueValidator(Decimal('1.0000'))])
     invoice = ForeignKey(Invoice, on_delete=CASCADE)
 
     @property
