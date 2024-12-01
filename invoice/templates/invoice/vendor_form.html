@@ -7,7 +7,7 @@
                 {% if vendor %}
               action="{% url "vendor-update" vendor.id %}"
                 {% else %}
-              action="{% url "vendor-create" %}"
+              action="{% url "vendor-add" %}"
                 {% endif %}>
             {% csrf_token %}
             {% bootstrap_form form layout="floating" %}

@@ -7,7 +7,7 @@
                 {% if customer %}
               action="{% url "customer-update" customer.id %}"
                 {% else %}
-              action="{% url "customer-create" %}"
+              action="{% url "customer-add" %}"
                 {% endif %}>
             {% csrf_token %}
             {% bootstrap_form form layout="floating" %}

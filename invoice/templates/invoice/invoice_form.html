@@ -9,7 +9,7 @@
                         {% if invoice %}
                       action="{% url "invoice-update" invoice.id %}"
                         {% else %}
-                      action="{% url "invoice-create" %}"
+                      action="{% url "invoice-add" %}"
                         {% endif %}>
                     {% csrf_token %}
                     {% bootstrap_form form layout="floating" %}
