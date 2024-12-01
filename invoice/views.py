@@ -137,7 +137,7 @@ class InvoiceItemCreateView(SuccessMessageMixin, CreateView):
     success_message = 'Invoice item was created successfully.'
 
     def get_invoice(self):
-        return get_object_or_404(Invoice, pk=self.kwargs['pk'])
+        return get_object_or_404(Invoice, pk=self.kwargs['invoice_id'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -151,7 +151,7 @@ class InvoiceItemCreateView(SuccessMessageMixin, CreateView):
         return context
 
     def get_success_url(self):
-        return reverse('invoice-update', kwargs={'pk': self.kwargs['pk']})
+        return reverse('invoice-update', kwargs={'pk': self.kwargs['invoice_id']})
 
     def form_valid(self, form):
         invoice = self.get_invoice()
@@ -159,6 +159,53 @@ class InvoiceItemCreateView(SuccessMessageMixin, CreateView):
         invoice_item.invoice = invoice
         invoice_item.save()
         return super().form_valid(form)
+
+
+class InvoiceItemUpdateView(SuccessMessageMixin, UpdateView):
+    """Update an existing invoice item."""
+    template_name = 'invoice/invoice_form.html'
+    form_class = InvoiceItemForm
+    model = InvoiceItem
+    pk_url_kwarg = 'invoice_item_id'
+    success_message = 'Invoice item was updated successfully.'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        invoice_item = self.get_object()
+        context['invoice'] = invoice_item.invoice
+        context['form'] = InvoiceForm(instance=invoice_item.invoice)
+        if self.request.POST:
+            context['invoice_item_form'] = InvoiceItemForm(self.request.POST, instance=invoice_item)
+        else:
+            context['invoice_item_form'] = InvoiceItemForm(instance=invoice_item)
+        return context
+
+    def get_success_url(self):
+        return reverse('invoice-update', kwargs={'pk': self.kwargs['invoice_id']})
+
+
+class InvoiceItemDeleteView(SuccessMessageMixin, DeleteView):
+    """Delete an existing invoice item."""
+    model = InvoiceItem
+    pk_url_kwarg = 'invoice_item_id'
+    success_message = 'Invoice item was deleted successfully.'
+
+    def get_invoice(self):
+        return get_object_or_404(Invoice, pk=self.kwargs['invoice_id'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        invoice = self.get_invoice()
+        context['invoice'] = invoice
+        context['form'] = InvoiceForm(instance=invoice)
+        if self.request.POST:
+            context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+        else:
+            context['invoice_item_form'] = InvoiceItemForm()
+        return context
+
+    def get_success_url(self):
+        return reverse('invoice-update', kwargs={'pk': self.kwargs['invoice_id']})
 
 
 class VendorCreateView(SuccessMessageMixin, CreateView):
