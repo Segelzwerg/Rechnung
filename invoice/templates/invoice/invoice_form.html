@@ -14,14 +14,15 @@
             <div class="col">
                 <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip"
                         {% if invoice %}
-                      title="Create a line item for this invoice."
+                      title="Create an item for this invoice."
                         {% else %}
                       title="Create an invoice first."
                         {% endif %}>
                   <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                          id="ItemInvoiceToggler"
                           data-bs-target="#InvoiceItemModal"
                           {% if not invoice %} disabled {% endif %}>
-                        Add line item
+                        Add invoice item
                     </button>
                 </span>
 
@@ -35,6 +36,7 @@
                             <th scope="col">Price</th>
                             <th scope="col">Tax</th>
                             <th scope="col">Total</th>
+                            <th scope="col">Actions</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -42,14 +44,26 @@
                             <tr>
                                 <td>{{ item.name }}</td>
                                 <td>{{ item.description }}</td>
-                                <td class="text-end">{{ item.quantity }}</td>
-                                <td class="text-end">{{ item.price|floatformat:2 }}</td>
+                                <td class="text-end">{{ item.quantity_string }}</td>
+                                <td class="text-end">{{ item.price|floatformat:"2g" }}</td>
                                 <td class="text-end">{{ item.tax_string }}</td>
-                                <td class="text-end">{{ item.total|floatformat:2 }}</td>
+                                <td class="text-end">{{ item.total|floatformat:"2g" }}</td>
+                                <td>
+                                    <a href={% url "invoice-item-update" invoice.id item.id %}>Update</a> /
+                                    <a href={% url "invoice-item-delete" invoice.id item.id %}>Delete</a>
+                                </td>
                             </tr>
                         {% endfor %}
                         </tbody>
                     </table>
+                    <div class="row">
+                        <div class="col">Net Total:</div>
+                        <div class="col"><span>{{ invoice.net_total|floatformat:"2g" }}</span></div>
+                    </div>
+                    <div class="row">
+                        <div class="col">Total:</div>
+                        <div class="col"><span>{{ invoice.total|floatformat:"2g" }}</span></div>
+                    </div>
                 {% endif %}
             </div>
         </div>
@@ -62,29 +76,48 @@
         </div>
     </div>
 
-    {% if invoice %}
+    {% if invoice and invoice_item_form %}
         <div class="modal fade" id="InvoiceItemModal" tabindex="-1"
              aria-labelledby="InvoiceItemModalLabel"
              aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="InvoiceItemModalLabel">Add line item</h1>
+                        <h1 class="modal-title fs-5" id="InvoiceItemModalLabel">
+                            {% if invoiceitem %}
+                                Update invoice item
+                            {% else %}
+                                Add invoice item
+                            {% endif %}
+                        </h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Close"></button>
                     </div>
-                    <form role="form" method="post" action={% url "invoice-item-add" invoice.id %}>
+                    <form role="form" method="post"
+                            {% if invoiceitem %}
+                          action="{% url "invoice-item-update" invoice.id invoiceitem.id %}"
+                            {% else %}
+                          action={% url "invoice-item-add" invoice.id %}
+                            {% endif %}>
                         {% csrf_token %}
                         <div class="modal-body">
                             {% bootstrap_form invoice_item_form layout="floating" %}
                             <div class="modal-footer">
-                                {% bootstrap_button button_type="reset" content="Reset" %}
-                                {% bootstrap_button button_type="submit" content="Save" %}
+                                {% if invoiceitem %}
+                                    {% bootstrap_button button_type="submit" content="Save" %}
+                                {% else %}
+                                    {% bootstrap_button button_type="reset" content="Reset" %}
+                                    {% bootstrap_button button_type="submit" content="Create" %}
+                                {% endif %}
                             </div>
+                        </div>
                     </form>
-
                 </div>
             </div>
         </div>
+
+        {% if invoiceitem or invoice_item_form.errors %}
+            <script>document.getElementById("ItemInvoiceToggler").click()</script>
+        {% endif %}
     {% endif %}
 {% endblock content %}

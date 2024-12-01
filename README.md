@@ -18,4 +18,3 @@ However, you need to set up a few environment variables.
 | DB_PASSWORD            | Password of the admin.                                                                                                             |
 | DB_HOST                | Hostname of the database. It must be the same as docker compose service.                                                           |
 | DB_PORT                | Port of the database.                                                                                                              |
-| -                      | -                                                                                                                                  |

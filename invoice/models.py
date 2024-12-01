@@ -157,14 +157,15 @@ class InvoiceItem(Model):
     """Line item of an invoice."""
     name = CharField(max_length=120)
     description = CharField(max_length=1000)
-    quantity = IntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
+    quantity = DecimalField(max_digits=19, decimal_places=4,
+                            validators=[MinValueValidator(Decimal('0.0000')),
+                                        MaxValueValidator(Decimal('1000000.0000'))])
     price = DecimalField(max_digits=19, decimal_places=2,
-                         validators=[MinValueValidator(-1000000),
-                                     MaxValueValidator(1000000)])
-    tax = DecimalField(max_digits=3, decimal_places=2,
-                       validators=[MinValueValidator(0.00),
-                                   MaxValueValidator(1.00)])
+                         validators=[MinValueValidator(Decimal('-1000000.00')),
+                                     MaxValueValidator(Decimal('1000000.00'))])
+    tax = DecimalField(max_digits=5, decimal_places=4,
+                       validators=[MinValueValidator(Decimal('0.0000')),
+                                   MaxValueValidator(Decimal('1.0000'))])
     invoice = ForeignKey(Invoice, on_delete=CASCADE)
 
     @property
@@ -180,10 +181,21 @@ class InvoiceItem(Model):
     @property
     def list_export(self):
         """Get the fields as list with formatted fields of totals."""
-        return [self.name, self.description, self.quantity, self.price, self.tax_string,
-                f'{self.net_total:.2f}', f'{self.total:.2f}']
+        return [self.name,
+                self.description,
+                self.quantity_string,
+                f'{self.price:.2f}',
+                self.tax_string,
+                f'{self.net_total:.2f}',
+                f'{self.total:.2f}']
+
+    @property
+    def quantity_string(self) -> str:
+        """Get the quantity string."""
+        return f'{self.quantity:.4f}'.rstrip('0').rstrip('.,')
 
     @property
     def tax_string(self) -> str:
         """Get the tax string."""
-        return f'{self.tax * 100}%'
+        s = f'{self.tax * 100:.2f}'.rstrip('0').rstrip('.,')
+        return f'{s}%'

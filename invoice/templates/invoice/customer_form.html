@@ -3,7 +3,7 @@
 
 {% block content %}
     <div class="w-50">
-        <form method="POST" class="form-horizontal">
+        <form method="post" class="form-horizontal">
             {% csrf_token %}
             {% bootstrap_form form layout="floating" %}
             {% bootstrap_form address_form layout="floating" %}

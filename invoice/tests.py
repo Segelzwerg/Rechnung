@@ -8,7 +8,7 @@ from django.utils.timezone import now
 from hypothesis import given, example, assume
 from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
-from hypothesis.strategies import characters, text, emails, integers, composite, decimals, \
+from hypothesis.strategies import characters, text, emails, composite, decimals, \
     sampled_from
 
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE, \
@@ -77,19 +77,17 @@ def build_bank_fields(draw):
     bic = iban.bic
     assume(bic != '')
     assume(bic is not None)
-    return (iban, bic)
+    return iban, bic
 
 
 @composite
 def build_invoice_item(draw):
     name = draw(text())
     description = draw(text())
-    quantity = draw(integers(min_value=0, max_value=MAX_VALUE_DJANGO_SAVE))
-    price = draw(decimals(max_value=10000000, min_value=-1000000,
-                          places=2, allow_infinity=False, allow_nan=False))
-    tax = draw(decimals(places=2, min_value=Decimal('0.0'), max_value=ONE))
-    return InvoiceItem(name=name, description=description, quantity=quantity,
-                       price=price, tax=tax)
+    quantity = draw(decimals(places=4, min_value=0, max_value=1000000, allow_infinity=False, allow_nan=False))
+    price = draw(decimals(max_value=1000000, min_value=-1000000, places=2, allow_infinity=False, allow_nan=False))
+    tax = draw(decimals(places=4, min_value=0, max_value=1, allow_infinity=False, allow_nan=False))
+    return InvoiceItem(name=name, description=description, quantity=quantity, price=price, tax=tax)
 
 
 class AddCustomerViewTestCase(TestCase):
@@ -138,7 +136,7 @@ class AddCustomerViewTestCase(TestCase):
             'postcode': '12345',
             'country': 'Germany', }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context_data['form'], 'line_1',
+        self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
 
 
@@ -205,7 +203,7 @@ class UpdateCustomerViewTestCase(TestCase):
             'postcode': '12345',
             'country': 'Germany', }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context_data['form'], 'line_1',
+        self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
 
 
@@ -269,7 +267,7 @@ class AddVendorViewTestCase(TestCase):
             'postcode': '12345',
             'country': 'Germany', }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context_data['form'], 'line_1',
+        self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
 
     def test_update_invalid_input_bank_account(self):
@@ -281,7 +279,7 @@ class AddVendorViewTestCase(TestCase):
             'postcode': '12345',
             'country': 'Germany', }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context_data['form'], 'iban',
+        self.assertFormError(response.context_data['bank_form'], 'iban',
                              errors=['This field is required.'])
 
 
@@ -342,7 +340,7 @@ class UpdateVendorViewTestCase(TestCase):
             'postcode': '12345',
             'country': 'Germany', }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context_data['form'], 'line_1',
+        self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
 
     def test_update_invalid_input_bank_account(self):
@@ -354,7 +352,7 @@ class UpdateVendorViewTestCase(TestCase):
             'postcode': '12345',
             'country': 'Germany', }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context_data['form'], 'iban',
+        self.assertFormError(response.context_data['bank_form'], 'iban',
                              errors=['This field is required.'])
 
 
@@ -373,12 +371,10 @@ class InvoiceItemModelTestCase(TestCase):
         Address.objects.all().delete()
 
     @given(text(min_size=1), text(min_size=1),
-           integers(min_value=1, max_value=MAX_VALUE_DJANGO_SAVE),
-           decimals(allow_infinity=False, allow_nan=False, min_value=-1000000, max_value=1000000,
-                    places=2),
-           decimals(places=2, min_value=0.0, max_value=1.0))
-    @example('Security Services', 'Implementation of a firewall', 1, HUNDRED,
-             GERMAN_TAX_RATE)
+           decimals(places=4, min_value=0, max_value=1000000, allow_infinity=False, allow_nan=False),
+           decimals(places=2, min_value=-1000000, max_value=1000000, allow_infinity=False, allow_nan=False),
+           decimals(places=4, min_value=0, max_value=1, allow_infinity=False, allow_nan=False))
+    @example('Security Services', 'Implementation of a firewall', 1, HUNDRED, GERMAN_TAX_RATE)
     def test_create_invoice_item(self, name, description, quantity, price, tax):
         invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
                                    price=price, tax=tax, invoice=self.invoice)
@@ -471,9 +467,7 @@ class InvoiceItemModelTestCase(TestCase):
         invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
                                    price=price, tax=tax, invoice=invoice)
         list_export = invoice_item.list_export
-        self.assertEqual(list_export, [name, description, quantity, price, str(tax * 100) + '%',
-                                       f'{price * quantity:.2f}',
-                                       f'{price * quantity * (ONE + tax):.2f}'])
+        self.assertEqual(list_export, [name, description, '1', '4000.00', '19%', '4000.00', '4760.00'])
 
     def test_sql_quantity_limit(self):
         invoice = Invoice()
@@ -487,9 +481,29 @@ class InvoiceItemModelTestCase(TestCase):
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
-    @given(build_invoice_item())
-    def test_tax_string(self, invoice_item: InvoiceItem):
-        self.assertEqual(invoice_item.tax_string, str(invoice_item.tax * 100) + '%')
+    def test_tax_string_1(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=HUNDRED, tax=Decimal('0.19'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_string.rstrip('%'), '19')
+
+    def test_tax_string_2(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=HUNDRED, tax=Decimal('0.1925'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_string.rstrip('%'), '19.25')
+
+    def test_tax_string_3(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=HUNDRED, tax=Decimal('0.074'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_string.rstrip('%'), '7.4')
+
+    def test_tax_string_4(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=HUNDRED, tax=Decimal('0.07999'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_string.rstrip('%'), '8')
 
 
 class InvoiceModelTestCase(TestCase):
@@ -522,10 +536,9 @@ class InvoiceModelTestCase(TestCase):
         table = invoice.table_export
         self.assertEqual(table,
                          [['Name', 'Description', 'Quantity', 'Price', 'Tax', 'Net Total', 'Total'],
-                          [invoice_item.name, invoice_item.description, invoice_item.quantity,
-                           invoice_item.price, invoice_item.tax_string,
-                           f'{invoice_item.net_total:.2f}',
-                           f'{invoice_item.total:.2f}']])
+                          [invoice_item.name, invoice_item.description, invoice_item.quantity_string,
+                           f'{invoice_item.price:.2f}', invoice_item.tax_string,
+                           f'{invoice_item.net_total:.2f}', f'{invoice_item.total:.2f}']])
 
     @given(build_invoice_item(), build_invoice_item())
     def test_invoice_net_total(self, first_item, second_item):
