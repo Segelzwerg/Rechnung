@@ -1,9 +1,8 @@
 """Defines the views of the invoice app."""
 import io
 
-from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import FileResponse, HttpResponseRedirect
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
@@ -39,7 +38,7 @@ class CustomerCreateView(SuccessMessageMixin, CreateView):
         """Create a new customer and a new address."""
         address_form = AddressForm(self.request.POST)
         if not address_form.is_valid():
-            return self.form_invalid(address_form)
+            return self.form_invalid(form)
         address = address_form.save()
         customer = form.save(commit=False)
         customer.address = address
@@ -66,7 +65,7 @@ class CustomerUpdateView(SuccessMessageMixin, UpdateView):
         """Updates an existing customer including the address."""
         address_form = AddressForm(instance=self.object.address, data=self.request.POST)
         if not address_form.is_valid():
-            return self.form_invalid(address_form)
+            return self.form_invalid(form)
         address_form.save()
         return super().form_valid(form)
 
@@ -90,15 +89,7 @@ class InvoiceCreateView(SuccessMessageMixin, CreateView):
     success_message = 'Invoice was created successfully.'
 
     def get_success_url(self):
-        return reverse_lazy('invoice-update', kwargs={'pk': self.object.id})
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.POST:
-            context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
-        else:
-            context['invoice_item_form'] = InvoiceItemForm()
-        return context
+        return reverse('invoice-update', kwargs={'pk': self.object.id})
 
 
 class InvoiceUpdateView(SuccessMessageMixin, UpdateView):
@@ -140,24 +131,34 @@ def pdf_invoice(request, invoice_id) -> FileResponse:
 
 class InvoiceItemCreateView(SuccessMessageMixin, CreateView):
     """Create a new invoice item."""
-    # template_name = 'invoice/invoice_form.html'
+    template_name = 'invoice/invoice_form.html'
     form_class = InvoiceItemForm
     model = InvoiceItem
     success_message = 'Invoice item was created successfully.'
+
+    def get_invoice(self):
+        return get_object_or_404(Invoice, pk=self.kwargs['pk'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        invoice = self.get_invoice()
+        context['invoice'] = invoice
+        context['form'] = InvoiceForm(instance=invoice)
+        if self.request.POST:
+            context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+        else:
+            context['invoice_item_form'] = InvoiceItemForm()
+        return context
 
     def get_success_url(self):
         return reverse('invoice-update', kwargs={'pk': self.kwargs['pk']})
 
     def form_valid(self, form):
-        invoice = get_object_or_404(Invoice, id=self.kwargs['pk'])
+        invoice = self.get_invoice()
         invoice_item = form.save(commit=False)
         invoice_item.invoice = invoice
         invoice_item.save()
         return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, "Error adding invoice item!")
-        return HttpResponseRedirect(reverse('invoice-update', kwargs={'pk': self.kwargs['pk']}))
 
 
 class VendorCreateView(SuccessMessageMixin, CreateView):
@@ -214,12 +215,11 @@ class VendorUpdateView(SuccessMessageMixin, UpdateView):
 
     def form_valid(self, form):
         """Updates an existing vendor including the address and the bank account."""
-        address_form = AddressForm(instance=self.object.address, data=self.request.POST)
+        address_form = AddressForm(self.request.POST, instance=self.object.address)
         if not address_form.is_valid():
             return self.form_invalid(address_form)
         address_form.save()
-        bank_account_form = BankAccountForm(instance=self.object.bank_account,
-                                            data=self.request.POST)
+        bank_account_form = BankAccountForm(self.request.POST, instance=self.object.bank_account)
         if not bank_account_form.is_valid():
             return self.form_invalid(bank_account_form)
         bank_account_form.save()

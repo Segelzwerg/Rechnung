@@ -19,6 +19,7 @@
                       title="Create an invoice first."
                         {% endif %}>
                   <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                          id="ItemInvoiceToggler"
                           data-bs-target="#InvoiceItemModal"
                           {% if not invoice %} disabled {% endif %}>
                         Add invoice item
@@ -62,7 +63,7 @@
         </div>
     </div>
 
-    {% if invoice %}
+    {% if invoice and invoice_item_form %}
         <div class="modal fade" id="InvoiceItemModal" tabindex="-1"
              aria-labelledby="InvoiceItemModalLabel"
              aria-hidden="true">
@@ -86,5 +87,9 @@
                 </div>
             </div>
         </div>
+
+        {% if invoice_item_form.errors %}
+            <script>document.getElementById("ItemInvoiceToggler").click()</script>
+        {% endif %}
     {% endif %}
 {% endblock content %}
