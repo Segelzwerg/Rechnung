@@ -44,10 +44,10 @@
                             <tr>
                                 <td>{{ item.name }}</td>
                                 <td>{{ item.description }}</td>
-                                <td class="text-end">{{ item.quantity }}</td>
-                                <td class="text-end">{{ item.price|floatformat:2 }}</td>
+                                <td class="text-end">{{ item.quantity_string }}</td>
+                                <td class="text-end">{{ item.price|floatformat:"2g" }}</td>
                                 <td class="text-end">{{ item.tax_string }}</td>
-                                <td class="text-end">{{ item.total|floatformat:2 }}</td>
+                                <td class="text-end">{{ item.total|floatformat:"2g" }}</td>
                                 <td>
                                     <a href={% url "invoice-item-update" invoice.id item.id %}>Update</a> /
                                     <a href={% url "invoice-item-delete" invoice.id item.id %}>Delete</a>
