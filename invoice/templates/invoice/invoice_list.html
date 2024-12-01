@@ -8,6 +8,7 @@
         <tr>
             <th scope="col">Invoice Number</th>
             <th scope="col">Date</th>
+            <th scope="col">Due Date</th>
             <th scope="col">Vendor</th>
             <th scope="col">Customer</th>
             <th scope="col">Net Total</th>
@@ -20,6 +21,11 @@
             <tr>
                 <td>{{ invoice.invoice_number }}</td>
                 <td>{{ invoice.date }}</td>
+                <td>
+                    {% if invoice.due_date %}
+                        {{ invoice.due_date }}
+                    {% endif %}
+                </td>
                 <td>{{ invoice.vendor.name }} ({{ invoice.vendor.company_name }})</td>
                 <td>{{ invoice.customer.first_name }} {{ invoice.customer.last_name }}</td>
                 <td class="text-end">{{ invoice.net_total_string }}</td>
