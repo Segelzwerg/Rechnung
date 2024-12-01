@@ -153,9 +153,9 @@ class InvoiceItem(Model):
     """Line item of an invoice."""
     name = CharField(max_length=120)
     description = CharField(max_length=1000)
-    quantity = DecimalField(max_digits=19, decimal_places=2,
-                            validators=[MinValueValidator(Decimal('0.00')),
-                                        MaxValueValidator(Decimal('1000000.00'))])
+    quantity = DecimalField(max_digits=19, decimal_places=4,
+                            validators=[MinValueValidator(Decimal('0.0000')),
+                                        MaxValueValidator(Decimal('1000000.0000'))])
     price = DecimalField(max_digits=19, decimal_places=2,
                          validators=[MinValueValidator(Decimal('-1000000.00')),
                                      MaxValueValidator(Decimal('1000000.00'))])
@@ -188,7 +188,7 @@ class InvoiceItem(Model):
     @property
     def quantity_string(self) -> str:
         """Get the quantity string."""
-        return f'{self.quantity:.2f}'.rstrip('0').rstrip('.,')
+        return f'{self.quantity:.4f}'.rstrip('0').rstrip('.,')
 
     @property
     def tax_string(self) -> str:
