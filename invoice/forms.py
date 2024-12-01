@@ -1,7 +1,19 @@
 """Forms of the invoice app"""
 from django.forms import ModelForm
+from django.forms.widgets import DateInput
 
-from invoice.models import InvoiceItem, Customer, Address, BankAccount, Vendor
+from invoice.models import InvoiceItem, Customer, Address, BankAccount, Vendor, Invoice
+
+
+class InvoiceForm(ModelForm):
+    """Form for invoices"""
+
+    class Meta:
+        model = Invoice
+        fields = ['invoice_number', 'date', 'vendor', 'customer']
+        widgets = {
+            'date': DateInput(attrs={'type': 'date'}),
+        }
 
 
 class InvoiceItemForm(ModelForm):
