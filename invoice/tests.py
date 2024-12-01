@@ -487,9 +487,29 @@ class InvoiceItemModelTestCase(TestCase):
         with self.assertRaises(ValidationError):
             invoice_item.full_clean()
 
-    @given(build_invoice_item())
-    def test_tax_string(self, invoice_item: InvoiceItem):
-        self.assertEqual(invoice_item.tax_string, str(invoice_item.tax * 100) + '%')
+    def test_tax_string_1(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=HUNDRED, tax=Decimal('0.19'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_string.rstrip('%'), '19')
+
+    def test_tax_string_2(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=HUNDRED, tax=Decimal('0.1925'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_string.rstrip('%'), '19.25')
+
+    def test_tax_string_3(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=HUNDRED, tax=Decimal('0.074'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_string.rstrip('%'), '7.4')
+
+    def test_tax_string_4(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=HUNDRED, tax=Decimal('0.07999'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_string.rstrip('%'), '8')
 
 
 class InvoiceModelTestCase(TestCase):
