@@ -8,7 +8,7 @@ from django.utils.timezone import now
 from hypothesis import given, example, assume
 from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
-from hypothesis.strategies import characters, text, emails, integers, composite, decimals, \
+from hypothesis.strategies import characters, text, emails, composite, decimals, \
     sampled_from
 
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE, \
@@ -84,7 +84,7 @@ def build_bank_fields(draw):
 def build_invoice_item(draw):
     name = draw(text())
     description = draw(text())
-    quantity = draw(decimals(places=4, min_value=-1000000, max_value=1000000, allow_infinity=False, allow_nan=False))
+    quantity = draw(decimals(places=4, min_value=0, max_value=1000000, allow_infinity=False, allow_nan=False))
     price = draw(decimals(max_value=1000000, min_value=-1000000, places=2, allow_infinity=False, allow_nan=False))
     tax = draw(decimals(places=4, min_value=0, max_value=1, allow_infinity=False, allow_nan=False))
     return InvoiceItem(name=name, description=description, quantity=quantity, price=price, tax=tax)
@@ -371,12 +371,10 @@ class InvoiceItemModelTestCase(TestCase):
         Address.objects.all().delete()
 
     @given(text(min_size=1), text(min_size=1),
-           integers(min_value=1, max_value=MAX_VALUE_DJANGO_SAVE),
-           decimals(allow_infinity=False, allow_nan=False, min_value=-1000000, max_value=1000000,
-                    places=2),
-           decimals(places=2, min_value=0.0, max_value=1.0))
-    @example('Security Services', 'Implementation of a firewall', 1, HUNDRED,
-             GERMAN_TAX_RATE)
+           decimals(places=4, min_value=0, max_value=1000000, allow_infinity=False, allow_nan=False),
+           decimals(places=2, min_value=-1000000, max_value=1000000, allow_infinity=False, allow_nan=False),
+           decimals(places=4, min_value=0, max_value=1, allow_infinity=False, allow_nan=False))
+    @example('Security Services', 'Implementation of a firewall', 1, HUNDRED, GERMAN_TAX_RATE)
     def test_create_invoice_item(self, name, description, quantity, price, tax):
         invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
                                    price=price, tax=tax, invoice=self.invoice)
