@@ -584,6 +584,20 @@ class InvoiceModelTestCase(TestCase):
         with self.assertRaises(ValidationError):
             invoice.full_clean()
 
+    def test_due_date_before_date(self):
+        date = now()
+        due_date = date + timedelta(days=1)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+        invoice.full_clean()
+
+    def test_due_date_equal_date(self):
+        date = now()
+        due_date = date
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+        invoice.full_clean()
+
 
 class InvoicePDFViewTestCase(TestCase):
     def setUp(self):
