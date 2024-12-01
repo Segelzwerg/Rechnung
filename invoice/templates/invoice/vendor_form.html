@@ -3,12 +3,21 @@
 
 {% block content %}
     <div class="w-50">
-        <form method="POST" class="form-horizontal">
+        <form method="post" class="form-horizontal"
+                {% if vendor %}
+              action="{% url "vendor-update" vendor.id %}"
+                {% else %}
+              action="{% url "vendor-add" %}"
+                {% endif %}>
             {% csrf_token %}
             {% bootstrap_form form layout="floating" %}
             {% bootstrap_form address_form layout="floating" %}
             {% bootstrap_form bank_form layout="floating" %}
-            <input type="submit" value="Create Vendor">
+            <input type="submit" class="btn btn-primary"
+                    {% if vendor %}
+                   value="Update Vendor"
+                    {% else %}
+                   value="Create Vendor"{% endif %}>
         </form>
     </div>
 {% endblock content %}
