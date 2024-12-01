@@ -138,7 +138,7 @@ class AddCustomerViewTestCase(TestCase):
             'postcode': '12345',
             'country': 'Germany', }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context_data['form'], 'line_1',
+        self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
 
 
@@ -205,7 +205,7 @@ class UpdateCustomerViewTestCase(TestCase):
             'postcode': '12345',
             'country': 'Germany', }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context_data['form'], 'line_1',
+        self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
 
 
@@ -269,7 +269,7 @@ class AddVendorViewTestCase(TestCase):
             'postcode': '12345',
             'country': 'Germany', }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context_data['form'], 'line_1',
+        self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
 
     def test_update_invalid_input_bank_account(self):
@@ -281,7 +281,7 @@ class AddVendorViewTestCase(TestCase):
             'postcode': '12345',
             'country': 'Germany', }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context_data['form'], 'iban',
+        self.assertFormError(response.context_data['bank_form'], 'iban',
                              errors=['This field is required.'])
 
 
@@ -342,7 +342,7 @@ class UpdateVendorViewTestCase(TestCase):
             'postcode': '12345',
             'country': 'Germany', }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context_data['form'], 'line_1',
+        self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
 
     def test_update_invalid_input_bank_account(self):
@@ -354,7 +354,7 @@ class UpdateVendorViewTestCase(TestCase):
             'postcode': '12345',
             'country': 'Germany', }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context_data['form'], 'iban',
+        self.assertFormError(response.context_data['bank_form'], 'iban',
                              errors=['This field is required.'])
 
 
