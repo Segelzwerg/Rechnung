@@ -19,6 +19,7 @@ MAX_VALUE_DJANGO_SAVE = 2147483647
 
 
 class CurrencyEnum(Enum):
+    """Definition of commonly used currencies."""
     EUR = 'EUR'
     USD = 'USD'
     JPY = 'JPY'
