@@ -5,10 +5,19 @@
     <div class="container">
         <div class="row">
             <div class="col w-25">
-                <form method="post" class="form-horizontal">
+                <form method="post" class="form-horizontal"
+                        {% if invoice %}
+                      action="{% url "invoice-update" invoice.id %}"
+                        {% else %}
+                      action="{% url "invoice-add" %}"
+                        {% endif %}>
                     {% csrf_token %}
                     {% bootstrap_form form layout="floating" %}
-                    {% bootstrap_button button_type="submit" content="Create Invoice" %}
+                    <input type="submit" class="btn btn-primary"
+                            {% if invoice %}
+                           value="Update Invoice"
+                            {% else %}
+                           value="Create Invoice"{% endif %}>
                 </form>
             </div>
             <div class="col">
@@ -93,7 +102,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Close"></button>
                     </div>
-                    <form role="form" method="post"
+                    <form method="post" class="form"
                             {% if invoiceitem %}
                           action="{% url "invoice-item-update" invoice.id invoiceitem.id %}"
                             {% else %}
@@ -104,7 +113,7 @@
                             {% bootstrap_form invoice_item_form layout="floating" %}
                             <div class="modal-footer">
                                 {% if invoiceitem %}
-                                    {% bootstrap_button button_type="submit" content="Save" %}
+                                    {% bootstrap_button button_type="submit" content="Update" %}
                                 {% else %}
                                     {% bootstrap_button button_type="reset" content="Reset" %}
                                     {% bootstrap_button button_type="submit" content="Create" %}
@@ -117,7 +126,11 @@
         </div>
 
         {% if invoiceitem or invoice_item_form.errors %}
-            <script>document.getElementById("ItemInvoiceToggler").click()</script>
+            <script>
+                window.onload = function () {
+                    document.getElementById("ItemInvoiceToggler").click()
+                }
+            </script>
         {% endif %}
     {% endif %}
 {% endblock content %}
