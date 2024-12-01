@@ -11,7 +11,8 @@ except ImportError:
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
-    DateField, UniqueConstraint, OneToOneField
+    DateField, UniqueConstraint, OneToOneField, Q, F
+from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
 from schwifty import IBAN, BIC
 
@@ -123,8 +124,8 @@ class Invoice(Model):
     date = DateField()
     vendor = ForeignKey(Vendor, on_delete=CASCADE)
     customer = ForeignKey(Customer, on_delete=CASCADE)
-    currency = CharField(max_length=3, choices=CurrencyEnum.get_choices(),
-                         default=CurrencyEnum.EUR.value)
+    currency = CharField(max_length=3, choices=CurrencyEnum.get_choices(), default=CurrencyEnum.EUR.value)
+    due_date = DateField(null=True, blank=True)
 
     class Meta:
         """
@@ -132,7 +133,8 @@ class Invoice(Model):
         vendor profile.
         """
         constraints = [UniqueConstraint(fields=['vendor', 'invoice_number'],
-                                        name='unique_invoice_numbers_per_vendor')]
+                                        name='unique_invoice_numbers_per_vendor'),
+                       CheckConstraint(check=Q(due_date__gte=F('date')), name='due_date_gte_date')]
 
     @property
     def items(self):
