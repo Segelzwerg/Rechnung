@@ -21,6 +21,11 @@ MAX_VALUE_DJANGO_SAVE = 2147483647
 class CurrencyEnum(Enum):
     EUR = 'EUR'
 
+    @classmethod
+    def get_choices(cls):
+        return [(currency.value, currency.value) for currency in cls]
+
+
 class Address(Model):
     """Defines any type of address. For vendors as well as customers."""
     line_1 = CharField(max_length=200)
@@ -105,6 +110,8 @@ class Invoice(Model):
     date = DateField()
     vendor = ForeignKey(Vendor, on_delete=CASCADE)
     customer = ForeignKey(Customer, on_delete=CASCADE)
+    currency = CharField(max_length=3, choices=CurrencyEnum.get_choices(),
+                         default=CurrencyEnum.EUR.value)
 
     class Meta:
         """
@@ -135,6 +142,16 @@ class Invoice(Model):
     def total(self) -> Decimal:
         """Get the sum of total."""
         return Decimal(sum(item.total for item in self.items))
+
+    @property
+    def net_total_string(self) -> str:
+        """Get the net total string."""
+        return f'{self.net_total:.2f} {self.currency}'
+
+    @property
+    def total_string(self) -> str:
+        """Get the total string."""
+        return f'{self.total:.2f} {self.currency}'
 
 
 @deprecated('Deprecated in 0.1 and remove in 1.0')
@@ -184,10 +201,20 @@ class InvoiceItem(Model):
         return [self.name,
                 self.description,
                 self.quantity_string,
-                f'{self.price:.2f}',
+                self.price_string,
                 self.tax_string,
-                f'{self.net_total:.2f}',
-                f'{self.total:.2f}']
+                self.net_total_string,
+                self.total_string]
+
+    @property
+    def net_total_string(self) -> str:
+        """Get the net total string."""
+        return f'{self.net_total:.2f} {self.invoice.currency}'
+
+    @property
+    def price_string(self) -> str:
+        """Get the price string."""
+        return f'{self.price:.2f} {self.invoice.currency}'
 
     @property
     def quantity_string(self) -> str:
@@ -199,3 +226,8 @@ class InvoiceItem(Model):
         """Get the tax string."""
         s = f'{self.tax * 100:.2f}'.rstrip('0').rstrip('.,')
         return f'{s}%'
+
+    @property
+    def total_string(self) -> str:
+        """Get the total string."""
+        return f'{self.total:.2f} {self.invoice.currency}'
