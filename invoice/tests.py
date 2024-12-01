@@ -84,8 +84,10 @@ def build_bank_fields(draw):
 def build_invoice_item(draw):
     name = draw(text())
     description = draw(text())
-    quantity = draw(decimals(places=4, min_value=0, max_value=1000000, allow_infinity=False, allow_nan=False))
-    price = draw(decimals(max_value=1000000, min_value=-1000000, places=2, allow_infinity=False, allow_nan=False))
+    quantity = draw(
+        decimals(places=4, min_value=0, max_value=1000000, allow_infinity=False, allow_nan=False))
+    price = draw(decimals(max_value=1000000, min_value=-1000000, places=2, allow_infinity=False,
+                          allow_nan=False))
     tax = draw(decimals(places=4, min_value=0, max_value=1, allow_infinity=False, allow_nan=False))
     return InvoiceItem(name=name, description=description, quantity=quantity, price=price, tax=tax)
 
@@ -371,8 +373,10 @@ class InvoiceItemModelTestCase(TestCase):
         Address.objects.all().delete()
 
     @given(text(min_size=1), text(min_size=1),
-           decimals(places=4, min_value=0, max_value=1000000, allow_infinity=False, allow_nan=False),
-           decimals(places=2, min_value=-1000000, max_value=1000000, allow_infinity=False, allow_nan=False),
+           decimals(places=4, min_value=0, max_value=1000000, allow_infinity=False,
+                    allow_nan=False),
+           decimals(places=2, min_value=-1000000, max_value=1000000, allow_infinity=False,
+                    allow_nan=False),
            decimals(places=4, min_value=0, max_value=1, allow_infinity=False, allow_nan=False))
     @example('Security Services', 'Implementation of a firewall', 1, HUNDRED, GERMAN_TAX_RATE)
     def test_create_invoice_item(self, name, description, quantity, price, tax):
@@ -467,7 +471,8 @@ class InvoiceItemModelTestCase(TestCase):
         invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
                                    price=price, tax=tax, invoice=invoice)
         list_export = invoice_item.list_export
-        self.assertEqual(list_export, [name, description, '1', '4000.00', '19%', '4000.00', '4760.00'])
+        self.assertEqual(list_export, [name, description, '1', '4000.00 EUR', '19%', '4000.00 EUR',
+                                       '4760.00 EUR'])
 
     def test_sql_quantity_limit(self):
         invoice = Invoice()
@@ -536,9 +541,10 @@ class InvoiceModelTestCase(TestCase):
         table = invoice.table_export
         self.assertEqual(table,
                          [['Name', 'Description', 'Quantity', 'Price', 'Tax', 'Net Total', 'Total'],
-                          [invoice_item.name, invoice_item.description, invoice_item.quantity_string,
-                           f'{invoice_item.price:.2f}', invoice_item.tax_string,
-                           f'{invoice_item.net_total:.2f}', f'{invoice_item.total:.2f}']])
+                          [invoice_item.name, invoice_item.description,
+                           invoice_item.quantity_string,
+                           invoice_item.price_string, invoice_item.tax_string,
+                           invoice_item.net_total_string, invoice_item.total_string]])
 
     @given(build_invoice_item(), build_invoice_item())
     def test_invoice_net_total(self, first_item, second_item):

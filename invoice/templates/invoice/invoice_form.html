@@ -3,8 +3,8 @@
 
 {% block content %}
     <div class="container">
-        <div class="row">
-            <div class="col w-25">
+        <div class="row justify-content-center">
+            <div class="col-sm-4">
                 <form method="post" class="form-horizontal"
                         {% if invoice %}
                       action="{% url "invoice-update" invoice.id %}"
@@ -20,7 +20,7 @@
                            value="Create Invoice"{% endif %}>
                 </form>
             </div>
-            <div class="col">
+            <div class="col-xl">
                 <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip"
                         {% if invoice %}
                       title="Create an item for this invoice."
@@ -54,9 +54,9 @@
                                 <td>{{ item.name }}</td>
                                 <td>{{ item.description }}</td>
                                 <td class="text-end">{{ item.quantity_string }}</td>
-                                <td class="text-end">{{ item.price|floatformat:"2g" }}</td>
+                                <td class="text-end">{{ item.price_string }}</td>
                                 <td class="text-end">{{ item.tax_string }}</td>
-                                <td class="text-end">{{ item.total|floatformat:"2g" }}</td>
+                                <td class="text-end">{{ item.total_string }}</td>
                                 <td>
                                     <a href="{% url "invoice-item-update" invoice.id item.id %}">Update</a> /
                                     <a href="{% url "invoice-item-delete" invoice.id item.id %}">Delete</a>
@@ -67,11 +67,11 @@
                     </table>
                     <div class="row">
                         <div class="col">Net Total:</div>
-                        <div class="col"><span>{{ invoice.net_total|floatformat:"2g" }}</span></div>
+                        <div class="col"><span>{{ invoice.net_total_string }}</span></div>
                     </div>
                     <div class="row">
                         <div class="col">Total:</div>
-                        <div class="col"><span>{{ invoice.total|floatformat:"2g" }}</span></div>
+                        <div class="col"><span>{{ invoice.total_string }}</span></div>
                     </div>
                 {% endif %}
             </div>
