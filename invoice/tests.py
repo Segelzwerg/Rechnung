@@ -77,15 +77,15 @@ def build_bank_fields(draw):
     bic = iban.bic
     assume(bic != '')
     assume(bic is not None)
-    return (iban, bic)
+    return iban, bic
 
 
 @composite
 def build_invoice_item(draw):
     name = draw(text())
     description = draw(text())
-    quantity = draw(decimals(places=4, min_value=-10000000, max_value=10000000, allow_infinity=False, allow_nan=False))
-    price = draw(decimals(max_value=10000000, min_value=-1000000, places=2, allow_infinity=False, allow_nan=False))
+    quantity = draw(decimals(places=4, min_value=-1000000, max_value=1000000, allow_infinity=False, allow_nan=False))
+    price = draw(decimals(max_value=1000000, min_value=-1000000, places=2, allow_infinity=False, allow_nan=False))
     tax = draw(decimals(places=4, min_value=0, max_value=1, allow_infinity=False, allow_nan=False))
     return InvoiceItem(name=name, description=description, quantity=quantity, price=price, tax=tax)
 
