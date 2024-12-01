@@ -49,8 +49,8 @@
                                 <td class="text-end">{{ item.tax_string }}</td>
                                 <td class="text-end">{{ item.total_string }}</td>
                                 <td>
-                                    <a href={% url "invoice-item-update" invoice.id item.id %}>Update</a> /
-                                    <a href={% url "invoice-item-delete" invoice.id item.id %}>Delete</a>
+                                    <a href="{% url "invoice-item-update" invoice.id item.id %}">Update</a> /
+                                    <a href="{% url "invoice-item-delete" invoice.id item.id %}">Delete</a>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -70,7 +70,7 @@
         <div class="row">
             <div class="col">
                 {% if invoice %}
-                    <a class="btn btn-primary" role="button" href={% url "invoice-pdf" invoice.id %}>Show PDF</a>
+                    <a class="btn btn-primary" role="button" href="{% url "invoice-pdf" invoice.id %}">Show PDF</a>
                 {% endif %}
             </div>
         </div>
@@ -97,7 +97,7 @@
                             {% if invoiceitem %}
                           action="{% url "invoice-item-update" invoice.id invoiceitem.id %}"
                             {% else %}
-                          action={% url "invoice-item-add" invoice.id %}
+                          action="{% url "invoice-item-add" invoice.id %}"
                             {% endif %}>
                         {% csrf_token %}
                         <div class="modal-body">

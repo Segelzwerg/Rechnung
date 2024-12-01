@@ -25,9 +25,9 @@
                 <td class="text-end">{{ invoice.net_total_string }}</td>
                 <td class="text-end">{{ invoice.total_string }}</td>
                 <td>
-                    <a href={% url "invoice-update" invoice.id %}>Update</a> /
-                    <a href={% url "invoice-delete" invoice.id %}>Delete</a> /
-                    <a href={% url "invoice-pdf" invoice.id %}>PDF</a>
+                    <a href="{% url "invoice-update" invoice.id %}">Update</a> /
+                    <a href="{% url "invoice-delete" invoice.id %}">Delete</a> /
+                    <a href="{% url "invoice-pdf" invoice.id %}">PDF</a>
                 </td>
             </tr>
         {% endfor %}
