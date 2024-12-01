@@ -20,9 +20,21 @@ MAX_VALUE_DJANGO_SAVE = 2147483647
 
 class CurrencyEnum(Enum):
     EUR = 'EUR'
+    USD = 'USD'
+    JPY = 'JPY'
+    GBP = 'GBP'
+    CHF = 'CHF'
+    CAD = 'CAD'
+    AUD = 'AUD'
+    NZD = 'NZD'
+    SEK = 'SEK'
+    DKK = 'DKK'
+    NOK = 'NOK'
+    HKD = 'HKD'
 
     @classmethod
     def get_choices(cls):
+        """Get choices for currency."""
         return [(currency.value, currency.value) for currency in cls]
 
 
