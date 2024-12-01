@@ -15,6 +15,7 @@ services:
       - DB_HOST=$DB_HOST
       - DB_PORT=$DB_PORT
       - DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
+    restart: always
   postgres:
     image: postgres:17
     volumes:

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from decimal import Decimal
 from math import inf, nan
 
@@ -210,10 +211,9 @@ class UpdateCustomerViewTestCase(TestCase):
 class CustomerModelTestCase(TestCase):
     def test_long_email(self):
         long_email = 'a' * 240 + '@' + 'b' * 20 + '.com'
-        address = Address.objects.create(line_1="Musterstraße 1", postcode="12345",
-                                         city="Musterstadt", country="Germany")
-        customer = Customer.objects.create(first_name='John', last_name='Doe', email=long_email,
-                                           address=address)
+        address = Address.objects.create(line_1="Musterstraße 1", postcode="12345", city="Musterstadt",
+                                         country="Germany")
+        customer = Customer.objects.create(first_name='John', last_name='Doe', email=long_email, address=address)
         with self.assertRaises(ValidationError):
             customer.full_clean()
 
@@ -575,6 +575,14 @@ class InvoiceModelTestCase(TestCase):
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
                                          customer=Customer.objects.first(), date=now())
         self.assertEqual(invoice.total, 0)
+
+    def test_due_date_after_date(self):
+        date = now()
+        due_date = date - timedelta(days=1)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+        with self.assertRaises(ValidationError):
+            invoice.full_clean()
 
 
 class InvoicePDFViewTestCase(TestCase):
