@@ -579,10 +579,10 @@ class InvoiceModelTestCase(TestCase):
     def test_due_date_after_date(self):
         date = now()
         due_date = date - timedelta(days=1)
-        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+        invoice = Invoice(invoice_number=1, vendor=Vendor.objects.first(),
                                          customer=Customer.objects.first(), date=date, due_date=due_date)
         with self.assertRaises(ValidationError):
-            invoice.full_clean()
+            invoice.validate_constraints()
 
     def test_due_date_before_date(self):
         date = now()
