@@ -1,6 +1,5 @@
 """Models for invoice app."""
 from decimal import Decimal
-from enum import Enum
 from math import isnan, isinf
 
 try:
@@ -11,34 +10,13 @@ except ImportError:
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
-    DateField, UniqueConstraint, OneToOneField, Q, F
+    DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
 from django.utils.translation import gettext as _
 from schwifty import IBAN, BIC
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
-
-
-class CurrencyEnum(Enum):
-    """Definition of commonly used currencies."""
-    EUR = 'EUR'
-    USD = 'USD'
-    JPY = 'JPY'
-    GBP = 'GBP'
-    CHF = 'CHF'
-    CAD = 'CAD'
-    AUD = 'AUD'
-    NZD = 'NZD'
-    SEK = 'SEK'
-    DKK = 'DKK'
-    NOK = 'NOK'
-    HKD = 'HKD'
-
-    @classmethod
-    def get_choices(cls):
-        """Get choices for currency."""
-        return [(currency.value, currency.value) for currency in cls]
 
 
 class Address(Model):
@@ -125,11 +103,29 @@ class Vendor(Model):
 
 class Invoice(Model):
     """Defines an invoice."""
+
+    # pylint: disable=too-many-ancestors
+    class Currency(TextChoices):
+        """Definition of commonly used currencies."""
+        EUR = 'EUR', 'Euro'
+        USD = 'USD', 'US Dollar'
+        JPY = 'JPY', 'Japanese Yen'
+        GBP = 'GBP', 'Pound Sterling'
+        CHF = 'CHF', 'Swiss Franc'
+        CAD = 'CAD', 'Canadian Dollar'
+        AUD = 'AUD', 'Australian Dollar'
+        NZD = 'NZD', 'New Zealand Dollar'
+        SEK = 'SEK', 'Swedish Krona'
+        DKK = 'DKK', 'Danish Krone'
+        NOK = 'NOK', 'Norwegian Krone'
+        HKD = 'HKD', 'Hong Kong Dollar'
+        CNY = 'CNY', 'Chinese Yuan'
+
     invoice_number = IntegerField(validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
     date = DateField()
     vendor = ForeignKey(Vendor, on_delete=CASCADE)
     customer = ForeignKey(Customer, on_delete=CASCADE)
-    currency = CharField(max_length=3, choices=CurrencyEnum.get_choices(), default=CurrencyEnum.EUR.value)
+    currency = CharField(max_length=3, choices=Currency, default=Currency.EUR)
     due_date = DateField(null=True, blank=True)
 
     class Meta:
