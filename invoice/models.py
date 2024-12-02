@@ -84,16 +84,24 @@ def validate_bic(value):
 
 class BankAccount(Model):
     """Defines a bank account."""
-    iban = CharField(max_length=34, validators=[validate_iban])
-    bic = CharField(max_length=11, validators=[validate_bic])
+    iban = CharField(_('IBAN'), max_length=34, validators=[validate_iban])
+    bic = CharField(_('BIC'), max_length=11, validators=[validate_bic])
+
+    class Meta:
+        verbose_name = _('bank account')
+        verbose_name_plural = _('bank accounts')
 
 
 class Customer(Model):
     """Defines a customer."""
-    first_name = CharField(max_length=120)
-    last_name = CharField(max_length=120)
-    email = EmailField(max_length=256)
-    address = OneToOneField(Address, on_delete=CASCADE)
+    first_name = CharField(_('first name'), max_length=120)
+    last_name = CharField(_('last name'), max_length=120)
+    email = EmailField(_('email'), max_length=256)
+    address = OneToOneField(Address, related_name=_('addresses'), verbose_name=_('address'), on_delete=CASCADE)
+
+    class Meta:
+        verbose_name = _('customer')
+        verbose_name_plural = _('customers')
 
     @property
     def full_name(self):
@@ -106,14 +114,17 @@ class Customer(Model):
 
 class Vendor(Model):
     """Defines profiles for the invoicer."""
-    name = CharField(max_length=255)
-    company_name = CharField(max_length=255, null=True, blank=True)
-    address: Address = OneToOneField(Address, on_delete=CASCADE)
-    tax_id = CharField(max_length=120, null=True, blank=True)
-    bank_account: BankAccount = OneToOneField(BankAccount, on_delete=CASCADE, null=True, blank=True)
+    name = CharField(_('name'), max_length=255)
+    company_name = CharField(_('company name'), max_length=255, null=True, blank=True)
+    address: Address = OneToOneField(Address, related_name=_('addresses'), verbose_name=_('address'), on_delete=CASCADE)
+    tax_id = CharField(_('tax ID'), max_length=120, null=True, blank=True)
+    bank_account: BankAccount = OneToOneField(BankAccount, related_name=_('bank accounts'),
+                                              verbose_name=_('bank account'), on_delete=CASCADE, null=True, blank=True)
 
     class Meta:
         """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""
+        verbose_name = _('vendor')
+        verbose_name_plural = _('vendors')
         constraints = [UniqueConstraint(fields=['name', 'company_name'],
                                         name='unique_name_and_company_name')]
 
@@ -125,18 +136,21 @@ class Vendor(Model):
 
 class Invoice(Model):
     """Defines an invoice."""
-    invoice_number = IntegerField(validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
-    date = DateField()
-    vendor = ForeignKey(Vendor, on_delete=CASCADE)
-    customer = ForeignKey(Customer, on_delete=CASCADE)
-    currency = CharField(max_length=3, choices=CurrencyEnum.get_choices(), default=CurrencyEnum.EUR.value)
-    due_date = DateField(null=True, blank=True)
+    invoice_number = IntegerField(_('invoice number'), validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
+    date = DateField(_('date'))
+    vendor = ForeignKey(Vendor, related_name=_('vendors'), verbose_name=_('vendor'), on_delete=CASCADE)
+    customer = ForeignKey(Customer, related_name=_('customers'), verbose_name=_('customer'), on_delete=CASCADE)
+    currency = CharField(_('currency'), max_length=3, choices=CurrencyEnum.get_choices(),
+                         default=CurrencyEnum.EUR.value)
+    due_date = DateField(_('due date'), null=True, blank=True)
 
     class Meta:
         """
         Meta configuration of invoice. Ensure uniques of the combination invoice number and
         vendor profile.
         """
+        verbose_name = _('invoice')
+        verbose_name_plural = _('invoices')
         constraints = [UniqueConstraint(fields=['vendor', 'invoice_number'],
                                         name='unique_invoice_numbers_per_vendor'),
                        CheckConstraint(check=Q(due_date__gte=F('date')), name='due_date_gte_date')]
@@ -149,7 +163,7 @@ class Invoice(Model):
     @property
     def table_export(self):
         """Get the line items as list and export all of them as table with a header row."""
-        header = ['Name', 'Description', 'Quantity', 'Price', 'Tax', 'Net Total', 'Total']
+        header = [_('Name'), _('Description'), _('Quantity'), _('Price'), _('Tax'), _('Net Total'), _('Total')]
         item_list = [item.list_export for item in self.items]
         return [header] + item_list
 
@@ -178,32 +192,32 @@ class Invoice(Model):
 def validate_real_values(value):
     """Validate real values."""
     if isnan(value):
-        raise ValidationError('Value must not be nan.')
+        raise ValidationError(_('Value must not be nan.'))
     if isinf(value):
-        raise ValidationError('Value must not be inf or -inf.')
+        raise ValidationError(_('Value must not be inf or -inf.'))
 
 
 @deprecated('Deprecated in 0.1 and remove in 1.0')
 def validate_two_digits_decimals(value):
     """Allow only two decimal digits."""
     if str(value)[::-1].find('.') > 2:
-        raise ValidationError('Price must have only two decimal digits.')
+        raise ValidationError(_('Price must have only two decimal digits.'))
 
 
 class InvoiceItem(Model):
     """Line item of an invoice."""
-    name = CharField(max_length=120)
-    description = CharField(max_length=1000)
-    quantity = DecimalField(max_digits=19, decimal_places=4,
+    name = CharField(_('invoice item'), max_length=120)
+    description = CharField(_('description'), max_length=1000)
+    quantity = DecimalField(_('quantity'), max_digits=19, decimal_places=4,
                             validators=[MinValueValidator(Decimal('0.0000')),
                                         MaxValueValidator(Decimal('1000000.0000'))])
-    price = DecimalField(max_digits=19, decimal_places=2,
+    price = DecimalField(_('price'), max_digits=19, decimal_places=2,
                          validators=[MinValueValidator(Decimal('-1000000.00')),
                                      MaxValueValidator(Decimal('1000000.00'))])
-    tax = DecimalField(max_digits=5, decimal_places=4,
+    tax = DecimalField(_('tax rate'), max_digits=5, decimal_places=4,
                        validators=[MinValueValidator(Decimal('0.0000')),
                                    MaxValueValidator(Decimal('1.0000'))])
-    invoice = ForeignKey(Invoice, on_delete=CASCADE)
+    invoice = ForeignKey(Invoice, related_name=_('invoice'), verbose_name=_('invoice'), on_delete=CASCADE)
 
     @property
     def net_total(self) -> Decimal:
