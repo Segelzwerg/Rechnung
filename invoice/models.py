@@ -108,7 +108,7 @@ class Invoice(Model):
         GBP = 'GBP', 'Pound Sterling'
         CHF = 'CHF', 'Swiss Franc'
         CAD = 'CAD', 'Canadian Dollar'
-        AUD = 'AUD', 'Austrian Dollar'
+        AUD = 'AUD', 'Australian Dollar'
         NZD = 'NZD', 'New Zealand Dollar'
         SEK = 'SEK', 'Swedish Krona'
         DKK = 'DKK', 'Danish Krone'
