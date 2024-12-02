@@ -14,6 +14,7 @@ from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, 
     DateField, UniqueConstraint, OneToOneField, Q, F
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
+from django.utils.translation import gettext as _
 from schwifty import IBAN, BIC
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
@@ -42,13 +43,17 @@ class CurrencyEnum(Enum):
 
 class Address(Model):
     """Defines any type of address. For vendors as well as customers."""
-    line_1 = CharField(max_length=200)
-    line_2 = CharField(max_length=200, null=True, blank=True)
-    line_3 = CharField(max_length=200, null=True, blank=True)
-    postcode = CharField(max_length=10)
-    city = CharField(max_length=120)
-    state = CharField(max_length=200, null=True, blank=True)
-    country = CharField(max_length=120)
+    line_1 = CharField(_('first address line'), max_length=200)
+    line_2 = CharField(_('second address line'), max_length=200, null=True, blank=True)
+    line_3 = CharField(_('third address line'), max_length=200, null=True, blank=True)
+    postcode = CharField(_('postcode'), max_length=10)
+    city = CharField(_('city'), max_length=120)
+    state = CharField(_('state'), max_length=200, null=True, blank=True)
+    country = CharField(_('country'), max_length=120)
+
+    class Meta:
+        verbose_name = _('address')
+        verbose_name_plural = _('addresses')
 
     def __str__(self):
         export = self.line_1
@@ -66,7 +71,7 @@ def validate_iban(value):
         iban = IBAN(value)
         iban.validate()
     except ValueError as err:
-        raise ValidationError('Invalid IBAN.') from err
+        raise ValidationError(_('Invalid IBAN.')) from err
 
 
 def validate_bic(value):
@@ -74,7 +79,7 @@ def validate_bic(value):
     try:
         BIC(value).validate()
     except ValueError as err:
-        raise ValidationError('Invalid BIC.') from err
+        raise ValidationError(_('Invalid BIC.')) from err
 
 
 class BankAccount(Model):
