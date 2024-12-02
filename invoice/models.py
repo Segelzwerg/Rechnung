@@ -114,6 +114,7 @@ class Invoice(Model):
         DKK = 'DKK', 'Danish Krone'
         NOK = 'NOK', 'Norwegian Krone'
         HKD = 'HKD', 'Hong Kong Dollar'
+        CNY = 'CNY', 'Chinese Yuan'
 
     invoice_number = IntegerField(validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
     date = DateField()
