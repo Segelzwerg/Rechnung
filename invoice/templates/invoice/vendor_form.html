@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load django_bootstrap5 %}
 
 {% block content %}
@@ -15,9 +16,10 @@
             {% bootstrap_form bank_form layout="floating" %}
             <input type="submit" class="btn btn-primary"
                     {% if vendor %}
-                   value="Update Vendor"
+                   value="{% translate "Update Vendor" %}"
                     {% else %}
-                   value="Create Vendor"{% endif %}>
+                   value="{% translate "Create Vendor" %}"
+                    {% endif %}>
         </form>
     </div>
 {% endblock content %}

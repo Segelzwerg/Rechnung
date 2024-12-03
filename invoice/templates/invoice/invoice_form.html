@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load django_bootstrap5 %}
 
 {% block content %}
@@ -15,37 +16,37 @@
                     {% bootstrap_form form layout="floating" %}
                     <input type="submit" class="btn btn-primary"
                             {% if invoice %}
-                           value="Update Invoice"
+                           value="{% translate "Update Invoice" %}"
                             {% else %}
-                           value="Create Invoice"{% endif %}>
+                           value={% translate "Create Invoice" %}{% endif %}>
                 </form>
             </div>
             <div class="col-xl">
                 <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip"
                         {% if invoice %}
-                      title="Create an item for this invoice."
+                      title="{% translate "Create an item for this invoice." %}"
                         {% else %}
-                      title="Create an invoice first."
+                      title="{% translate "Create an invoice first." %}"
                         {% endif %}>
                   <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                           id="ItemInvoiceToggler"
                           data-bs-target="#InvoiceItemModal"
                           {% if not invoice %} disabled {% endif %}>
-                        Add invoice item
-                    </button>
+                {% translate "Add invoice item" %}
+                </button>
                 </span>
 
                 {% if invoice %}
                     <table class="table">
                         <thead>
                         <tr>
-                            <th scope="col">Name</th>
-                            <th scope="col">Description</th>
-                            <th scope="col">Quantity</th>
-                            <th scope="col">Price</th>
-                            <th scope="col">Tax</th>
-                            <th scope="col">Total</th>
-                            <th scope="col">Actions</th>
+                            <th scope="col">{% translate "Name" %}</th>
+                            <th scope="col">{% translate "Description" %}</th>
+                            <th scope="col">{% translate "Quantity" %}</th>
+                            <th scope="col">{% translate "Price" %}</th>
+                            <th scope="col">{% translate "Tax" %}</th>
+                            <th scope="col">{% translate "Total" %}</th>
+                            <th scope="col">{% translate "Actions" %}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -66,11 +67,11 @@
                         </tbody>
                     </table>
                     <div class="row">
-                        <div class="col">Net Total:</div>
+                        <div class="col">{% translate "Net Total" %}:</div>
                         <div class="col"><span>{{ invoice.net_total_string }}</span></div>
                     </div>
                     <div class="row">
-                        <div class="col">Total:</div>
+                        <div class="col">{% translate "Total" %}:</div>
                         <div class="col"><span>{{ invoice.total_string }}</span></div>
                     </div>
                 {% endif %}
@@ -79,7 +80,8 @@
         <div class="row">
             <div class="col">
                 {% if invoice %}
-                    <a class="btn btn-primary" role="button" href="{% url "invoice-pdf" invoice.id %}">Show PDF</a>
+                    <a class="btn btn-primary" role="button" href="{% url "invoice-pdf" invoice.id %}">
+                        {% translate "Show PDF" %}</a>
                 {% endif %}
             </div>
         </div>
@@ -94,9 +96,9 @@
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="InvoiceItemModalLabel">
                             {% if invoiceitem %}
-                                Update invoice item
+                                {% translate "Update invoice item" %}
                             {% else %}
-                                Add invoice item
+                                {% translate "Add invoice item" %}
                             {% endif %}
                         </h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"
@@ -113,10 +115,10 @@
                             {% bootstrap_form invoice_item_form layout="floating" %}
                             <div class="modal-footer">
                                 {% if invoiceitem %}
-                                    {% bootstrap_button button_type="submit" content="Update" %}
+                                    {% bootstrap_button button_type="submit" content={% translate "Update" %} %}
                                 {% else %}
-                                    {% bootstrap_button button_type="reset" content="Reset" %}
-                                    {% bootstrap_button button_type="submit" content="Create" %}
+                                    {% bootstrap_button button_type="reset" content={% translate "Reset" %} %}
+                                    {% bootstrap_button button_type="submit" content={% translate "Create" %} %}
                                 {% endif %}
                             </div>
                         </div>

@@ -19,51 +19,51 @@
 
 {% block navbar %}
     <nav class="navbar navbar-expand-md bg-dark" data-bs-theme="dark">
-        <a class="navbar-brand" href="{% url "start" %}">Rechnung</a>
+        <a class="navbar-brand" href="{% url "start" %}">{% translate "Rechnung" %}</a>
         <div class="container-fluid">
             <ul class="navbar-nav justify-content">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#"
                        role="button" data-bs-toggle="dropdown"
-                       aria-expanded="false">Invoices</a>
+                       aria-expanded="false">{% translate "Invoices" %}</a>
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="{% url "invoice-list" %}">List</a>
+                               href="{% url "invoice-list" %}">{% translate "List" %}</a>
                         </li>
                         <li>
                             <a class="dropdown-item"
-                               href="{% url "invoice-add" %}">Add</a>
+                               href="{% url "invoice-add" %}">{% translate "Add" %}</a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#"
                        role="button" data-bs-toggle="dropdown"
-                       aria-expanded="false">Customers</a>
+                       aria-expanded="false">{% translate "Customers" %}</a>
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="{% url "customer-list" %}">List</a>
+                               href="{% url "customer-list" %}">{% translate "List" %}</a>
                         </li>
                         <li>
                             <a class="dropdown-item"
-                               href="{% url "customer-add" %}">Add</a>
+                               href="{% url "customer-add" %}">{% translate "Add" %}</a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#"
                        role="button" data-bs-toggle="dropdown"
-                       aria-expanded="false">Vendors</a>
+                       aria-expanded="false">{% translate "Vendors" %}</a>
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="{% url "vendor-list" %}">List</a>
+                               href="{% url "vendor-list" %}">{% translate "List" %}</a>
                         </li>
                         <li>
                             <a class="dropdown-item"
-                               href="{% url "vendor-add" %}">Add</a>
+                               href="{% url "vendor-add" %}">{% translate "Add" %}</a>
                         </li>
                     </ul>
                 </li>
