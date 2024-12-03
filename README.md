@@ -1,5 +1,7 @@
 # Rechnung
 
+[![Documentation Status](https://readthedocs.org/projects/rechnung-django/badge/?version=latest)](https://rechnung-django.readthedocs.io/en/latest/?badge=latest)
+
 Django App for invoices
 
 ## Docker Compose
