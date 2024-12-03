@@ -97,7 +97,7 @@ class Customer(Model):
     first_name = CharField(_('first name'), max_length=120)
     last_name = CharField(_('last name'), max_length=120)
     email = EmailField(_('email'), max_length=256)
-    address = OneToOneField(Address, related_name=_('addresses'), verbose_name=_('address'), on_delete=CASCADE)
+    address = OneToOneField(Address, verbose_name=_('address'), on_delete=CASCADE)
 
     class Meta:
         verbose_name = _('customer')
@@ -116,10 +116,10 @@ class Vendor(Model):
     """Defines profiles for the invoicer."""
     name = CharField(_('name'), max_length=255)
     company_name = CharField(_('company name'), max_length=255, null=True, blank=True)
-    address: Address = OneToOneField(Address, related_name=_('addresses'), verbose_name=_('address'), on_delete=CASCADE)
+    address: Address = OneToOneField(Address, verbose_name=_('address'), on_delete=CASCADE)
     tax_id = CharField(_('tax ID'), max_length=120, null=True, blank=True)
-    bank_account: BankAccount = OneToOneField(BankAccount, related_name=_('bank accounts'),
-                                              verbose_name=_('bank account'), on_delete=CASCADE, null=True, blank=True)
+    bank_account: BankAccount = OneToOneField(BankAccount, verbose_name=_('bank account'), on_delete=CASCADE, null=True,
+                                              blank=True)
 
     class Meta:
         """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""
@@ -138,8 +138,8 @@ class Invoice(Model):
     """Defines an invoice."""
     invoice_number = IntegerField(_('invoice number'), validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
     date = DateField(_('date'))
-    vendor = ForeignKey(Vendor, related_name=_('vendors'), verbose_name=_('vendor'), on_delete=CASCADE)
-    customer = ForeignKey(Customer, related_name=_('customers'), verbose_name=_('customer'), on_delete=CASCADE)
+    vendor = ForeignKey(Vendor, verbose_name=_('vendor'), on_delete=CASCADE)
+    customer = ForeignKey(Customer, verbose_name=_('customer'), on_delete=CASCADE)
     currency = CharField(_('currency'), max_length=3, choices=CurrencyEnum.get_choices(),
                          default=CurrencyEnum.EUR.value)
     due_date = DateField(_('due date'), null=True, blank=True)
@@ -217,7 +217,7 @@ class InvoiceItem(Model):
     tax = DecimalField(_('tax rate'), max_digits=5, decimal_places=4,
                        validators=[MinValueValidator(Decimal('0.0000')),
                                    MaxValueValidator(Decimal('1.0000'))])
-    invoice = ForeignKey(Invoice, related_name=_('invoice'), verbose_name=_('invoice'), on_delete=CASCADE)
+    invoice = ForeignKey(Invoice, verbose_name=_('invoice'), on_delete=CASCADE)
 
     @property
     def net_total(self) -> Decimal:
