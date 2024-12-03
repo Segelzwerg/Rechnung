@@ -1,6 +1,6 @@
-[![Documentation Status](https://readthedocs.org/projects/rechung/badge/?version=latest)](https://rechung.readthedocs.io/en/latest/?badge=latest)
-
 # Rechnung
+
+[![Documentation Status](https://readthedocs.org/projects/rechung/badge/?version=latest)](https://rechung.readthedocs.io/en/latest/?badge=latest)
 
 Django App for invoices
 
