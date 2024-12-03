@@ -118,19 +118,19 @@ class Invoice(Model):
     # pylint: disable=too-many-ancestors
     class Currency(TextChoices):
         """Definition of commonly used currencies."""
-        EUR = 'EUR', 'Euro'
-        USD = 'USD', 'US Dollar'
-        JPY = 'JPY', 'Japanese Yen'
-        GBP = 'GBP', 'Pound Sterling'
-        CHF = 'CHF', 'Swiss Franc'
-        CAD = 'CAD', 'Canadian Dollar'
-        AUD = 'AUD', 'Australian Dollar'
-        NZD = 'NZD', 'New Zealand Dollar'
-        SEK = 'SEK', 'Swedish Krona'
-        DKK = 'DKK', 'Danish Krone'
-        NOK = 'NOK', 'Norwegian Krone'
-        HKD = 'HKD', 'Hong Kong Dollar'
-        CNY = 'CNY', 'Chinese Yuan'
+        EUR = 'EUR', _('Euro')
+        USD = 'USD', _('US Dollar')
+        JPY = 'JPY', _('Japanese Yen')
+        GBP = 'GBP', _('Pound Sterling')
+        CHF = 'CHF', _('Swiss Franc')
+        CAD = 'CAD', _('Canadian Dollar')
+        AUD = 'AUD', _('Australian Dollar')
+        NZD = 'NZD', _('New Zealand Dollar')
+        SEK = 'SEK', _('Swedish Krona')
+        DKK = 'DKK', _('Danish Krone')
+        NOK = 'NOK', _('Norwegian Krone')
+        HKD = 'HKD', _('Hong Kong Dollar')
+        CNY = 'CNY', _('Chinese Yuan')
 
     invoice_number = IntegerField(_('invoice number'), validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
     date = DateField(_('date'))
