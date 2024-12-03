@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
-from django.utils.translation import gettext_lazy as gettext_lazy
+from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -104,8 +104,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 LANGUAGES = [
-    ('de', gettext_lazy('German')),
-    ('en', gettext_lazy('English')),
+    ('de', _('German')),
+    ('en', _('English')),
 ]
 LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
 
