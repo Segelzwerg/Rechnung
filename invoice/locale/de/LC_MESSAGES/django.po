@@ -1,0 +1,250 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-12-03 09:06+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: invoice/models.py:46
+msgid "first address line"
+msgstr ""
+
+#: invoice/models.py:47
+msgid "second address line"
+msgstr ""
+
+#: invoice/models.py:48
+msgid "third address line"
+msgstr ""
+
+#: invoice/models.py:49
+msgid "postcode"
+msgstr ""
+
+#: invoice/models.py:50
+msgid "city"
+msgstr ""
+
+#: invoice/models.py:51
+msgid "state"
+msgstr ""
+
+#: invoice/models.py:52
+msgid "country"
+msgstr ""
+
+#: invoice/models.py:55 invoice/models.py:100 invoice/models.py:119
+msgid "address"
+msgstr ""
+
+#: invoice/models.py:56 invoice/models.py:100 invoice/models.py:119
+msgid "addresses"
+msgstr ""
+
+#: invoice/models.py:74
+msgid "Invalid IBAN."
+msgstr ""
+
+#: invoice/models.py:82
+msgid "Invalid BIC."
+msgstr ""
+
+#: invoice/models.py:87
+msgid "IBAN"
+msgstr ""
+
+#: invoice/models.py:88
+msgid "BIC"
+msgstr ""
+
+#: invoice/models.py:91 invoice/models.py:122
+msgid "bank account"
+msgstr ""
+
+#: invoice/models.py:92 invoice/models.py:121
+msgid "bank accounts"
+msgstr ""
+
+#: invoice/models.py:97
+msgid "first name"
+msgstr ""
+
+#: invoice/models.py:98
+msgid "last name"
+msgstr ""
+
+#: invoice/models.py:99
+msgid "email"
+msgstr ""
+
+#: invoice/models.py:103 invoice/models.py:142
+msgid "customer"
+msgstr ""
+
+#: invoice/models.py:104 invoice/models.py:142
+msgid "customers"
+msgstr ""
+
+#: invoice/models.py:117
+msgid "name"
+msgstr ""
+
+#: invoice/models.py:118
+msgid "company name"
+msgstr ""
+
+#: invoice/models.py:120
+msgid "tax ID"
+msgstr ""
+
+#: invoice/models.py:126 invoice/models.py:141
+msgid "vendor"
+msgstr ""
+
+#: invoice/models.py:127 invoice/models.py:141
+msgid "vendors"
+msgstr ""
+
+#: invoice/models.py:139
+msgid "invoice number"
+msgstr ""
+
+#: invoice/models.py:140
+msgid "date"
+msgstr ""
+
+#: invoice/models.py:143
+msgid "currency"
+msgstr ""
+
+#: invoice/models.py:145
+msgid "due date"
+msgstr ""
+
+#: invoice/models.py:152 invoice/models.py:220
+msgid "invoice"
+msgstr ""
+
+#: invoice/models.py:153
+msgid "invoices"
+msgstr ""
+
+#: invoice/models.py:166
+msgid "Name"
+msgstr ""
+
+#: invoice/models.py:166
+msgid "Description"
+msgstr ""
+
+#: invoice/models.py:166
+msgid "Quantity"
+msgstr ""
+
+#: invoice/models.py:166
+msgid "Price"
+msgstr ""
+
+#: invoice/models.py:166
+msgid "Tax"
+msgstr ""
+
+#: invoice/models.py:166
+msgid "Net Total"
+msgstr ""
+
+#: invoice/models.py:166
+msgid "Total"
+msgstr ""
+
+#: invoice/models.py:195
+msgid "Value must not be nan."
+msgstr ""
+
+#: invoice/models.py:197
+msgid "Value must not be inf or -inf."
+msgstr ""
+
+#: invoice/models.py:204
+msgid "Price must have only two decimal digits."
+msgstr ""
+
+#: invoice/models.py:209
+msgid "invoice item"
+msgstr ""
+
+#: invoice/models.py:210
+msgid "description"
+msgstr ""
+
+#: invoice/models.py:211
+msgid "quantity"
+msgstr ""
+
+#: invoice/models.py:214
+msgid "price"
+msgstr ""
+
+#: invoice/models.py:217
+msgid "tax rate"
+msgstr ""
+
+#: invoice/views.py:28
+msgid "Customer was created successfully."
+msgstr ""
+
+#: invoice/views.py:55
+msgid "Customer was updated successfully."
+msgstr ""
+
+#: invoice/views.py:78
+msgid "Customer was deleted successfully."
+msgstr ""
+
+#: invoice/views.py:90
+msgid "Invoice was created successfully."
+msgstr ""
+
+#: invoice/views.py:101
+msgid "Invoice was updated successfully."
+msgstr ""
+
+#: invoice/views.py:116
+msgid "Invoice was deleted successfully."
+msgstr ""
+
+#: invoice/views.py:138
+msgid "Invoice item was created successfully."
+msgstr ""
+
+#: invoice/views.py:168
+msgid "Invoice item was updated successfully."
+msgstr ""
+
+#: invoice/views.py:189
+msgid "Invoice item was deleted successfully."
+msgstr ""
+
+#: invoice/views.py:212
+msgid "Vendor was created successfully."
+msgstr ""
+
+#: invoice/views.py:246
+msgid "Vendor was updated successfully."
+msgstr ""
+
+#: invoice/views.py:275
+msgid "Vendor was deleted successfully."
+msgstr ""
