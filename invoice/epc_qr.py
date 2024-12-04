@@ -34,7 +34,7 @@ def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str | IBAN, benefic
     else:
         identification = "INST"
 
-    if encoding in ("utf8", "utf-8",):
+    if encoding in ("utf8", "utf-8"):
         encoding_key = "1"
     elif encoding in ("latin", "latin1", "latin-1", "iso8859-1", "iso-8859-1"):
         encoding_key = "2"
@@ -48,7 +48,7 @@ def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str | IBAN, benefic
         encoding_key = "6"
     elif encoding in ("latin6", "iso8859-10", "iso-8859-10"):
         encoding_key = "7"
-    elif encoding in ("latin69", "iso8859-15", "iso-8859-15",):
+    elif encoding in ("latin9", "iso8859-15", "iso-8859-15"):
         encoding_key = "8"
     else:
         raise ValueError(f"unsupported encoding {encoding}")

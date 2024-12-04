@@ -2,6 +2,7 @@
 
 import reportlab.lib.pagesizes
 from reportlab.graphics.barcode.qr import QrCode
+from reportlab.graphics.barcode.qrencoder import QR8bitByte
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table, Paragraph
@@ -110,12 +111,15 @@ def gen_invoice_pdf(invoice, filename_or_io):
         render_lines_left_right(x_left, bottom_y, lines)
 
     if invoice.vendor.bank_account and invoice.currency == Invoice.Currency.EUR:
+        encoding = "utf-8"
         data = epc_qr.gen_epc_qr_data(str(invoice.vendor), invoice.vendor.bank_account.iban,
                                       beneficiary_bic=invoice.vendor.bank_account.bic,
                                       eur_amount=invoice.total,
-                                      remittance_info=f"Invoice {invoice.invoice_number}")
+                                      remittance_info=f"Invoice {invoice.invoice_number}",
+                                      encoding=encoding)
+        qr_data = QR8bitByte(data.encode(encoding))
         # version must be <= 13 and error correction must be M!
-        epc_qr_code = QrCode(value=data, qrVersion=None, qrLevel='M')
+        epc_qr_code = QrCode(value=[qr_data], qrVersion=None, qrLevel='M')
         w, h = epc_qr_code.wrapOn(pdf_object, A4_WIDTH - 2 * x_left, A4_HEIGHT)
         epc_qr_code.drawOn(pdf_object, A4_WIDTH - x_left - w, bottom_y - h)
         if epc_qr_code.qr.version > 13:
