@@ -12,7 +12,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
     DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices
 from django.db.models.constraints import CheckConstraint
-from django.db.models.fields import DecimalField
+from django.db.models.fields import DecimalField, BooleanField
 from schwifty import IBAN, BIC
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
@@ -122,6 +122,7 @@ class Invoice(Model):
     customer = ForeignKey(Customer, on_delete=CASCADE)
     currency = CharField(max_length=3, choices=Currency, default=Currency.EUR)
     due_date = DateField(null=True, blank=True)
+    final = BooleanField(default=False)
 
     class Meta:
         """
@@ -131,6 +132,17 @@ class Invoice(Model):
         constraints = [UniqueConstraint(fields=['vendor', 'invoice_number'],
                                         name='unique_invoice_numbers_per_vendor'),
                        CheckConstraint(check=Q(due_date__gte=F('date')), name='due_date_gte_date')]
+
+    def save(
+            self,
+            force_insert=...,
+            force_update=...,
+            using=...,
+            update_fields=...,
+    ):
+        if self.final:
+            raise FinalException()
+        super().save(force_insert, force_update, using, update_fields)
 
     @property
     def items(self):
