@@ -34,15 +34,17 @@ def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str, beneficiary_bi
     :param eur_amount: money amount in EUR (optional, min. 0.01 EUR, max. 999999999.99 EUR)
     :param version: EPC QR code version (default is "001")
     :param encoding: encoding (default is "utf-8")
-    :param instant: SCT (SEPA Credit Transfer) or INST (SEPA Instant Credit Transfer) identification (default is False)
+    :param instant: whether to use INST (SEPA Instant Credit Transfer) or SCT (SEPA Credit Transfer) identification
+        (default is False=SCT)
     :param purpose: SEPA purpose code (optional, max. 4 characters)
-    :param structured_remittance_info: ISO 11649 RF Creditor Reference (optional, max. 35 characters, mutually exclusive with ``remittance_info``)
-    :param remittance_info: unstructured remittance info (optional, max. 140 characters, mutually exclusive with ``structured_remittance_info``)
+    :param structured_remittance_info: ISO 11649 RF Creditor Reference
+        (optional, max. 35 characters, mutually exclusive with ``remittance_info``)
+    :param remittance_info: unstructured remittance info
+        (optional, max. 140 characters, mutually exclusive with ``structured_remittance_info``)
     :param originator_info: beneficiary to originator information (optional, max. 70 characters)
     :param always_add_bic: whether to add the BIC if it is not required (default is True)
     :param use_crlf: whether to use windows-style CRLF as line separator (default is False)
     :return: EPC QR code data as a string
-    :rtype: str
 
     .. _Official: https://www.europeanpaymentscouncil.eu/document-library/guidance-documents/quick-response-code-guidelines-enable-data-capture-initiation
     .. _Wikipedia: https://de.wikipedia.org/wiki/EPC-QR-Code
