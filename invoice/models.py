@@ -2,6 +2,8 @@
 from decimal import Decimal
 from math import isnan, isinf
 
+from invoice.errors import FinalError
+
 try:
     from warnings import deprecated
 except ImportError:
@@ -133,16 +135,11 @@ class Invoice(Model):
                                         name='unique_invoice_numbers_per_vendor'),
                        CheckConstraint(check=Q(due_date__gte=F('date')), name='due_date_gte_date')]
 
-    def save(
-            self,
-            force_insert=...,
-            force_update=...,
-            using=...,
-            update_fields=...,
-    ):
+    def save(self, *args, **kwargs):
+        """Save invoice unless it is marked final. Then an FinalError is raised."""
         if self.final:
-            raise FinalException()
-        super().save(force_insert, force_update, using, update_fields)
+            raise FinalError()
+        super().save(*args, **kwargs)
 
     @property
     def items(self):
