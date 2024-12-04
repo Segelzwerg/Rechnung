@@ -6,7 +6,7 @@
     <div class="w-50">
         <form method="post" class="form">
             {% csrf_token %}
-            {% bootstrap_button button_type="submit" content={% translate "Confirm Delete" %} %}
+            <button type="submit" class="btn btn-primary">{% translate "Confirm Delete" %}</button>
         </form>
     </div>
 {% endblock content %}

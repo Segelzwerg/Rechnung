@@ -115,10 +115,10 @@
                             {% bootstrap_form invoice_item_form layout="floating" %}
                             <div class="modal-footer">
                                 {% if invoiceitem %}
-                                    {% bootstrap_button button_type="submit" content={% translate "Update" %} %}
+                                    <button type="submit" class="btn btn-primary">{% translate "Update" %}</button>
                                 {% else %}
-                                    {% bootstrap_button button_type="reset" content={% translate "Reset" %} %}
-                                    {% bootstrap_button button_type="submit" content={% translate "Create" %} %}
+                                    <button type="reset" class="btn btn-primary">{% translate "Reset" %}</button>
+                                    <button type="submit" class="btn btn-primary">{% translate "Create" %}</button>
                                 {% endif %}
                             </div>
                         </div>
