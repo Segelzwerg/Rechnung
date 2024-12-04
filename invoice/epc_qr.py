@@ -9,10 +9,11 @@ from schwifty import BIC, IBAN
 def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str | IBAN, beneficiary_bic: Optional[str | BIC] = None,
                     eur_amount: Optional[int | float | str | Decimal] = None,
                     version: str = "001", encoding: str = "utf-8", instant: bool = False, purpose: str = "",
-                    structured_remittance_info: str = "", remittance_info: str = "", extra_info: str = "") -> bytes:
+                    structured_remittance_info: str = "", remittance_info: str = "", extra_info: str = "") -> str:
     # pylint: disable=too-many-locals,too-many-arguments,too-many-positional-arguments,too-many-branches,line-too-long
-    """Generate EPC QR code data as bytes.
-    Strings should not contain slashes and newlines or be longer than the maximum length for its field.
+    """Generate EPC QR code data as str.
+    Strings should not newlines or be longer than the maximum length for its field.
+    Changing the encoding from "utf-8" is discouraged and will only work if both the qr code encoder and decoder support other charsets.
 
     .. _Wikipedia: https://de.wikipedia.org/wiki/EPC-QR-Code
     .. _EPC: https://www.europeanpaymentscouncil.eu/document-library/guidance-documents/quick-response-code-guidelines-enable-data-capture-initiation
@@ -67,7 +68,11 @@ def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str | IBAN, benefic
             raise ValueError("bic is required for version 001")
         bic = included_bic
 
-    eur_amount = f"EUR{Decimal(eur_amount).quantize(Decimal("0.01"))}" if eur_amount else ""
+    eur_amount_num = Decimal(eur_amount).quantize(Decimal("0.01"))
+    if not Decimal("0.01") <= eur_amount_num <= Decimal("999999999.99"):
+        raise ValueError(f"eur_amount {eur_amount_num} is out of bounds")
+    eur_amount_str = f"EUR{eur_amount_num}" if eur_amount else ""
+
     purpose = clean_text(purpose, max_length=4)
 
     structured_remittance_info = clean_text(structured_remittance_info, max_length=35)
@@ -77,19 +82,15 @@ def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str | IBAN, benefic
 
     extra_info = clean_text(extra_info)
 
-    data = f"""BCD
+    return f"""BCD
 {version}
 {encoding_key}
 {identification}
 {bic}
 {name}
 {iban}
-{eur_amount}
+{eur_amount_str}
 {purpose}
 {structured_remittance_info}
 {remittance_info}
-{extra_info}""".encode(encoding)
-    if len(data) > 331:
-        raise ValueError("the qr payload is limited to 331 bytes")
-
-    return data
+{extra_info}"""
