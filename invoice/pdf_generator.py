@@ -91,8 +91,8 @@ def gen_invoice_pdf(invoice, filename_or_io):
 
     # Totals
     render_lines_left_right(-(A4_WIDTH - x_left), table_y_end, [
-        [f'{gettext("Net Total")}: ', invoice.net_total_string],
-        [f'{gettext("Total")}: ', invoice.total_string]
+        [gettext("Net Total: %(net_total)") % {'net_total': invoice.net_total_string}],
+        [gettext("Total: %(total)") % {'total': invoice.total_string}]
     ], line_offset=1)
 
     # Tax ID and bank account info
