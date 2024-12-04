@@ -137,8 +137,10 @@ class Invoice(Model):
 
     def save(self, *args, **kwargs):
         """Save invoice unless it is marked final. Then an FinalError is raised."""
-        if self.final:
-            raise FinalError()
+        if self.final and self.pk is not None:
+            initial = Invoice.objects.get(pk=self.pk)
+            if initial.final:
+                raise FinalError()
         super().save(*args, **kwargs)
 
     @property
