@@ -13,7 +13,7 @@ from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, 
     DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from schwifty import IBAN, BIC
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
