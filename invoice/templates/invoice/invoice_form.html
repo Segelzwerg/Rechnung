@@ -96,7 +96,7 @@
         </div>
     </div>
 
-    {% if invoice and invoice_item_form %}
+    {% if invoice and invoice_item_form and not invoice.final %}
         <div class="modal fade" id="InvoiceItemModal" tabindex="-1"
              aria-labelledby="InvoiceItemModalLabel"
              aria-hidden="true">
