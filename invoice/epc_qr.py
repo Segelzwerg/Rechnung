@@ -22,14 +22,30 @@ def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str, beneficiary_bi
                     eur_amount: Optional[int | float | str | Decimal] = None,
                     version: str = "001", encoding: str = "utf-8", instant: bool = False, purpose: str = "",
                     structured_remittance_info: str = "", remittance_info: str = "", originator_info: str = "",
-                    always_add_bic: bool = True) -> str:
+                    always_add_bic: bool = True, use_crlf: bool = False) -> str:
     # pylint: disable=too-many-locals,too-many-arguments,too-many-positional-arguments,too-many-branches,line-too-long
-    """Generate EPC QR code data as str.
-    Strings should not contain newlines or be longer than the maximum length for its field.
-    Changing the encoding from "utf-8" is discouraged and will only work if both the qr code encoder and decoder support other charsets.
+    """Generate EPC QR code data (`Official`_, `Wikipedia`_) as a string.
 
+    Strings should not contain newlines or be longer than the maximum length for their field!
+
+    :param beneficiary_name: name of beneficiary (required, max. 70 characters)
+    :param beneficiary_iban: IBAN of beneficiary (required)
+    :param beneficiary_bic: BIC of beneficiary (optional if derivable from IBAN)
+    :param eur_amount: money amount in EUR (optional, min. 0.01 EUR, max. 999999999.99 EUR)
+    :param version: EPC QR code version (default is "001")
+    :param encoding: encoding (default is "utf-8")
+    :param instant: SCT (SEPA Credit Transfer) or INST (SEPA Instant Credit Transfer) identification (default is False)
+    :param purpose: SEPA purpose code (optional, max. 4 characters)
+    :param structured_remittance_info: ISO 11649 RF Creditor Reference (optional, max. 35 characters, mutually exclusive with ``remittance_info``)
+    :param remittance_info: unstructured remittance info (optional, max. 140 characters, mutually exclusive with ``structured_remittance_info``)
+    :param originator_info: beneficiary to originator information (optional, max. 70 characters)
+    :param always_add_bic: whether to add the BIC if it is not required (default is True)
+    :param use_crlf: whether to use windows-style CRLF as line separator (default is False)
+    :return: EPC QR code data as a string
+    :rtype: str
+
+    .. _Official: https://www.europeanpaymentscouncil.eu/document-library/guidance-documents/quick-response-code-guidelines-enable-data-capture-initiation
     .. _Wikipedia: https://de.wikipedia.org/wiki/EPC-QR-Code
-    .. _EPC: https://www.europeanpaymentscouncil.eu/document-library/guidance-documents/quick-response-code-guidelines-enable-data-capture-initiation
     """
 
     def clean_text(s, max_length) -> str:
@@ -63,8 +79,12 @@ def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str, beneficiary_bi
         raise ValueError("beneficiary name is required")
 
     bic = iban.bic
-    if not bic and beneficiary_bic:
-        bic = BIC(beneficiary_bic)
+    if beneficiary_bic:
+        beneficiary_bic = BIC(beneficiary_bic)
+    if bic and beneficiary_bic and beneficiary_bic != bic:
+        raise ValueError(f"bic {bic} from iban {iban} != beneficiary_bic {beneficiary_bic}")
+    if not bic:
+        bic = beneficiary_bic
     if version == "001" and not bic:
         raise ValueError("bic is required for version 001")
     if version == "002" and not always_add_bic:
@@ -84,15 +104,18 @@ def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str, beneficiary_bi
 
     originator_info = clean_text(originator_info, max_length=70)
 
-    return f"""BCD
-{version}
-{encoding_key}
-{identification}
-{bic}
-{name}
-{iban}
-{eur_amount_str}
-{purpose}
-{structured_remittance_info}
-{remittance_info}
-{originator_info}"""
+    line_separator = "\r\n" if use_crlf else "\n"
+    return line_separator.join([
+        "BCD",
+        version,
+        encoding_key,
+        identification,
+        bic,
+        name,
+        iban,
+        eur_amount_str,
+        purpose,
+        structured_remittance_info,
+        remittance_info,
+        originator_info
+    ])
