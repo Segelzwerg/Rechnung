@@ -2,8 +2,6 @@
 from decimal import Decimal
 from math import isnan, isinf
 
-from invoice.errors import FinalError
-
 try:
     from warnings import deprecated
 except ImportError:
@@ -16,6 +14,8 @@ from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, 
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField, BooleanField
 from schwifty import IBAN, BIC
+
+from invoice.errors import FinalError
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
 
