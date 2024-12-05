@@ -83,13 +83,13 @@ def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str, beneficiary_bi
     bic = iban.bic
     if beneficiary_bic:
         beneficiary_bic = BIC(beneficiary_bic)
-    if bic and beneficiary_bic and beneficiary_bic != bic:
-        raise ValueError(f"bic {bic} from iban {iban} != beneficiary_bic {beneficiary_bic}")
-    if not bic:
-        bic = beneficiary_bic
+        if bic and beneficiary_bic != bic:
+            raise ValueError(f"bic {bic} from iban {iban} != beneficiary_bic {beneficiary_bic}")
+        elif not bic:
+            bic = beneficiary_bic
     if version == "001" and not bic:
         raise ValueError("bic is required for version 001")
-    if version == "002" and not always_add_bic:
+    if version == "002" and not always_add_bic and iban.bic:
         bic = None
 
     eur_amount_num = Decimal(eur_amount).quantize(Decimal("0.01"))
