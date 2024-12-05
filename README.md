@@ -1,6 +1,6 @@
 # Rechnung
 
-[![Django CI](https://github.com/Segelzwerg/Rechnung/actions/workflows/django.yml/badge.svg)](https://github.com/Segelzwerg/Rechnung/actions/workflows/django.yml)
+[![Tests](https://github.com/Segelzwerg/Rechnung/actions/workflows/django.yml/badge.svg)](https://github.com/Segelzwerg/Rechnung/actions/workflows/django.yml)
 [![Documentation Status](https://readthedocs.org/projects/rechnung-django/badge/?version=latest)](https://rechnung-django.readthedocs.io/en/latest/?badge=latest)
 
 Django App for invoices
