@@ -1,10 +1,15 @@
 """PDF generation utilities."""
 
 import reportlab.lib.pagesizes
+from reportlab.graphics.barcode.qr import QrCode
+from reportlab.graphics.barcode.qrencoder import QR8bitByte
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table, Paragraph
 from schwifty import IBAN, BIC
+
+from invoice import epc_qr
+from invoice.models import Invoice
 
 (A4_WIDTH, A4_HEIGHT) = reportlab.lib.pagesizes.A4
 
@@ -46,7 +51,7 @@ def gen_invoice_pdf(invoice, filename_or_io):
         if x < 0:
             x = -x - max_width
         for i, (text_l, text_r) in enumerate(lines):
-            line_y = y - (i + line_offset) * line_height
+            line_y = y - (i + line_offset + 1) * line_height
             pdf_object.drawString(x, line_y, text_l)
             pdf_object.drawRightString(x + max_width, line_y, text_r)
 
@@ -92,9 +97,10 @@ def gen_invoice_pdf(invoice, filename_or_io):
     render_lines_left_right(-(A4_WIDTH - x_left), table_y_end, [
         ["Net Total: ", invoice.net_total_string],
         ["Total: ", invoice.total_string]
-    ], line_offset=1)
+    ])
 
     # Tax ID and bank account info
+    bottom_y = 100
     lines = []
     if invoice.vendor.tax_id:
         lines += [["Tax ID: ", f"{invoice.vendor.tax_id}"]]
@@ -102,7 +108,22 @@ def gen_invoice_pdf(invoice, filename_or_io):
         lines += [["IBAN: ", f"{IBAN(invoice.vendor.bank_account.iban).formatted}"],
                   ["BIC: ", f"{BIC(invoice.vendor.bank_account.bic)}"]]
     if lines:
-        render_lines_left_right(x_left, 100, lines)
+        render_lines_left_right(x_left, bottom_y, lines)
+
+    if invoice.vendor.bank_account and invoice.currency == Invoice.Currency.EUR:
+        encoding = "utf-8"
+        data = epc_qr.gen_epc_qr_data(str(invoice.vendor), invoice.vendor.bank_account.iban,
+                                      beneficiary_bic=invoice.vendor.bank_account.bic,
+                                      eur_amount=invoice.total,
+                                      remittance_info=f"Invoice {invoice.invoice_number}",
+                                      encoding=encoding)
+        qr_data = QR8bitByte(data.encode(encoding))
+        # version must be <= 13 and error correction must be M!
+        epc_qr_code = QrCode(value=[qr_data], qrVersion=None, qrLevel='M')
+        w, h = epc_qr_code.wrapOn(pdf_object, A4_WIDTH - 2 * x_left, A4_HEIGHT)
+        epc_qr_code.drawOn(pdf_object, A4_WIDTH - x_left - w, bottom_y - h)
+        if epc_qr_code.qr.version > 13:
+            raise ValueError("the epc qr code payload is limited to 331 bytes/version 13")
 
     pdf_object.showPage()
     pdf_object.save()
