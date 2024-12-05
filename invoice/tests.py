@@ -580,7 +580,7 @@ class InvoiceModelTestCase(TestCase):
         date = now()
         due_date = date - timedelta(days=1)
         invoice = Invoice(invoice_number=1, vendor=Vendor.objects.first(),
-                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+                          customer=Customer.objects.first(), date=date, due_date=due_date)
         with self.assertRaises(ValidationError):
             invoice.validate_constraints()
 
@@ -597,6 +597,15 @@ class InvoiceModelTestCase(TestCase):
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
                                          customer=Customer.objects.first(), date=date, due_date=due_date)
         invoice.full_clean()
+
+    def test_paid(self):
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=now())
+        self.assertEqual(invoice.paid, False)
+        invoice.paid = True
+        invoice.save()
+        retrieve_invoice = Invoice.objects.get(invoice_number=1)
+        self.assertEqual(retrieve_invoice.paid, True)
 
 
 class InvoicePDFViewTestCase(TestCase):

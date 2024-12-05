@@ -10,7 +10,7 @@ except ImportError:
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
-    DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices
+    DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices, BooleanField
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
 from schwifty import IBAN, BIC
@@ -122,6 +122,7 @@ class Invoice(Model):
     customer = ForeignKey(Customer, on_delete=CASCADE)
     currency = CharField(max_length=3, choices=Currency, default=Currency.EUR)
     due_date = DateField(null=True, blank=True)
+    paid = BooleanField(default=False)
 
     class Meta:
         """
