@@ -10,7 +10,7 @@ from hypothesis import given, example, assume
 from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
 from hypothesis.strategies import characters, text, emails, composite, decimals, \
-    sampled_from
+    sampled_from, lists
 
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE, \
     BankAccount
@@ -633,6 +633,32 @@ class InvoiceModelTestCase(TestCase):
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
                                          customer=Customer.objects.first(), date=date, due_date=due_date)
         invoice.full_clean()
+
+    @given(lists(build_invoice_item(), min_size=1, max_size=100))
+    def test_correct_sum(self, invoice_items):
+        date = now()
+        due_date = date
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+        for item in invoice_items:
+            item.invoice = invoice
+            item.save()
+        net_total = sum(item.net_total for item in invoice_items)
+        net_total_string = f'{net_total:.2f} EUR'
+        vat_total = sum(item.tax_amount for item in invoice_items)
+        vat_total_string = f'{vat_total:.2f} EUR'
+        total_total = sum(item.total for item in invoice_items)
+        total_total_string = f'{total_total:.2f} EUR'
+        manual_total = net_total + vat_total
+        manual_total_string = f'{manual_total:.2f} EUR'
+        self.assertEqual(invoice.net_total, net_total)
+        self.assertEqual(invoice.tax_amount, vat_total)
+        self.assertEqual(invoice.total, total_total)
+        self.assertEqual(invoice.net_total_string, net_total_string)
+        self.assertEqual(invoice.tax_amount_string, vat_total_string)
+        self.assertEqual(invoice.total_string, total_total_string)
+        self.assertEqual(invoice.total, manual_total)
+        self.assertEqual(invoice.total_string, manual_total_string)
 
 
 class InvoicePDFViewTestCase(TestCase):
