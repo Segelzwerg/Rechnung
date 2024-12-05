@@ -9,6 +9,8 @@ LABEL authors="Segelzwerg"
 FROM python:${PYTHON_VERSION}-slim
 WORKDIR /app
 COPY --from=poetry /app/requirements.txt .
+RUN apt-get update
+RUN apt-get install gettext -y
 RUN pip install -r requirements.txt
 COPY invoice ./invoice/
 COPY rechnung ./rechnung/
