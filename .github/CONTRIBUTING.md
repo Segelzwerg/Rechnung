@@ -6,7 +6,8 @@ Read our [Code of Conduct](./CODE_OF_CONDUCT.md) to keep our community approacha
 
 ## Found a bug?
 
-Please, check the issue list if someelse already reported it. In such case maybe you can add additional information to the existing one.
+Please, check the issue list if someone else already reported it. In such case maybe you can add additional
+information to the existing one.
 If noone else has reported it, please, create a new issue.
 
 ### New Issue
@@ -42,4 +43,5 @@ Fork the repo and you can start working on it. You can create a Draft PR at any 
 Please, update / add documentation so the users can appreciate your feature.
 
 Once you are done and all CI checks have passed you can click on "Ready for Review". We will assign a maintainer to review the PR.
-The maintainer may request changes. Please, follow their guidenance. Conversation should only be closed by the initiator of the conversation.
+The maintainer may request changes. Please, follow their guidance. Conversation should only be closed by the initiator
+of the conversation.
