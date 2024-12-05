@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-03 10:35+0000\n"
+"POT-Creation-Date: 2024-12-05 11:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -258,6 +258,13 @@ msgstr ""
 msgid "tax rate"
 msgstr ""
 
+#: invoice/templates/invoice/customer_confirm_delete.html:9
+#: invoice/templates/invoice/invoice_confirm_delete.html:9
+#: invoice/templates/invoice/invoiceitem_confirm_delete.html:9
+#: invoice/templates/invoice/vendor_confirm_delete.html:9
+msgid "Confirm Delete"
+msgstr ""
+
 #: invoice/templates/invoice/customer_form.html:18
 msgid "Update Customer"
 msgstr ""
@@ -288,6 +295,7 @@ msgid "Actions"
 msgstr ""
 
 #: invoice/templates/invoice/customer_list.html:25
+#: invoice/templates/invoice/invoice_form.html:118
 #: invoice/templates/invoice/invoice_list.html:35
 #: invoice/templates/invoice/vendor_list.html:23
 msgid "Update"
@@ -326,6 +334,14 @@ msgstr ""
 
 #: invoice/templates/invoice/invoice_form.html:99
 msgid "Update invoice item"
+msgstr ""
+
+#: invoice/templates/invoice/invoice_form.html:120
+msgid "Reset"
+msgstr ""
+
+#: invoice/templates/invoice/invoice_form.html:121
+msgid "Create"
 msgstr ""
 
 #: invoice/templates/invoice/invoice_list.html:10
