@@ -150,6 +150,11 @@ class Invoice(Model):
         return Decimal(sum(item.net_total for item in self.items))
 
     @property
+    def tax_amount(self):
+        """Get the sum of tax amount."""
+        return Decimal(sum(item.tax_amount for item in self.items))
+
+    @property
     def total(self) -> Decimal:
         """Get the sum of total."""
         return Decimal(sum(item.total for item in self.items))
@@ -158,6 +163,11 @@ class Invoice(Model):
     def net_total_string(self) -> str:
         """Get the net total string."""
         return f'{self.net_total:.2f} {self.currency}'
+
+    @property
+    def tax_amount_string(self):
+        """Get the tax amount string."""
+        return f'{self.tax_amount:.2f} {self.currency}'
 
     @property
     def total_string(self) -> str:
