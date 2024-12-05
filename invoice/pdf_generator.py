@@ -13,7 +13,7 @@ from schwifty import IBAN, BIC
 def gen_invoice_pdf(invoice, filename_or_io):
     """Generate the invoice pdf document."""
 
-    # pylint: disable=too-many-locals,too-many-arguments,too-many-positional-arguments
+    # pylint: disable=too-many-locals
 
     pdf_object = canvas.Canvas(filename_or_io)
     pdf_object.setFontSize(12)
