@@ -22,7 +22,7 @@ Please, also create an issue if you already have a solution. You can create the 
 Check the issue list for open bugs and look for unassigned ones.
 Please, comment in the issue you want to solve, that you are working on it. So, we can assign the issue to you.
 
-Checkput the section `Make changes` below for more information.
+Checkout the section `Make changes` below for more information.
 
 We appreciate if you can add a test that shows the bug is resolved. However, writing a test shall not exceed the effort fixing a bug. But be aware a maintainer may still ask for it.
 
