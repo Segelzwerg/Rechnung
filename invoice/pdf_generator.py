@@ -1,10 +1,9 @@
 """PDF generation utilities."""
 
 import reportlab.lib.pagesizes
+from django.utils.translation import gettext
 from reportlab.graphics.barcode.qr import QrCode
 from reportlab.graphics.barcode.qrencoder import QR8bitByte
-from django.utils.translation import gettext
-from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table, Paragraph
 from schwifty import IBAN, BIC
