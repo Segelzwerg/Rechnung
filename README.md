@@ -7,7 +7,6 @@
 ![GitHub Release Date](https://img.shields.io/github/release-date/Segelzwerg/Rechnung)
 ![GitHub License](https://img.shields.io/github/license/Segelzwerg/Rechnung)
 
-
 Django App for invoices
 
 ## Docker Compose
