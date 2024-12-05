@@ -505,6 +505,42 @@ class InvoiceItemModelTestCase(TestCase):
                                    price=HUNDRED, tax=Decimal('0.07999'), invoice=self.invoice)
         self.assertEqual(invoice_item.tax_string.rstrip('%'), '8')
 
+    def test_tax_amount(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=HUNDRED, tax=Decimal('0.19'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_amount, Decimal('19'))
+
+    def test_tax_amount_low_amount(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=ONE, tax=Decimal('0.19'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_amount, Decimal('0.19'))
+
+    def test_tax_amount_tiny_amount(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=Decimal('0.01'), tax=Decimal('0.19'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_amount, Decimal('0.0019'))
+
+    def test_tax_amount_string(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=HUNDRED, tax=Decimal('0.19'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_amount_string, '19.00 EUR')
+
+    def test_tax_amount_low_amount_string(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=ONE, tax=Decimal('0.19'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_amount_string, '0.19 EUR')
+
+    def test_tax_amount_tiny_amount_string(self):
+        invoice_item = InvoiceItem(name='',
+                                   description='', quantity=1,
+                                   price=Decimal('0.01'), tax=Decimal('0.19'), invoice=self.invoice)
+        self.assertEqual(invoice_item.tax_amount_string, '0.00 EUR')
+
 
 class InvoiceModelTestCase(TestCase):
     def setUp(self):
@@ -580,7 +616,7 @@ class InvoiceModelTestCase(TestCase):
         date = now()
         due_date = date - timedelta(days=1)
         invoice = Invoice(invoice_number=1, vendor=Vendor.objects.first(),
-                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+                          customer=Customer.objects.first(), date=date, due_date=due_date)
         with self.assertRaises(ValidationError):
             invoice.validate_constraints()
 

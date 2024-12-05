@@ -202,6 +202,11 @@ class InvoiceItem(Model):
         return self.price * self.quantity
 
     @property
+    def tax_amount(self) -> Decimal:
+        """Get the monetary amount of tax."""
+        return self.net_total * self.tax
+
+    @property
     def total(self) -> Decimal:
         """Get the sum of the item including taxes."""
         return self.net_total * (Decimal('1.0') + self.tax)
@@ -234,9 +239,14 @@ class InvoiceItem(Model):
 
     @property
     def tax_string(self) -> str:
-        """Get the tax string."""
+        """Get the tax rate string."""
         s = f'{self.tax * 100:.2f}'.rstrip('0').rstrip('.,')
         return f'{s}%'
+
+    @property
+    def tax_amount_string(self):
+        """Get the tax amount string."""
+        return f'{self.tax_amount:.2f} {self.invoice.currency}'
 
     @property
     def total_string(self) -> str:
