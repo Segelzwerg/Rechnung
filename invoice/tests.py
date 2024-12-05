@@ -660,6 +660,21 @@ class InvoiceModelTestCase(TestCase):
         self.assertEqual(invoice.total, manual_total)
         self.assertEqual(invoice.total_string, manual_total_string)
 
+    def test_sum_tiny_vat(self):
+        date = now()
+        due_date = date
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+        for _ in range(100):
+            InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('0.01'),
+                                       tax=Decimal('0.19'))
+        self.assertEqual(invoice.net_total, Decimal('1'))
+        self.assertEqual(invoice.tax_amount, Decimal('0.19'))
+        self.assertEqual(invoice.total, Decimal('1.19'))
+        self.assertEqual(invoice.net_total_string, f'1.00 EUR')
+        self.assertEqual(invoice.tax_amount_string, f'0.19 EUR')
+        self.assertEqual(invoice.total_string, f'1.19 EUR')
+
 
 class InvoicePDFViewTestCase(TestCase):
     def setUp(self):
