@@ -9,7 +9,7 @@
 
 Django App for invoices
 
-Checkout our [documentation](https://rechnung-django.readthedocs.io/en/latest/)
+Check out our [documentation](https://rechnung-django.readthedocs.io/en/latest/)
 
 ## Docker Compose
 
