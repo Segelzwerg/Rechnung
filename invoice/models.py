@@ -10,9 +10,9 @@ except ImportError:
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
-    DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices
+    DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices, BooleanField
 from django.db.models.constraints import CheckConstraint
-from django.db.models.fields import DecimalField, BooleanField
+from django.db.models.fields import DecimalField
 from schwifty import IBAN, BIC
 
 from invoice.errors import FinalError
@@ -59,8 +59,19 @@ def validate_bic(value):
 
 class BankAccount(Model):
     """Defines a bank account."""
-    iban = CharField(max_length=34, validators=[validate_iban])
-    bic = CharField(max_length=11, validators=[validate_bic])
+    owner = CharField(max_length=120, default='')
+    iban = CharField(max_length=120, validators=[validate_iban])
+    bic = CharField(max_length=120, validators=[validate_bic])
+
+    def save(self, *args, **kwargs):
+        """Save the bank account."""
+        self.iban = IBAN(self.iban)
+        if self.iban.bic:
+            # Overwrites the BIC regardless of the user input.
+            self.bic = self.iban.bic
+        elif self.bic:
+            self.bic = BIC(self.bic)
+        super().save(*args, **kwargs)
 
 
 class Customer(Model):
@@ -125,6 +136,7 @@ class Invoice(Model):
     currency = CharField(max_length=3, choices=Currency, default=Currency.EUR)
     due_date = DateField(null=True, blank=True)
     delivery_date = DateField(null=True, blank=True)
+    paid = BooleanField(default=False)
     final = BooleanField(default=False)
 
     class Meta:
