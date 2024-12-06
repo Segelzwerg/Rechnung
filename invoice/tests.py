@@ -357,6 +357,16 @@ class UpdateVendorViewTestCase(TestCase):
                              errors=['This field is required.'])
 
 
+class BankAccountTestCase(TestCase):
+    def test_bic_overwrite(self):
+        user_iban = 'DE02500105170137075030'
+        user_bic = 'INGDDEFF'
+        bank_account = BankAccount(iban=user_iban, bic=user_bic)
+        bank_account.save()
+        self.assertEqual(bank_account.iban, user_iban)
+        self.assertEqual(bank_account.bic, 'INGDDEFFXXX')
+
+
 class InvoiceItemModelTestCase(TestCase):
     def setUp(self):
         address = Address.objects.create()
