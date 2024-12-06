@@ -44,7 +44,7 @@ def validate_iban(value):
     """Validate IBAN."""
     try:
         iban = IBAN(value)
-        iban.validate(validate_bban=True)
+        iban.validate()
     except ValueError as err:
         raise ValidationError('Invalid IBAN.') from err
 
@@ -69,6 +69,8 @@ class BankAccount(Model):
         if iban.bic:
             # Overwrites the BIC regardless of the user input.
             self.bic = iban.bic
+        elif self.bic:
+            self.bic = BIC(self.bic)
         super().save(*args, **kwargs)
 
 
