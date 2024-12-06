@@ -23,79 +23,79 @@ ONE = Decimal('1')
 
 @composite
 def build_customer_fields(draw):
-    first_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
+    first_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
                            min_size=1))
-    last_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
+    last_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
                           min_size=1))
     email = draw(emails(domains=domains(max_length=255, max_element_length=63)))
+
+    assume(first_name.strip() == first_name)
+    assume(last_name.strip() == last_name)
+    assume(email.strip() == email)
     return first_name, last_name, email
 
 
 @composite
 def build_vendor_fields(draw):
-    name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1))
-    company_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1))
-    tax_id = draw(text())
+    name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']), min_size=1))
+    company_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']), min_size=1))
+    tax_id = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
+
+    assume(name.strip() == name)
+    assume(company_name.strip() == company_name)
+    assume(tax_id.strip() == tax_id)
     return name, company_name, tax_id
 
 
 @composite
 def build_address_fields(draw):
-    address_line_1 = draw(text(
-        alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']), min_size=1))
-    address_line_2 = draw(text(
-        alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
-    address_line_3 = draw(text(
-        alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
+    address_line_1 = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
+                               min_size=1))
+    address_line_2 = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
+    address_line_3 = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
     city = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
                      min_size=1))
-    postcode = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs',
-                                                                        'Pd']),
+    postcode = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
                          min_size=1, max_size=10))
-    state = draw(text(alphabet=characters(codec='utf-8',
-                                          categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
-    country = draw(text(alphabet=characters(codec='utf-8',
-                                            categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
+    state = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd'])))
+    country = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
                         min_size=1))
-    assume(address_line_1[0] != ' ')
-    assume(country[0] != ' ')
-    assume(city[0] != ' ')
-    assume(postcode[0] != ' ')
-    assume(address_line_1 != '\xa0')
-    assume(address_line_2 != '\xa0')
-    assume(address_line_3 != '\xa0')
-    assume(city != '\xa0')
-    assume(postcode != '\xa0')
-    assume(state != '\xa0')
-    assume(country != '\xa0')
+
+    assume(address_line_1.strip() == address_line_1)
+    assume(address_line_2.strip() == address_line_2)
+    assume(address_line_3.strip() == address_line_3)
+    assume(city.strip() == city)
+    assume(postcode.strip() == postcode)
+    assume(state.strip() == state)
+    assume(country.strip() == country)
     return address_line_1, address_line_2, address_line_3, city, postcode, state, country
 
 
 @composite
 def build_bank_fields(draw):
     country_code = draw(sampled_from(['DE', 'AT', 'CH', 'GB', 'LU', 'NL', 'PL', 'SE', 'LT', 'PL']))
-    owner = draw(text(
-        alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']), min_size=1))
-    iban = schwifty.IBAN.random(country_code=country_code, )
+    owner = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']),
+                      min_size=1))
+    iban = schwifty.IBAN.random(country_code=country_code)
     bic = iban.bic
-    assume(owner != '')
-    assume(owner is not None)
-    assume(owner[0] != ' ')
-    assume(owner != '\xa0')
-    assume(owner != '\x00')
-    assume(bic != '')
-    assume(bic is not None)
+
+    assume(owner.strip() == owner)
+    assume(bic)
     return owner, iban, bic
 
 
 @composite
 def build_invoice_item(draw):
-    name = draw(text())
-    description = draw(text())
+    name = draw(text(min_size=1))
+    description = draw(text(min_size=1))
     quantity = draw(decimals(places=4, min_value=0, max_value=1000000, allow_infinity=False, allow_nan=False))
     unit = draw(text())
     price = draw(decimals(max_value=1000000, min_value=-1000000, places=2, allow_infinity=False, allow_nan=False))
     tax = draw(decimals(places=4, min_value=0, max_value=1, allow_infinity=False, allow_nan=False))
+
+    assume(name.strip() == name)
+    assume(description.strip() == description)
+    assume(unit.strip() == unit)
     return InvoiceItem(name=name, description=description, quantity=quantity, unit=unit, price=price, tax=tax)
 
 
@@ -143,7 +143,8 @@ class AddCustomerViewTestCase(TestCase):
             'line_1': '',
             'city': 'Musterstadt',
             'postcode': '12345',
-            'country': 'Germany', }, follow=True)
+            'country': 'Germany',
+        }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
@@ -166,7 +167,7 @@ class UpdateCustomerViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/customer_form.html')
 
-    @given((build_customer_fields()), build_address_fields())
+    @given(build_customer_fields(), build_address_fields())
     def test_update_vendor(self, customer_fields, address_fields):
         first_name, last_name, email = customer_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
@@ -180,7 +181,8 @@ class UpdateCustomerViewTestCase(TestCase):
             'city': city,
             'postcode': postcode,
             'state': state,
-            'country': country, }, follow=True)
+            'country': country,
+        }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/customers/')
         customer = Customer.objects.get(first_name=first_name, last_name=last_name)
@@ -197,7 +199,8 @@ class UpdateCustomerViewTestCase(TestCase):
             'line_1': 'Musterstraße 1',
             'city': 'Musterstadt',
             'postcode': '12345',
-            'country': 'Germany', }, follow=True)
+            'country': 'Germany',
+        }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context_data['form'], 'last_name',
                              errors=['This field is required.'])
@@ -210,7 +213,8 @@ class UpdateCustomerViewTestCase(TestCase):
             'line_1': '',
             'city': 'Musterstadt',
             'postcode': '12345',
-            'country': 'Germany', }, follow=True)
+            'country': 'Germany',
+        }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
@@ -256,7 +260,7 @@ class AddVendorViewTestCase(TestCase):
             'country': country,
             'owner': owner,
             'iban': str(iban),
-            'bic': str(bic)
+            'bic': str(bic),
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/vendors/')
@@ -275,7 +279,8 @@ class AddVendorViewTestCase(TestCase):
             'line_1': '',
             'city': 'Musterstadt',
             'postcode': '12345',
-            'country': 'Germany', }, follow=True)
+            'country': 'Germany',
+        }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
@@ -287,7 +292,8 @@ class AddVendorViewTestCase(TestCase):
             'line_1': 'Musterstraße 1',
             'city': 'Musterstadt',
             'postcode': '12345',
-            'country': 'Germany', }, follow=True)
+            'country': 'Germany',
+        }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context_data['bank_form'], 'iban',
                              errors=['This field is required.'])
@@ -331,7 +337,7 @@ class UpdateVendorViewTestCase(TestCase):
             'country': country,
             'owner': owner,
             'iban': str(iban),
-            'bic': str(bic)
+            'bic': str(bic),
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/vendors/')
