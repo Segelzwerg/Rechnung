@@ -193,6 +193,7 @@ class Invoice(Model):
         """Get the sum of tax amount rounded to two decimals."""
         return self.tax_amount.quantize(Decimal('0.01'))
 
+    @property
     def total_rounded(self) -> Decimal:
         """Get the sum of total rounded to two decimals."""
         return self.total.quantize(Decimal('0.01'))
