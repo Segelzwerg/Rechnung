@@ -41,7 +41,7 @@ is the internal port which you must not change.
     ports:
       - "12321:8000" # You can change to any port you like.
 
-Don't change the ``depends_on``. Otherwise you will run into problems during the migration phase while starting the
+Do not change the ``depends_on``. Otherwise you will run into problems during the migration phase while starting the
 webapp.
 
 You have to set some environment variables. See the table below for more.
