@@ -44,7 +44,7 @@ def validate_iban(value):
     """Validate IBAN."""
     try:
         iban = IBAN(value)
-        iban.validate()
+        iban.validate(validate_bban=True)
     except ValueError as err:
         raise ValidationError('Invalid IBAN.') from err
 
