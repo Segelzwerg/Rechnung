@@ -82,6 +82,7 @@ def build_bank_fields(draw):
     assume(owner is not None)
     assume(owner[0] != ' ')
     assume(owner != '\xa0')
+    assume(owner != '\x00')
     assume(bic != '')
     assume(bic is not None)
     return owner, iban, bic
