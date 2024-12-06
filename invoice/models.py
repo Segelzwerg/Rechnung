@@ -189,7 +189,7 @@ class Invoice(Model):
         return self.net_total.quantize(Decimal('0.01'))
 
     @property
-    def tax_amount_rounded(self):
+    def tax_amount_rounded(self) -> Decimal:
         """Get the sum of tax amount rounded to two decimals."""
         return self.tax_amount.quantize(Decimal('0.01'))
 
@@ -262,6 +262,21 @@ class InvoiceItem(Model):
         return self.net_total * (Decimal('1.0') + self.tax)
 
     @property
+    def net_total_rounded(self) -> Decimal:
+        """Get the net total rounded to two decimals."""
+        return self.net_total.quantize(Decimal('0.01'))
+
+    @property
+    def tax_amount_rounded(self) -> Decimal:
+        """Get the tax amount rounded to two decimals."""
+        return self.tax_amount.quantize(Decimal('0.01'))
+
+    @property
+    def total_rounded(self) -> Decimal:
+        """Get the total rounded to two decimals."""
+        return self.total.quantize(Decimal('0.01'))
+
+    @property
     def list_export(self):
         """Get the fields as list with formatted fields of totals."""
         return [self.name,
@@ -271,11 +286,6 @@ class InvoiceItem(Model):
                 self.tax_string,
                 self.net_total_string,
                 self.total_string]
-
-    @property
-    def net_total_string(self) -> str:
-        """Get the net total string."""
-        return f'{self.net_total:.2f} {self.invoice.currency}'
 
     @property
     def price_string(self) -> str:
@@ -297,11 +307,16 @@ class InvoiceItem(Model):
         return f'{s}%'
 
     @property
-    def tax_amount_string(self):
+    def net_total_string(self) -> str:
+        """Get the net total string."""
+        return f'{self.net_total_rounded} {self.invoice.currency}'
+
+    @property
+    def tax_amount_string(self) -> str:
         """Get the tax amount string."""
-        return f'{self.tax_amount:.2f} {self.invoice.currency}'
+        return f'{self.tax_amount_rounded} {self.invoice.currency}'
 
     @property
     def total_string(self) -> str:
         """Get the total string."""
-        return f'{self.total:.2f} {self.invoice.currency}'
+        return f'{self.total_rounded} {self.invoice.currency}'
