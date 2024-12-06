@@ -12,6 +12,7 @@ from hypothesis.provisional import domains
 from hypothesis.strategies import characters, text, emails, composite, decimals, \
     sampled_from
 
+from invoice.errors import FinalError
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE, \
     BankAccount
 
@@ -580,7 +581,7 @@ class InvoiceModelTestCase(TestCase):
         date = now()
         due_date = date - timedelta(days=1)
         invoice = Invoice(invoice_number=1, vendor=Vendor.objects.first(),
-                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+                          customer=Customer.objects.first(), date=date, due_date=due_date)
         with self.assertRaises(ValidationError):
             invoice.validate_constraints()
 
@@ -597,6 +598,18 @@ class InvoiceModelTestCase(TestCase):
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
                                          customer=Customer.objects.first(), date=date, due_date=due_date)
         invoice.full_clean()
+
+    def test_save_final_model_on_creation(self):
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=now(), final=True)
+        self.assertTrue(invoice.final)
+
+    def test_save_after_final_model(self):
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=now(), final=True)
+        invoice.invoice_number = 2
+        with self.assertRaises(FinalError):
+            invoice.save()
 
 
 class InvoicePDFViewTestCase(TestCase):
