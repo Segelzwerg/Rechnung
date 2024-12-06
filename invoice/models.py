@@ -181,7 +181,7 @@ class Invoice(Model):
     @property
     def total(self) -> Decimal:
         """Get the sum of total."""
-        return Decimal(sum(item.total for item in self.items))
+        return self.net_total + self.tax_amount
 
     @property
     def net_total_rounded(self) -> Decimal:
@@ -196,7 +196,7 @@ class Invoice(Model):
     @property
     def total_rounded(self) -> Decimal:
         """Get the sum of total rounded to two decimals."""
-        return self.total.quantize(Decimal('0.01'))
+        return self.net_total_rounded + self.tax_amount_rounded
 
     @property
     def net_total_string(self) -> str:
@@ -259,7 +259,7 @@ class InvoiceItem(Model):
     @property
     def total(self) -> Decimal:
         """Get the sum of the item including taxes."""
-        return self.net_total * (Decimal('1.0') + self.tax)
+        return self.net_total + self.tax_amount
 
     @property
     def net_total_rounded(self) -> Decimal:
@@ -274,7 +274,7 @@ class InvoiceItem(Model):
     @property
     def total_rounded(self) -> Decimal:
         """Get the total rounded to two decimals."""
-        return self.total.quantize(Decimal('0.01'))
+        return self.net_total_rounded + self.tax_amount_rounded
 
     @property
     def list_export(self):
