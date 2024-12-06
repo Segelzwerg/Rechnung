@@ -363,8 +363,16 @@ class BankAccountTestCase(TestCase):
         user_bic = 'INGDDEFF'
         bank_account = BankAccount(iban=user_iban, bic=user_bic)
         bank_account.save()
-        self.assertEqual(bank_account.iban, user_iban)
-        self.assertEqual(bank_account.bic, 'INGDDEFFXXX')
+        self.assertEqual(user_iban, bank_account.iban)
+        self.assertEqual('INGDDEFFXXX', bank_account.bic)
+
+    def test_iban_input_white_space(self):
+        user_iban = 'DE02 5001 0517 0137 0750 30'
+        user_bic = 'INGDDEFFXXX'
+        bank_account = BankAccount(iban=user_iban, bic=user_bic)
+        bank_account.save()
+        self.assertEqual('DE02500105170137075030', bank_account.iban)
+        self.assertEqual('INGDDEFFXXX', bank_account.bic)
 
 
 class InvoiceItemModelTestCase(TestCase):

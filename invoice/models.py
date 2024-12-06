@@ -65,10 +65,10 @@ class BankAccount(Model):
 
     def save(self, *args, **kwargs):
         """Save the bank account."""
-        iban = IBAN(self.iban)
-        if iban.bic:
+        self.iban = IBAN(self.iban)
+        if self.iban.bic:
             # Overwrites the BIC regardless of the user input.
-            self.bic = iban.bic
+            self.bic = self.iban.bic
         elif self.bic:
             self.bic = BIC(self.bic)
         super().save(*args, **kwargs)
