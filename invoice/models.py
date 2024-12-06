@@ -59,8 +59,19 @@ def validate_bic(value):
 
 class BankAccount(Model):
     """Defines a bank account."""
-    iban = CharField(max_length=34, validators=[validate_iban])
-    bic = CharField(max_length=11, validators=[validate_bic])
+    owner = CharField(max_length=120, default='')
+    iban = CharField(max_length=120, validators=[validate_iban])
+    bic = CharField(max_length=120, validators=[validate_bic])
+
+    def save(self, *args, **kwargs):
+        """Save the bank account."""
+        self.iban = IBAN(self.iban)
+        if self.iban.bic:
+            # Overwrites the BIC regardless of the user input.
+            self.bic = self.iban.bic
+        elif self.bic:
+            self.bic = BIC(self.bic)
+        super().save(*args, **kwargs)
 
 
 class Customer(Model):
