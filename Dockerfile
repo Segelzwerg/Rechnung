@@ -11,8 +11,8 @@ WORKDIR /app
 COPY --from=poetry /app/requirements.txt .
 RUN apt-get update && \
     apt-get install -y --no-install-recommends gettext && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-RUN apt-get clean
 RUN pip install -r requirements.txt
 COPY invoice ./invoice/
 COPY rechnung ./rechnung/
