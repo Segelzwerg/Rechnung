@@ -75,7 +75,8 @@ def build_address_fields(draw):
 @composite
 def build_bank_fields(draw):
     country_code = draw(sampled_from(['DE', 'AT', 'CH', 'GB', 'LU', 'NL', 'PL', 'SE', 'LT', 'PL']))
-    owner = draw(text(min_size=1))
+    owner = draw(text(
+        alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']), min_size=1))
     iban = schwifty.IBAN.random(country_code=country_code, )
     bic = iban.bic
     assume(owner != '')
