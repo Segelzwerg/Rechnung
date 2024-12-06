@@ -12,8 +12,10 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
     DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices
 from django.db.models.constraints import CheckConstraint
-from django.db.models.fields import DecimalField
+from django.db.models.fields import DecimalField, BooleanField
 from schwifty import IBAN, BIC
+
+from invoice.errors import FinalError
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
 
@@ -122,6 +124,7 @@ class Invoice(Model):
     customer = ForeignKey(Customer, on_delete=CASCADE)
     currency = CharField(max_length=3, choices=Currency, default=Currency.EUR)
     due_date = DateField(null=True, blank=True)
+    final = BooleanField(default=False)
 
     class Meta:
         """
@@ -131,6 +134,14 @@ class Invoice(Model):
         constraints = [UniqueConstraint(fields=['vendor', 'invoice_number'],
                                         name='unique_invoice_numbers_per_vendor'),
                        CheckConstraint(check=Q(due_date__gte=F('date')), name='due_date_gte_date')]
+
+    def save(self, *args, **kwargs):
+        """Save invoice unless it is marked final. Then an FinalError is raised."""
+        if self.final and self.pk is not None:
+            initial = Invoice.objects.get(pk=self.pk)
+            if initial.final:
+                raise FinalError()
+        super().save(*args, **kwargs)
 
     @property
     def items(self):
