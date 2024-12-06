@@ -12,7 +12,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
     DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices, BooleanField
 from django.db.models.constraints import CheckConstraint
-from django.db.models.fields import DecimalField, BooleanField
+from django.db.models.fields import DecimalField
 from schwifty import IBAN, BIC
 
 from invoice.errors import FinalError
