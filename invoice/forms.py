@@ -10,10 +10,11 @@ class InvoiceForm(ModelForm):
 
     class Meta:
         model = Invoice
-        fields = ['invoice_number', 'date', 'due_date', 'vendor', 'customer', 'currency']
+        fields = ['invoice_number', 'date', 'due_date', 'delivery_date', 'vendor', 'customer', 'currency']
         widgets = {
             'date': DateInput(attrs={'type': 'date'}),
             'due_date': DateInput(attrs={'type': 'date'}),
+            'delivery_date': DateInput(attrs={'type': 'date'}),
         }
 
 

@@ -122,6 +122,7 @@ class Invoice(Model):
     customer = ForeignKey(Customer, on_delete=CASCADE)
     currency = CharField(max_length=3, choices=Currency, default=Currency.EUR)
     due_date = DateField(null=True, blank=True)
+    delivery_date = DateField(null=True, blank=True)
 
     class Meta:
         """
