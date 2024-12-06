@@ -2,7 +2,7 @@
 import io
 
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
@@ -106,6 +106,25 @@ class InvoiceUpdateView(SuccessMessageMixin, UpdateView):
         else:
             context['invoice_item_form'] = InvoiceItemForm()
         return context
+
+
+class InvoicePaidView(SuccessMessageMixin, UpdateView):
+    """Mark an invoice as paid"""
+    model = Invoice
+    fields = ['paid']
+    success_message = 'Invoice was marked as paid successfully.'
+    template_name = 'invoice/invoice_paid.html'
+
+    def get_success_url(self):
+        """Redirect to the invoice detail page."""
+        return reverse('invoice-update', kwargs={'pk': self.kwargs['pk']})
+
+    def post(self, request, *args, **kwargs):
+        """Mark an invoice as paid."""
+        super().post(request, *args, **kwargs)
+        self.object.paid = True
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class InvoiceDeleteView(SuccessMessageMixin, DeleteView):

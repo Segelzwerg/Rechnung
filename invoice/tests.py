@@ -649,6 +649,15 @@ class InvoiceModelTestCase(TestCase):
                                          customer=Customer.objects.first(), date=date, due_date=due_date)
         invoice.full_clean()
 
+    def test_paid(self):
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=now())
+        self.assertEqual(invoice.paid, False)
+        invoice.paid = True
+        invoice.save()
+        retrieve_invoice = Invoice.objects.get(invoice_number=1)
+        self.assertEqual(retrieve_invoice.paid, True)
+
     def test_save_final_model_on_creation(self):
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
                                          customer=Customer.objects.first(), date=now(), final=True)
