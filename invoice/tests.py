@@ -78,6 +78,10 @@ def build_bank_fields(draw):
     owner = draw(text(min_size=1))
     iban = schwifty.IBAN.random(country_code=country_code, )
     bic = iban.bic
+    assume(owner != '')
+    assume(owner is not None)
+    assume(owner[0] != ' ')
+    assume(owner != '\xa0')
     assume(bic != '')
     assume(bic is not None)
     return owner, iban, bic
