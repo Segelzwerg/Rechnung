@@ -704,12 +704,10 @@ class InvoiceModelTestCase(TestCase):
             item.save()
 
         # high precision, internal representation
-        self.assertEqual(invoice.net_total + invoice.tax_amount,
-                         invoice.total)
+        self.assertEqual(invoice.net_total + invoice.tax_amount, invoice.total)
 
-        # 2 digits after comma, customers expect this to be equal:
-        self.assertEqual(invoice.net_total.quantize(Decimal('0.01')) + invoice.tax_amount.quantize(Decimal('0.01')),
-                         invoice.total.quantize(Decimal('0.01')))
+        # rounded to two decimals, customers expect this to be equal:
+        self.assertEqual(invoice.net_total_rounded + invoice.tax_amount_rounded, invoice.total_rounded)
 
     def test_sum_tiny_vat(self):
         date = now()

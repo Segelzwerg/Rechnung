@@ -184,19 +184,33 @@ class Invoice(Model):
         return Decimal(sum(item.total for item in self.items))
 
     @property
+    def net_total_rounded(self) -> Decimal:
+        """Get the sum of net total rounded to two decimals."""
+        return self.net_total.quantize(Decimal('0.01'))
+
+    @property
+    def tax_amount_rounded(self):
+        """Get the sum of tax amount rounded to two decimals."""
+        return self.tax_amount.quantize(Decimal('0.01'))
+
+    def total_rounded(self) -> Decimal:
+        """Get the sum of total rounded to two decimals."""
+        return self.total.quantize(Decimal('0.01'))
+
+    @property
     def net_total_string(self) -> str:
         """Get the net total string."""
-        return f'{self.net_total:.2f} {self.currency}'
+        return f'{self.net_total_rounded} {self.currency}'
 
     @property
     def tax_amount_string(self):
         """Get the tax amount string."""
-        return f'{self.tax_amount:.2f} {self.currency}'
+        return f'{self.tax_amount_rounded} {self.currency}'
 
     @property
     def total_string(self) -> str:
         """Get the total string."""
-        return f'{self.total:.2f} {self.currency}'
+        return f'{self.total_rounded} {self.currency}'
 
 
 @deprecated('Deprecated in 0.1 and remove in 1.0')
