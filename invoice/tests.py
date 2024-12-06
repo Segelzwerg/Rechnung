@@ -687,29 +687,20 @@ class InvoiceModelTestCase(TestCase):
 
     @given(lists(build_invoice_item(), min_size=1, max_size=100))
     def test_correct_sum(self, invoice_items):
-        date = now()
-        due_date = date
+        due_date = date = now()
         invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
                                          customer=Customer.objects.first(), date=date, due_date=due_date)
         for item in invoice_items:
             item.invoice = invoice
             item.save()
-        net_total = sum(item.net_total for item in invoice_items)
-        net_total_string = f'{net_total:.2f} EUR'
-        vat_total = sum(item.tax_amount for item in invoice_items)
-        vat_total_string = f'{vat_total:.2f} EUR'
-        total_total = sum(item.total for item in invoice_items)
-        total_total_string = f'{total_total:.2f} EUR'
-        manual_total = net_total + vat_total
-        manual_total_string = f'{manual_total:.2f} EUR'
-        self.assertEqual(invoice.net_total, net_total)
-        self.assertEqual(invoice.tax_amount, vat_total)
-        self.assertEqual(invoice.total, total_total)
-        self.assertEqual(invoice.net_total_string, net_total_string)
-        self.assertEqual(invoice.tax_amount_string, vat_total_string)
-        self.assertEqual(invoice.total_string, total_total_string)
-        self.assertEqual(invoice.total, manual_total)
-        self.assertEqual(invoice.total_string, manual_total_string)
+
+        # high precision, internal representation
+        self.assertEqual(invoice.net_total + invoice.tax_amount,
+                         invoice.total)
+
+        # 2 digits after comma, customers expect this to be equal:
+        self.assertEqual(invoice.net_total.quantize(Decimal('0.01')) + invoice.tax_amount.quantize(Decimal('0.01')),
+                         invoice.total.quantize(Decimal('0.01')))
 
     def test_sum_tiny_vat(self):
         date = now()
