@@ -19,6 +19,11 @@
                             {% else %}
                            value="Create Invoice"{% endif %}>
                 </form>
+                {% if invoice %}
+                    <a class="btn btn-primary" role="button" href="{% url "invoice-delete" invoice.id %}">
+                        Delete Invoice
+                    </a>
+                {% endif %}
             </div>
             <div class="col-xl">
                 <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip"
