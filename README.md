@@ -9,6 +9,8 @@
 
 Django App for invoices
 
+Checkout our [documentation](https://rechnung-django.readthedocs.io/en/latest/)
+
 ## Docker Compose
 
 To start the server with the docker compose file. Use the following command:
