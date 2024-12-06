@@ -28,16 +28,15 @@ def build_customer_fields(draw):
     last_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
                           min_size=1))
     email = draw(emails(domains=domains(max_length=255, max_element_length=63)))
-    return (first_name, last_name, email)
+    return first_name, last_name, email
 
 
 @composite
 def build_vendor_fields(draw):
-    name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
-                     min_size=1))
-    company_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']),
-                             min_size=1))
-    return (name, company_name)
+    name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1))
+    company_name = draw(text(alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd']), min_size=1))
+    tax_id = draw(text())
+    return name, company_name, tax_id
 
 
 @composite
@@ -69,7 +68,7 @@ def build_address_fields(draw):
     assume(postcode != '\xa0')
     assume(state != '\xa0')
     assume(country != '\xa0')
-    return (address_line_1, address_line_2, address_line_3, city, postcode, state, country)
+    return address_line_1, address_line_2, address_line_3, city, postcode, state, country
 
 
 @composite
@@ -236,17 +235,18 @@ class AddVendorViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/vendor_form.html')
 
-    @given((build_vendor_fields()), build_address_fields(), build_bank_fields())
-    @example(("John", "Doe Company"),
+    @given(build_vendor_fields(), build_address_fields(), build_bank_fields())
+    @example(('John', 'Doe Company', 'DE123456'),
              ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'),
              ('John Doe', 'ES9620686250804690656114', 'CAHMESMM'))
     def test_add_vendor(self, vendor_fields, address_fields, bank_fields):
-        name, company = vendor_fields
+        name, company, tax_id = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
         owner, iban, bic = bank_fields
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
+            'tax_id': tax_id,
             'line_1': address_line_1,
             'line_2': address_line_2,
             'line_3': address_line_3,
@@ -313,14 +313,15 @@ class UpdateVendorViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/vendor_form.html')
 
-    @given((build_vendor_fields()), build_address_fields(), build_bank_fields())
+    @given(build_vendor_fields(), build_address_fields(), build_bank_fields())
     def test_update_vendor(self, vendor_fields, address_fields, bank_fields):
-        name, company = vendor_fields
+        name, company, tax_id = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
         owner, iban, bic = bank_fields
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
+            'tax_id': tax_id,
             'line_1': address_line_1,
             'line_2': address_line_2,
             'line_3': address_line_3,
