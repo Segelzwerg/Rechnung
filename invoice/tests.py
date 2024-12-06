@@ -464,10 +464,11 @@ class InvoiceItemModelTestCase(TestCase):
         quantity = 1
         price = Decimal('4000.0')
         tax = GERMAN_TAX_RATE
-        invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
+        invoice_item = InvoiceItem(name=name, description=description, quantity=quantity, unit='piece',
                                    price=price, tax=tax, invoice=invoice)
         list_export = invoice_item.list_export
-        self.assertEqual(list_export, [name, description, '1', '4000.00 EUR', '19%', '4000.00 EUR', '4760.00 EUR'])
+        self.assertEqual(list_export, [name, description, '1', 'piece', '4000.00 EUR', '19%', '4000.00 EUR',
+                                       '4760.00 EUR'])
 
     def test_sql_quantity_limit(self):
         invoice = Invoice()
@@ -534,9 +535,9 @@ class InvoiceModelTestCase(TestCase):
         invoice_item.invoice = invoice
         invoice_item.save()
         table = invoice.table_export
-        self.assertEqual(table, [['Name', 'Description', 'Quantity', 'Price', 'Tax', 'Net Total', 'Total'],
+        self.assertEqual(table, [['Name', 'Description', 'Quantity', 'Unit', 'Price', 'Tax', 'Net Total', 'Total'],
                                  [invoice_item.name, invoice_item.description,
-                                  invoice_item.quantity_string,
+                                  invoice_item.quantity_string, invoice_item.unit,
                                   invoice_item.price_string, invoice_item.tax_string,
                                   invoice_item.net_total_string, invoice_item.total_string]])
 
@@ -580,7 +581,7 @@ class InvoiceModelTestCase(TestCase):
         date = now()
         due_date = date - timedelta(days=1)
         invoice = Invoice(invoice_number=1, vendor=Vendor.objects.first(),
-                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+                          customer=Customer.objects.first(), date=date, due_date=due_date)
         with self.assertRaises(ValidationError):
             invoice.validate_constraints()
 
