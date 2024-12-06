@@ -9,8 +9,9 @@ LABEL authors="Segelzwerg"
 FROM python:${PYTHON_VERSION}-slim
 WORKDIR /app
 COPY --from=poetry /app/requirements.txt .
-RUN apt-get update
-RUN apt-get install gettext -y
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gettext && \
+    rm -rf /var/lib/apt/lists/*
 RUN apt-get clean
 RUN pip install -r requirements.txt
 COPY invoice ./invoice/
