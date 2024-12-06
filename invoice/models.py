@@ -244,7 +244,9 @@ class InvoiceItem(Model):
     def quantity_string(self) -> str:
         """Get the quantity string including the unit."""
         quantity = f'{self.quantity:.4f}'.rstrip('0').rstrip('.,')
-        return f'{quantity} {self.unit}'
+        if self.unit:
+            return f'{quantity} {self.unit}'
+        return quantity
 
     @property
     def tax_string(self) -> str:
