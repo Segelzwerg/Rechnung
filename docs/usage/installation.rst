@@ -24,7 +24,7 @@ You have to options:
 
 Compose File
 ------------
-We recommend to use the prebuild image:
+We recommend to use the pre-built image:
 
 .. code :: yaml
 
