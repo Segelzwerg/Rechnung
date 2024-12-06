@@ -391,6 +391,20 @@ class BankAccountTestCase(TestCase):
         with self.assertRaises(ValidationError):
             bank_account.full_clean()
 
+    def test_too_long_iban(self):
+        user_iban = 'DE025001051701370750301'
+        user_bic = 'INGDDEFFXXX'
+        bank_account = BankAccount(iban=user_iban, bic=user_bic)
+        with self.assertRaises(ValidationError):
+            bank_account.full_clean()
+
+    def test_too_long_bic(self):
+        user_iban = 'DE02500105170137075030'
+        user_bic = 'INGDDEFFXXX1'
+        bank_account = BankAccount(iban=user_iban, bic=user_bic)
+        with self.assertRaises(ValidationError):
+            bank_account.full_clean()
+
 
 class InvoiceItemModelTestCase(TestCase):
     def setUp(self):
