@@ -2,7 +2,14 @@
 Installation
 ============
 
-There are several ways to run this application yourself. Currently, we are only supporting a docker compose setup.
+There are several ways to run this application yourself. Currently, we are only supporting a docker compose setup for
+production.
+
+Development
+===========
+
+We are using poetry as dependency management tool. After you have setup your environment, run ``poetry install`` in
+the root directory of the project.
 
 Docker Compose
 ==============
