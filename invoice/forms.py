@@ -22,7 +22,7 @@ class InvoiceItemForm(ModelForm):
 
     class Meta:
         model = InvoiceItem
-        fields = ['name', 'description', 'quantity', 'price', 'tax']
+        fields = ['name', 'description', 'quantity', 'unit', 'price', 'tax']
 
 
 class CustomerForm(ModelForm):

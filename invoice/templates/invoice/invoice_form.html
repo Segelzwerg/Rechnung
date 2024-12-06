@@ -42,6 +42,7 @@
                             <th scope="col">Name</th>
                             <th scope="col">Description</th>
                             <th scope="col">Quantity</th>
+                            <th scope="col">Unit</th>
                             <th scope="col">Price</th>
                             <th scope="col">Tax</th>
                             <th scope="col">Total</th>
@@ -54,6 +55,7 @@
                                 <td>{{ item.name }}</td>
                                 <td>{{ item.description }}</td>
                                 <td class="text-end">{{ item.quantity_string }}</td>
+                                <td class="text-end">{{ item.unit }}</td>
                                 <td class="text-end">{{ item.price_string }}</td>
                                 <td class="text-end">{{ item.tax_string }}</td>
                                 <td class="text-end">{{ item.total_string }}</td>
