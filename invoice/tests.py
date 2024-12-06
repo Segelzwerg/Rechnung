@@ -12,6 +12,7 @@ from hypothesis.provisional import domains
 from hypothesis.strategies import characters, text, emails, composite, decimals, \
     sampled_from, lists
 
+from invoice.errors import FinalError
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE, \
     BankAccount
 
@@ -86,9 +87,10 @@ def build_invoice_item(draw):
     name = draw(text())
     description = draw(text())
     quantity = draw(decimals(places=4, min_value=0, max_value=1000000, allow_infinity=False, allow_nan=False))
+    unit = draw(text())
     price = draw(decimals(max_value=1000000, min_value=-1000000, places=2, allow_infinity=False, allow_nan=False))
     tax = draw(decimals(places=4, min_value=0, max_value=1, allow_infinity=False, allow_nan=False))
-    return InvoiceItem(name=name, description=description, quantity=quantity, price=price, tax=tax)
+    return InvoiceItem(name=name, description=description, quantity=quantity, unit=unit, price=price, tax=tax)
 
 
 class AddCustomerViewTestCase(TestCase):
@@ -464,10 +466,11 @@ class InvoiceItemModelTestCase(TestCase):
         quantity = 1
         price = Decimal('4000.0')
         tax = GERMAN_TAX_RATE
-        invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
+        invoice_item = InvoiceItem(name=name, description=description, quantity=quantity, unit='piece',
                                    price=price, tax=tax, invoice=invoice)
         list_export = invoice_item.list_export
-        self.assertEqual(list_export, [name, description, '1', '4000.00 EUR', '19%', '4000.00 EUR', '4760.00 EUR'])
+        self.assertEqual(list_export, [name, description, '1 piece', '4000.00 EUR', '19%', '4000.00 EUR',
+                                       '4760.00 EUR'])
 
     def test_sql_quantity_limit(self):
         invoice = Invoice()
@@ -674,6 +677,18 @@ class InvoiceModelTestCase(TestCase):
         self.assertEqual(invoice.net_total_string, f'1.00 EUR')
         self.assertEqual(invoice.tax_amount_string, f'0.19 EUR')
         self.assertEqual(invoice.total_string, f'1.19 EUR')
+
+    def test_save_final_model_on_creation(self):
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=now(), final=True)
+        self.assertTrue(invoice.final)
+
+    def test_save_after_final_model(self):
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=now(), final=True)
+        invoice.invoice_number = 2
+        with self.assertRaises(FinalError):
+            invoice.save()
 
 
 class InvoicePDFViewTestCase(TestCase):
