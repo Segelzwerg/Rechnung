@@ -384,6 +384,13 @@ class BankAccountTestCase(TestCase):
         self.assertEqual('DE02500105170137075030', bank_account.iban)
         self.assertEqual('INGDDEFFXXX', bank_account.bic)
 
+    def test_empty_owner(self):
+        user_iban = 'DE02500105170137075030'
+        user_bic = 'INGDDEFFXXX'
+        bank_account = BankAccount(iban=user_iban, bic=user_bic, owner='')
+        with self.assertRaises(ValidationError):
+            bank_account.full_clean()
+
 
 class InvoiceItemModelTestCase(TestCase):
     def setUp(self):
