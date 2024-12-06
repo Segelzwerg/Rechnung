@@ -151,7 +151,7 @@ class Invoice(Model):
     @property
     def table_export(self):
         """Get the line items as list and export all of them as table with a header row."""
-        header = ['Name', 'Description', 'Quantity', 'Unit', 'Price', 'Tax', 'Net Total', 'Total']
+        header = ['Name', 'Description', 'Quantity', 'Price', 'Tax', 'Net Total', 'Total']
         item_list = [item.list_export for item in self.items]
         return [header] + item_list
 
@@ -224,7 +224,6 @@ class InvoiceItem(Model):
         return [self.name,
                 self.description,
                 self.quantity_string,
-                self.unit,
                 self.price_string,
                 self.tax_string,
                 self.net_total_string,
@@ -243,7 +242,8 @@ class InvoiceItem(Model):
     @property
     def quantity_string(self) -> str:
         """Get the quantity string."""
-        return f'{self.quantity:.4f}'.rstrip('0').rstrip('.,')
+        quantity = f'{self.quantity:.4f}'.rstrip('0').rstrip('.,')
+        return f'{quantity} {self.unit}'
 
     @property
     def tax_string(self) -> str:
