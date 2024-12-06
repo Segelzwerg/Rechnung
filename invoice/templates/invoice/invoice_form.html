@@ -25,6 +25,11 @@
                                value="Create Invoice"{% endif %}>
                     </fieldset>
                 </form>
+                {% if invoice %}
+                    <a class="btn btn-primary" role="button" href="{% url "invoice-delete" invoice.id %}">
+                        Delete Invoice
+                    </a>
+                {% endif %}
             </div>
             <div class="col-xl">
                 <fieldset
