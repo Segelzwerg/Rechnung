@@ -12,6 +12,7 @@ from hypothesis.provisional import domains
 from hypothesis.strategies import characters, text, emails, composite, decimals, \
     sampled_from
 
+from invoice.errors import FinalError
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE, \
     BankAccount
 
@@ -74,11 +75,18 @@ def build_address_fields(draw):
 @composite
 def build_bank_fields(draw):
     country_code = draw(sampled_from(['DE', 'AT', 'CH', 'GB', 'LU', 'NL', 'PL', 'SE', 'LT', 'PL']))
+    owner = draw(text(
+        alphabet=characters(codec='utf-8', categories=['Lu', 'Ll', 'Nd', 'Zs', 'Pd']), min_size=1))
     iban = schwifty.IBAN.random(country_code=country_code, )
     bic = iban.bic
+    assume(owner != '')
+    assume(owner is not None)
+    assume(owner[0] != ' ')
+    assume(owner != '\xa0')
+    assume(owner != '\x00')
     assume(bic != '')
     assume(bic is not None)
-    return iban, bic
+    return owner, iban, bic
 
 
 @composite
@@ -86,9 +94,10 @@ def build_invoice_item(draw):
     name = draw(text())
     description = draw(text())
     quantity = draw(decimals(places=4, min_value=0, max_value=1000000, allow_infinity=False, allow_nan=False))
+    unit = draw(text())
     price = draw(decimals(max_value=1000000, min_value=-1000000, places=2, allow_infinity=False, allow_nan=False))
     tax = draw(decimals(places=4, min_value=0, max_value=1, allow_infinity=False, allow_nan=False))
-    return InvoiceItem(name=name, description=description, quantity=quantity, price=price, tax=tax)
+    return InvoiceItem(name=name, description=description, quantity=quantity, unit=unit, price=price, tax=tax)
 
 
 class AddCustomerViewTestCase(TestCase):
@@ -230,11 +239,11 @@ class AddVendorViewTestCase(TestCase):
     @given((build_vendor_fields()), build_address_fields(), build_bank_fields())
     @example(("John", "Doe Company"),
              ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'),
-             ('ES9620686250804690656114', 'CAHMESMM'))
+             ('John Doe', 'ES9620686250804690656114', 'CAHMESMM'))
     def test_add_vendor(self, vendor_fields, address_fields, bank_fields):
         name, company = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
-        iban, bic = bank_fields
+        owner, iban, bic = bank_fields
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
@@ -245,6 +254,7 @@ class AddVendorViewTestCase(TestCase):
             'postcode': postcode,
             'state': state,
             'country': country,
+            'owner': owner,
             'iban': str(iban),
             'bic': str(bic)
         }, follow=True)
@@ -285,13 +295,13 @@ class AddVendorViewTestCase(TestCase):
 
 class UpdateVendorViewTestCase(TestCase):
     def setUp(self):
-        iban, bic = build_bank_fields().example()
+        owner, iban, bic = build_bank_fields().example()
         vendor = Vendor.objects.create(name="John", company_name="Doe Company",
                                        address=Address.objects.create(
                                            line_1='Musterstraße 1',
                                            postcode='12345', city='Musterstadt',
                                            country='Germany'),
-                                       bank_account=BankAccount.objects.create(iban=iban,
+                                       bank_account=BankAccount.objects.create(owner=owner, iban=iban,
                                                                                bic=bic))
         self.url = reverse('vendor-update', args=[vendor.id])
 
@@ -307,7 +317,7 @@ class UpdateVendorViewTestCase(TestCase):
     def test_update_vendor(self, vendor_fields, address_fields, bank_fields):
         name, company = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
-        iban, bic = bank_fields
+        owner, iban, bic = bank_fields
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
@@ -318,6 +328,7 @@ class UpdateVendorViewTestCase(TestCase):
             'postcode': postcode,
             'state': state,
             'country': country,
+            'owner': owner,
             'iban': str(iban),
             'bic': str(bic)
         }, follow=True)
@@ -354,6 +365,45 @@ class UpdateVendorViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context_data['bank_form'], 'iban',
                              errors=['This field is required.'])
+
+
+class BankAccountTestCase(TestCase):
+    def test_bic_overwrite(self):
+        user_iban = 'DE02500105170137075030'
+        user_bic = 'INGDDEFF'
+        bank_account = BankAccount(iban=user_iban, bic=user_bic)
+        bank_account.save()
+        self.assertEqual(user_iban, bank_account.iban)
+        self.assertEqual('INGDDEFFXXX', bank_account.bic)
+
+    def test_iban_input_white_space(self):
+        user_iban = 'DE02 5001 0517 0137 0750 30'
+        user_bic = 'INGDDEFFXXX'
+        bank_account = BankAccount(iban=user_iban, bic=user_bic)
+        bank_account.save()
+        self.assertEqual('DE02500105170137075030', bank_account.iban)
+        self.assertEqual('INGDDEFFXXX', bank_account.bic)
+
+    def test_empty_owner(self):
+        user_iban = 'DE02500105170137075030'
+        user_bic = 'INGDDEFFXXX'
+        bank_account = BankAccount(iban=user_iban, bic=user_bic, owner='')
+        with self.assertRaises(ValidationError):
+            bank_account.full_clean()
+
+    def test_too_long_iban(self):
+        user_iban = 'DE025001051701370750301'
+        user_bic = 'INGDDEFFXXX'
+        bank_account = BankAccount(iban=user_iban, bic=user_bic)
+        with self.assertRaises(ValidationError):
+            bank_account.full_clean()
+
+    def test_too_long_bic(self):
+        user_iban = 'DE02500105170137075030'
+        user_bic = 'INGDDEFFXXX1'
+        bank_account = BankAccount(iban=user_iban, bic=user_bic)
+        with self.assertRaises(ValidationError):
+            bank_account.full_clean()
 
 
 class InvoiceItemModelTestCase(TestCase):
@@ -464,10 +514,11 @@ class InvoiceItemModelTestCase(TestCase):
         quantity = 1
         price = Decimal('4000.0')
         tax = GERMAN_TAX_RATE
-        invoice_item = InvoiceItem(name=name, description=description, quantity=quantity,
+        invoice_item = InvoiceItem(name=name, description=description, quantity=quantity, unit='piece',
                                    price=price, tax=tax, invoice=invoice)
         list_export = invoice_item.list_export
-        self.assertEqual(list_export, [name, description, '1', '4000.00 EUR', '19%', '4000.00 EUR', '4760.00 EUR'])
+        self.assertEqual(list_export, [name, description, '1 piece', '4000.00 EUR', '19%', '4000.00 EUR',
+                                       '4760.00 EUR'])
 
     def test_sql_quantity_limit(self):
         invoice = Invoice()
@@ -606,6 +657,18 @@ class InvoiceModelTestCase(TestCase):
         invoice.save()
         retrieve_invoice = Invoice.objects.get(invoice_number=1)
         self.assertEqual(retrieve_invoice.paid, True)
+
+    def test_save_final_model_on_creation(self):
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=now(), final=True)
+        self.assertTrue(invoice.final)
+
+    def test_save_after_final_model(self):
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=now(), final=True)
+        invoice.invoice_number = 2
+        with self.assertRaises(FinalError):
+            invoice.save()
 
 
 class InvoicePDFViewTestCase(TestCase):

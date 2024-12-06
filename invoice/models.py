@@ -12,8 +12,10 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
     DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices, BooleanField
 from django.db.models.constraints import CheckConstraint
-from django.db.models.fields import DecimalField
+from django.db.models.fields import DecimalField, BooleanField
 from schwifty import IBAN, BIC
+
+from invoice.errors import FinalError
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
 
@@ -57,8 +59,19 @@ def validate_bic(value):
 
 class BankAccount(Model):
     """Defines a bank account."""
-    iban = CharField(max_length=34, validators=[validate_iban])
-    bic = CharField(max_length=11, validators=[validate_bic])
+    owner = CharField(max_length=120, default='')
+    iban = CharField(max_length=120, validators=[validate_iban])
+    bic = CharField(max_length=120, validators=[validate_bic])
+
+    def save(self, *args, **kwargs):
+        """Save the bank account."""
+        self.iban = IBAN(self.iban)
+        if self.iban.bic:
+            # Overwrites the BIC regardless of the user input.
+            self.bic = self.iban.bic
+        elif self.bic:
+            self.bic = BIC(self.bic)
+        super().save(*args, **kwargs)
 
 
 class Customer(Model):
@@ -122,7 +135,9 @@ class Invoice(Model):
     customer = ForeignKey(Customer, on_delete=CASCADE)
     currency = CharField(max_length=3, choices=Currency, default=Currency.EUR)
     due_date = DateField(null=True, blank=True)
+    delivery_date = DateField(null=True, blank=True)
     paid = BooleanField(default=False)
+    final = BooleanField(default=False)
 
     class Meta:
         """
@@ -132,6 +147,14 @@ class Invoice(Model):
         constraints = [UniqueConstraint(fields=['vendor', 'invoice_number'],
                                         name='unique_invoice_numbers_per_vendor'),
                        CheckConstraint(check=Q(due_date__gte=F('date')), name='due_date_gte_date')]
+
+    def save(self, *args, **kwargs):
+        """Save invoice unless it is marked final. Then an FinalError is raised."""
+        if self.final and self.pk is not None:
+            initial = Invoice.objects.get(pk=self.pk)
+            if initial.final:
+                raise FinalError()
+        super().save(*args, **kwargs)
 
     @property
     def items(self):
@@ -189,6 +212,7 @@ class InvoiceItem(Model):
     quantity = DecimalField(max_digits=19, decimal_places=4,
                             validators=[MinValueValidator(Decimal('0.0000')),
                                         MaxValueValidator(Decimal('1000000.0000'))])
+    unit = CharField(max_length=120, null=True, blank=True)
     price = DecimalField(max_digits=19, decimal_places=2,
                          validators=[MinValueValidator(Decimal('-1000000.00')),
                                      MaxValueValidator(Decimal('1000000.00'))])
@@ -230,8 +254,11 @@ class InvoiceItem(Model):
 
     @property
     def quantity_string(self) -> str:
-        """Get the quantity string."""
-        return f'{self.quantity:.4f}'.rstrip('0').rstrip('.,')
+        """Get the quantity string including the unit."""
+        quantity = f'{self.quantity:.4f}'.rstrip('0').rstrip('.,')
+        if self.unit:
+            return f'{quantity} {self.unit}'
+        return quantity
 
     @property
     def tax_string(self) -> str:

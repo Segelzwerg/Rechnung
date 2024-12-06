@@ -2,8 +2,14 @@
 
 [![Tests](https://github.com/Segelzwerg/Rechnung/actions/workflows/django.yml/badge.svg)](https://github.com/Segelzwerg/Rechnung/actions/workflows/django.yml)
 [![Documentation Status](https://readthedocs.org/projects/rechnung-django/badge/?version=latest)](https://rechnung-django.readthedocs.io/en/latest/?badge=latest)
+![Codecov](https://img.shields.io/codecov/c/github/Segelzwerg/Rechnung)
+![GitHub repo size](https://img.shields.io/github/repo-size/Segelzwerg/Rechnung)
+![GitHub Release Date](https://img.shields.io/github/release-date/Segelzwerg/Rechnung)
+![GitHub License](https://img.shields.io/github/license/Segelzwerg/Rechnung)
 
 Django App for invoices
+
+Check out our [documentation](https://rechnung-django.readthedocs.io/en/latest/)
 
 ## Docker Compose
 

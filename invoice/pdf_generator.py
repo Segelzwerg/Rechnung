@@ -71,6 +71,7 @@ def gen_invoice_pdf(invoice, filename_or_io):
         <font size="12">
         Number: {invoice.invoice_number}<br/>
         Date: {invoice.date}
+        {f'<br />Delivery Date: {invoice.delivery_date}' if invoice.delivery_date else ""}
         {f'<br />Due Date: {invoice.due_date}' if invoice.due_date else ""}
         </font>
 """)
