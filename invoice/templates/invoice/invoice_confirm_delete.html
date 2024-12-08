@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load django_bootstrap5 %}
 
 {% block content %}
     <div class="w-50">
         <form method="post" class="form">
             {% csrf_token %}
-            {% bootstrap_button button_type="submit" content="Confirm delete" %}
+            <button type="submit" class="btn btn-primary">{% translate "Confirm Delete" %}</button>
         </form>
     </div>
 {% endblock content %}

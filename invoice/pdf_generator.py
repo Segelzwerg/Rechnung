@@ -1,6 +1,7 @@
 """PDF generation utilities."""
 
 import reportlab.lib.pagesizes
+from django.utils.translation import gettext
 from reportlab.graphics.barcode.qr import QrCode
 from reportlab.graphics.barcode.qrencoder import QR8bitByte
 from reportlab.lib import colors
@@ -67,12 +68,12 @@ def gen_invoice_pdf(invoice, filename_or_io):
 
     # Title, number, date
     title = Paragraph(f"""
-        <font size="16"><b>Invoice</b></font><br/>
+        <font size="16"><b>{gettext('Invoice')}</b></font><br/>
         <font size="12">
-        Number: {invoice.invoice_number}<br/>
-        Date: {invoice.date}
-        {f'<br />Delivery Date: {invoice.delivery_date}' if invoice.delivery_date else ""}
-        {f'<br />Due Date: {invoice.due_date}' if invoice.due_date else ""}
+        {gettext('Number')}: {invoice.invoice_number}<br/>
+        {gettext('Date')}: {invoice.date}
+        {f'<br />{gettext('Delivery Date')}: {invoice.delivery_date}' if invoice.delivery_date else ""}
+        {f'<br />{gettext('Due Date')}: {invoice.due_date}' if invoice.due_date else ""}
         </font>
 """)
     _, h = title.wrapOn(pdf_object, A4_WIDTH, A4_HEIGHT)
@@ -96,19 +97,19 @@ def gen_invoice_pdf(invoice, filename_or_io):
 
     # Totals
     render_lines_left_right(-(A4_WIDTH - x_left), table_y_end, [
-        ["Net Total: ", invoice.net_total_string],
-        ["VAT: ", invoice.tax_amount_string],
-        ["Total: ", invoice.total_string]
+        [f'{gettext("Net Total")}: ', invoice.net_total_string],
+        [f'{gettext("VAT")}: ', invoice.tax_amount_string],
+        [f'{gettext("Total")}: ', invoice.total_string]
     ])
 
     # Tax ID and bank account info
     bottom_y = 100
     lines = []
     if invoice.vendor.tax_id:
-        lines += [["Tax ID: ", f"{invoice.vendor.tax_id}"]]
+        lines += [[f'{gettext("Tax ID")}: ', f"{invoice.vendor.tax_id}"]]
     if invoice.vendor.bank_account:
-        lines += [["IBAN: ", f"{IBAN(invoice.vendor.bank_account.iban).formatted}"],
-                  ["BIC: ", f"{BIC(invoice.vendor.bank_account.bic)}"]]
+        lines += [[f'{gettext("IBAN")}: ', f"{IBAN(invoice.vendor.bank_account.iban).formatted}"],
+                  [f'{gettext("BIC")}: ', f"{BIC(invoice.vendor.bank_account.bic)}"]]
     if lines:
         render_lines_left_right(x_left, bottom_y, lines)
 
