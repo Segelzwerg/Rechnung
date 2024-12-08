@@ -13,21 +13,37 @@
                       action="{% url "invoice-add" %}"
                         {% endif %}>
                     {% csrf_token %}
-                    {% bootstrap_form form layout="floating" %}
-                    <input type="submit" class="btn btn-primary"
-                            {% if invoice %}
-                           value="{% translate "Update Invoice" %}"
-                            {% else %}
-                           value={% translate "Create Invoice" %}{% endif %}>
+                    <fieldset
+                            {% if invoice.final %}
+                                disabled
+                            {% endif %}
+                    >
+                        {% bootstrap_form form layout="floating" %}
+                        <input type="submit" class="btn btn-primary"
+                                {% if invoice %}
+                               value="{% translate "Update Invoice" %}"
+                                {% else %}
+                               value={% translate "Create Invoice" %}{% endif %}>
+                    </fieldset>
                 </form>
+                {% if invoice %}
+                    <a class="btn btn-primary" role="button" href="{% url "invoice-delete" invoice.id %}">
+                        Delete Invoice
+                    </a>
+                {% endif %}
             </div>
             <div class="col-xl">
-                <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip"
-                        {% if invoice %}
-                      title="{% translate "Create an item for this invoice." %}"
-                        {% else %}
-                      title="{% translate "Create an invoice first." %}"
-                        {% endif %}>
+                <fieldset
+                        {% if invoice.final %}
+                            disabled
+                        {% endif %}
+                >
+                    <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip"
+                            {% if invoice %}
+                          title="{% translate "Create an item for this invoice." %}"
+                            {% else %}
+                          title="{% translate "Create an invoice first." %}"
+                            {% endif %}>
                   <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                           id="ItemInvoiceToggler"
                           data-bs-target="#InvoiceItemModal"
@@ -35,7 +51,7 @@
                 {% translate "Add invoice item" %}
                 </button>
                 </span>
-
+                </fieldset>
                 {% if invoice %}
                     <table class="table">
                         <thead>
@@ -87,7 +103,7 @@
         </div>
     </div>
 
-    {% if invoice and invoice_item_form %}
+    {% if invoice and invoice_item_form and not invoice.final %}
         <div class="modal fade" id="InvoiceItemModal" tabindex="-1"
              aria-labelledby="InvoiceItemModalLabel"
              aria-hidden="true">

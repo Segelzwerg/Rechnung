@@ -72,6 +72,7 @@ def gen_invoice_pdf(invoice, filename_or_io):
         <font size="12">
         {gettext('Number')}: {invoice.invoice_number}<br/>
         {gettext('Date')}: {invoice.date}
+        {f'<br />{gettext('Delivery Date')}: {invoice.delivery_date}' if invoice.delivery_date else ""}
         {f'<br />{gettext('Due Date')}: {invoice.due_date}' if invoice.due_date else ""}
         </font>
 """)
@@ -97,6 +98,7 @@ def gen_invoice_pdf(invoice, filename_or_io):
     # Totals
     render_lines_left_right(-(A4_WIDTH - x_left), table_y_end, [
         [f'{gettext("Net Total")}: ', invoice.net_total_string],
+        [f'{gettext("VAT")}: ', invoice.tax_amount_string],
         [f'{gettext("Total")}: ', invoice.total_string]
     ])
 

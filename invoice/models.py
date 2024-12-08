@@ -10,11 +10,13 @@ except ImportError:
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
-    DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices
+    DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices, BooleanField
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
 from django.utils.translation import gettext_lazy as _
 from schwifty import IBAN, BIC
+
+from invoice.errors import FinalError
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
 
@@ -62,8 +64,20 @@ def validate_bic(value):
 
 class BankAccount(Model):
     """Defines a bank account."""
-    iban = CharField(_('IBAN'), max_length=34, validators=[validate_iban])
-    bic = CharField(_('BIC'), max_length=11, validators=[validate_bic])
+    owner = CharField(_('owner'),max_length=120, default='')
+    iban = CharField(_('IBAN'),max_length=120, validators=[validate_iban])
+    bic = CharField(_('BIC'),max_length=120, validators=[validate_bic])
+
+    def save(self, *args, **kwargs):
+        """Save the bank account."""
+        self.iban = IBAN(self.iban)
+        if self.iban.bic:
+            # Overwrites the BIC regardless of the user input.
+            self.bic = self.iban.bic
+        elif self.bic:
+            self.bic = BIC(self.bic)
+        super().save(*args, **kwargs)
+
 
     class Meta:
         verbose_name = _('bank account')
@@ -139,6 +153,9 @@ class Invoice(Model):
     currency = CharField(_('currency'), max_length=3, choices=Currency,
                          default=Currency.EUR)
     due_date = DateField(_('due date'), null=True, blank=True)
+    delivery_date = DateField(null=True, blank=True)
+    paid = BooleanField(default=False)
+    final = BooleanField(default=False)
 
     class Meta:
         """
@@ -150,6 +167,14 @@ class Invoice(Model):
         constraints = [UniqueConstraint(fields=['vendor', 'invoice_number'],
                                         name='unique_invoice_numbers_per_vendor'),
                        CheckConstraint(check=Q(due_date__gte=F('date')), name='due_date_gte_date')]
+
+    def save(self, *args, **kwargs):
+        """Save invoice unless it is marked final. Then an FinalError is raised."""
+        if self.final and self.pk is not None:
+            initial = Invoice.objects.get(pk=self.pk)
+            if initial.final:
+                raise FinalError()
+        super().save(*args, **kwargs)
 
     @property
     def items(self):
@@ -169,19 +194,44 @@ class Invoice(Model):
         return Decimal(sum(item.net_total for item in self.items))
 
     @property
+    def tax_amount(self):
+        """Get the sum of tax amount."""
+        return Decimal(sum(item.tax_amount for item in self.items))
+
+    @property
     def total(self) -> Decimal:
         """Get the sum of total."""
-        return Decimal(sum(item.total for item in self.items))
+        return self.net_total + self.tax_amount
+
+    @property
+    def net_total_rounded(self) -> Decimal:
+        """Get the sum of net total rounded to two decimals."""
+        return self.net_total.quantize(Decimal('0.01'))
+
+    @property
+    def tax_amount_rounded(self) -> Decimal:
+        """Get the sum of tax amount rounded to two decimals."""
+        return self.tax_amount.quantize(Decimal('0.01'))
+
+    @property
+    def total_rounded(self) -> Decimal:
+        """Get the sum of total rounded to two decimals."""
+        return self.net_total_rounded + self.tax_amount_rounded
 
     @property
     def net_total_string(self) -> str:
         """Get the net total string."""
-        return f'{self.net_total:.2f} {self.currency}'
+        return f'{self.net_total_rounded} {self.currency}'
+
+    @property
+    def tax_amount_string(self):
+        """Get the tax amount string."""
+        return f'{self.tax_amount_rounded} {self.currency}'
 
     @property
     def total_string(self) -> str:
         """Get the total string."""
-        return f'{self.total:.2f} {self.currency}'
+        return f'{self.total_rounded} {self.currency}'
 
 
 @deprecated('Deprecated in 0.1 and remove in 1.0')
@@ -207,6 +257,7 @@ class InvoiceItem(Model):
     quantity = DecimalField(_('quantity'), max_digits=19, decimal_places=4,
                             validators=[MinValueValidator(Decimal('0.0000')),
                                         MaxValueValidator(Decimal('1000000.0000'))])
+    unit = CharField(max_length=120, null=True, blank=True)
     price = DecimalField(_('price'), max_digits=19, decimal_places=2,
                          validators=[MinValueValidator(Decimal('-1000000.00')),
                                      MaxValueValidator(Decimal('1000000.00'))])
@@ -221,9 +272,29 @@ class InvoiceItem(Model):
         return self.price * self.quantity
 
     @property
+    def tax_amount(self) -> Decimal:
+        """Get the monetary amount of tax."""
+        return self.net_total * self.tax
+
+    @property
     def total(self) -> Decimal:
         """Get the sum of the item including taxes."""
-        return self.net_total * (Decimal('1.0') + self.tax)
+        return self.net_total + self.tax_amount
+
+    @property
+    def net_total_rounded(self) -> Decimal:
+        """Get the net total rounded to two decimals."""
+        return self.net_total.quantize(Decimal('0.01'))
+
+    @property
+    def tax_amount_rounded(self) -> Decimal:
+        """Get the tax amount rounded to two decimals."""
+        return self.tax_amount.quantize(Decimal('0.01'))
+
+    @property
+    def total_rounded(self) -> Decimal:
+        """Get the total rounded to two decimals."""
+        return self.net_total_rounded + self.tax_amount_rounded
 
     @property
     def list_export(self):
@@ -237,27 +308,35 @@ class InvoiceItem(Model):
                 self.total_string]
 
     @property
-    def net_total_string(self) -> str:
-        """Get the net total string."""
-        return f'{self.net_total:.2f} {self.invoice.currency}'
-
-    @property
     def price_string(self) -> str:
         """Get the price string."""
         return f'{self.price:.2f} {self.invoice.currency}'
 
     @property
     def quantity_string(self) -> str:
-        """Get the quantity string."""
-        return f'{self.quantity:.4f}'.rstrip('0').rstrip('.,')
+        """Get the quantity string including the unit."""
+        quantity = f'{self.quantity:.4f}'.rstrip('0').rstrip('.,')
+        if self.unit:
+            return f'{quantity} {self.unit}'
+        return quantity
 
     @property
     def tax_string(self) -> str:
-        """Get the tax string."""
+        """Get the tax rate string."""
         s = f'{self.tax * 100:.2f}'.rstrip('0').rstrip('.,')
         return f'{s}%'
 
     @property
+    def net_total_string(self) -> str:
+        """Get the net total string."""
+        return f'{self.net_total_rounded} {self.invoice.currency}'
+
+    @property
+    def tax_amount_string(self) -> str:
+        """Get the tax amount string."""
+        return f'{self.tax_amount_rounded} {self.invoice.currency}'
+
+    @property
     def total_string(self) -> str:
         """Get the total string."""
-        return f'{self.total:.2f} {self.invoice.currency}'
+        return f'{self.total_rounded} {self.invoice.currency}'

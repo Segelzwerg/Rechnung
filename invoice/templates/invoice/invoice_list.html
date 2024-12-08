@@ -14,6 +14,7 @@
             <th scope="col">{% translate "Customer" %}</th>
             <th scope="col">{% translate "Net Total" %}</th>
             <th scope="col">{% translate "Total" %}</th>
+            <th scope="col">Paid</th>
             <th scope="col">{% translate "Action" %}</th>
         </tr>
         </thead>
@@ -31,10 +32,12 @@
                 <td>{{ invoice.customer.first_name }} {{ invoice.customer.last_name }}</td>
                 <td class="text-end">{{ invoice.net_total_string }}</td>
                 <td class="text-end">{{ invoice.total_string }}</td>
+                <td>{{ invoice.paid }}</td>
                 <td>
                     <a href="{% url "invoice-update" invoice.id %}">{% translate "Update" %}</a> /
                     <a href="{% url "invoice-delete" invoice.id %}">{% translate "Delete" %}</a> /
-                    <a href="{% url "invoice-pdf" invoice.id %}">{% translate "PDF" %}</a>
+                    <a href="{% url "invoice-pdf" invoice.id %}">{% translate "PDF" %}</a> /
+                    <a href="{% url "invoice-paid" invoice.id %}">Mark paid</a>
                 </td>
             </tr>
         {% endfor %}
