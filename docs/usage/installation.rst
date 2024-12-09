@@ -24,7 +24,8 @@ You have to options:
 
 Compose File
 ------------
-We recommend to use the pre-built image:
+We recommend to use the pre-built image. Use the ``latest`` tag for the stable release version and ``main`` for
+current development branch. Use only ``latest`` for production environments.
 
 .. code :: yaml
 
