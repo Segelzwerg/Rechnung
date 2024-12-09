@@ -1,4 +1,4 @@
-name: Django CI
+name: Tests
 
 on:
   push:
@@ -57,7 +57,7 @@ jobs:
         run: |
           poetry run coverage json
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5.0.7
+        uses: codecov/codecov-action@v5.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: Segelzwerg/rechnung
