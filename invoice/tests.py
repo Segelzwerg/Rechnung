@@ -3,6 +3,7 @@ from decimal import Decimal
 from math import inf, nan
 
 import schwifty
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.timezone import now
@@ -100,10 +101,19 @@ def build_invoice_item(draw):
 
 
 class AddCustomerViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def setUp(self):
         self.url = reverse('customer-add')
 
     def test_get(self):
+        self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/customer_form.html')
@@ -112,6 +122,7 @@ class AddCustomerViewTestCase(TestCase):
     @example(('John', 'Doe', 'john@doe.com'),
              ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'))
     def test_add_customer(self, customer_fields, address_fields):
+        self.client.force_login(self.user)
         first_name, last_name, email = customer_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
         response = self.client.post(self.url, data={
@@ -136,6 +147,7 @@ class AddCustomerViewTestCase(TestCase):
         self.assertEqual(customer.address, address)
 
     def test_update_invalid_input_address(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'first_name': 'John',
             'last_name': 'Doe',
@@ -148,6 +160,11 @@ class AddCustomerViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
+
+    def test_login_required(self):
+        url = reverse("customer-add")
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
 
 
 class UpdateCustomerViewTestCase(TestCase):
@@ -231,10 +248,19 @@ class CustomerModelTestCase(TestCase):
 
 
 class AddVendorViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def setUp(self):
         self.url = reverse('vendor-add')
 
     def test_get(self):
+        self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/vendor_form.html')
@@ -244,6 +270,7 @@ class AddVendorViewTestCase(TestCase):
              ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'),
              ('John Doe', 'ES9620686250804690656114', 'CAHMESMM'))
     def test_add_vendor(self, vendor_fields, address_fields, bank_fields):
+        self.client.force_login(self.user)
         name, company, tax_id = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
         owner, iban, bic = bank_fields
@@ -273,6 +300,7 @@ class AddVendorViewTestCase(TestCase):
         self.assertEqual(vendor.bank_account, bank_account)
 
     def test_update_invalid_input_address(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'name': 'John',
             'company_name': 'John Doe Company',
@@ -286,6 +314,7 @@ class AddVendorViewTestCase(TestCase):
                              errors=['This field is required.'])
 
     def test_update_invalid_input_bank_account(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'name': 'John',
             'company_name': 'John Doe Company',
@@ -297,6 +326,11 @@ class AddVendorViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context_data['bank_form'], 'iban',
                              errors=['This field is required.'])
+
+    def test_login_required(self):
+        url = reverse("vendor-add")
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
 
 
 class UpdateVendorViewTestCase(TestCase):
@@ -755,3 +789,10 @@ class InvoicePDFViewTestCase(TestCase):
     def test_pdf(self):
         response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}))
         self.assertEqual(response.status_code, 200)
+
+
+class AddInvoiceTestCase(TestCase):
+    def test_login_required(self):
+        url = reverse("invoice-add")
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")

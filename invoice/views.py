@@ -1,6 +1,7 @@
 """Defines the views of the invoice app."""
 import io
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import FileResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
@@ -18,7 +19,7 @@ class StartView(TemplateView):
     template_name = 'invoice/start.html'
 
 
-class CustomerCreateView(SuccessMessageMixin, CreateView):
+class CustomerCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Create a new customer."""
     template_name = 'invoice/customer_form.html'
     model = Customer
@@ -82,7 +83,7 @@ class CustomerListView(ListView):
     model = Customer
 
 
-class InvoiceCreateView(SuccessMessageMixin, CreateView):
+class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Create a new invoice."""
     form_class = InvoiceForm
     model = Invoice
@@ -221,7 +222,7 @@ class InvoiceItemDeleteView(SuccessMessageMixin, DeleteView):
         return reverse('invoice-update', kwargs={'pk': self.kwargs['invoice_id']})
 
 
-class VendorCreateView(SuccessMessageMixin, CreateView):
+class VendorCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Create a new vendor. Including a bank account and a new address."""
     template_name = 'invoice/vendor_form.html'
     form_class = VendorForm
