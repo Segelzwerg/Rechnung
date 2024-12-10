@@ -149,6 +149,11 @@ class AddCustomerViewTestCase(TestCase):
         self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
 
+    def test_login_required(self):
+        url = reverse("customer-add")
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+
 
 class UpdateCustomerViewTestCase(TestCase):
     def setUp(self):
@@ -297,6 +302,11 @@ class AddVendorViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context_data['bank_form'], 'iban',
                              errors=['This field is required.'])
+
+    def test_login_required(self):
+        url = reverse("vendor-add")
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
 
 
 class UpdateVendorViewTestCase(TestCase):
@@ -755,3 +765,10 @@ class InvoicePDFViewTestCase(TestCase):
     def test_pdf(self):
         response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}))
         self.assertEqual(response.status_code, 200)
+
+
+class AddInvoiceTestCase(TestCase):
+    def test_login_required(self):
+        url = reverse("invoice-add")
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
