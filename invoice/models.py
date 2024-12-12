@@ -64,9 +64,9 @@ def validate_bic(value):
 
 class BankAccount(Model):
     """Defines a bank account."""
-    owner = CharField(_('owner'),max_length=120, default='')
-    iban = CharField(_('IBAN'),max_length=120, validators=[validate_iban])
-    bic = CharField(_('BIC'),max_length=120, validators=[validate_bic])
+    owner = CharField(_('owner'), max_length=120, default='')
+    iban = CharField(_('IBAN'), max_length=120, validators=[validate_iban])
+    bic = CharField(_('BIC'), max_length=120, validators=[validate_bic])
 
     def save(self, *args, **kwargs):
         """Save the bank account."""
@@ -77,7 +77,6 @@ class BankAccount(Model):
         elif self.bic:
             self.bic = BIC(self.bic)
         super().save(*args, **kwargs)
-
 
     class Meta:
         verbose_name = _('bank account')
@@ -153,9 +152,9 @@ class Invoice(Model):
     currency = CharField(_('currency'), max_length=3, choices=Currency,
                          default=Currency.EUR)
     due_date = DateField(_('due date'), null=True, blank=True)
-    delivery_date = DateField(null=True, blank=True)
-    paid = BooleanField(default=False)
-    final = BooleanField(default=False)
+    delivery_date = DateField(_('delivery date'), null=True, blank=True)
+    paid = BooleanField(_('paid'), default=False)
+    final = BooleanField(_('final'), default=False)
 
     class Meta:
         """
@@ -257,7 +256,7 @@ class InvoiceItem(Model):
     quantity = DecimalField(_('quantity'), max_digits=19, decimal_places=4,
                             validators=[MinValueValidator(Decimal('0.0000')),
                                         MaxValueValidator(Decimal('1000000.0000'))])
-    unit = CharField(max_length=120, null=True, blank=True)
+    unit = CharField(_('unit'), max_length=120, null=True, blank=True)
     price = DecimalField(_('price'), max_digits=19, decimal_places=2,
                          validators=[MinValueValidator(Decimal('-1000000.00')),
                                      MaxValueValidator(Decimal('1000000.00'))])

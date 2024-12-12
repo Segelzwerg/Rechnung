@@ -113,7 +113,7 @@ class InvoicePaidView(SuccessMessageMixin, UpdateView):
     """Mark an invoice as paid"""
     model = Invoice
     fields = ['paid']
-    success_message = 'Invoice was marked as paid successfully.'
+    success_message = _('Invoice was marked as paid successfully.')
     template_name = 'invoice/invoice_paid.html'
 
     def get_success_url(self):

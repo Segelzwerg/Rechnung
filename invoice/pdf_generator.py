@@ -118,7 +118,7 @@ def gen_invoice_pdf(invoice, filename_or_io):
         data = epc_qr.gen_epc_qr_data(str(invoice.vendor), invoice.vendor.bank_account.iban,
                                       beneficiary_bic=invoice.vendor.bank_account.bic,
                                       eur_amount=invoice.total,
-                                      remittance_info=f"Invoice {invoice.invoice_number}",
+                                      remittance_info=f"{gettext("Invoice")}: {invoice.invoice_number}",
                                       encoding=encoding)
         qr_data = QR8bitByte(data.encode(encoding))
         # version must be <= 13 and error correction must be M!
