@@ -80,6 +80,7 @@ class Customer(Model):
     last_name = CharField(max_length=120)
     email = EmailField(max_length=256)
     address = OneToOneField(Address, on_delete=CASCADE)
+    vendor = ForeignKey('Vendor', on_delete=CASCADE)
 
     @property
     def full_name(self):
