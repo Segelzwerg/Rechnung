@@ -43,6 +43,7 @@ class CustomerCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         address = address_form.save()
         customer = form.save(commit=False)
         customer.address = address
+        customer.user = self.request.user
         return super().form_valid(form)
 
 

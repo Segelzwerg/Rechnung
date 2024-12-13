@@ -104,15 +104,10 @@ class AddCustomerViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        cls.vendor = Vendor.objects.create(name="John Doe Company",
-                                           address=Address.objects.create(line_1='Musterstraße 2', line_2='', line_3='',
-                                                                          city='Musterstadt', postcode='12345',
-                                                                          state='', country='Germany'))
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
-        Vendor.objects.all().delete()
 
     def setUp(self):
         self.url = reverse('customer-add')
@@ -141,7 +136,6 @@ class AddCustomerViewTestCase(TestCase):
             'postcode': postcode,
             'state': state,
             'country': country,
-            'vendor': self.vendor.id,
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/customers/')
@@ -176,14 +170,11 @@ class AddCustomerViewTestCase(TestCase):
 class UpdateCustomerViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.vendor = Vendor.objects.create(name="John Doe Company",
-                                           address=Address.objects.create(line_1='Musterstraße 2', line_2='', line_3='',
-                                                                          city='Musterstadt', postcode='12345',
-                                                                          state='', country='Germany'))
+        cls.user = User.objects.create_user(username="test", password="password")
 
     @classmethod
     def tearDownClass(cls):
-        Vendor.objects.all().delete()
+        User.objects.all().delete()
 
     def setUp(self):
         customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com",
@@ -191,7 +182,7 @@ class UpdateCustomerViewTestCase(TestCase):
                                                line_1='Musterstraße 1',
                                                postcode='12345', city='Musterstadt',
                                                country='Germany'),
-                                           vendor=self.vendor)
+                                           user=self.user)
         self.url = reverse('customer-update', args=[customer.id])
 
     def tearDown(self):
@@ -217,7 +208,6 @@ class UpdateCustomerViewTestCase(TestCase):
             'postcode': postcode,
             'state': state,
             'country': country,
-            'vendor': self.vendor.id,
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/customers/')
@@ -259,21 +249,18 @@ class UpdateCustomerViewTestCase(TestCase):
 class CustomerModelTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.vendor = Vendor.objects.create(name="John Doe Company",
-                                           address=Address.objects.create(line_1='Musterstraße 2', line_2='', line_3='',
-                                                                          city='Musterstadt', postcode='12345',
-                                                                          state='', country='Germany'))
+        cls.user = User.objects.create_user(username="test", password="password")
 
     @classmethod
     def tearDownClass(cls):
-        Vendor.objects.all().delete()
+        User.objects.all().delete()
 
     def test_long_email(self):
         long_email = 'a' * 240 + '@' + 'b' * 20 + '.com'
         address = Address.objects.create(line_1="Musterstraße 1", postcode="12345", city="Musterstadt",
                                          country="Germany")
         customer = Customer.objects.create(first_name='John', last_name='Doe', email=long_email, address=address,
-                                           vendor=self.vendor)
+                                           user=self.user)
         with self.assertRaises(ValidationError):
             customer.full_clean()
 
@@ -407,7 +394,7 @@ class UpdateVendorViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/vendors/')
         vendor = Vendor.objects.get(name=name)
-        address = Address.objects.first()
+        address = Address.objects.get(line_1=address_line_1)
         bank_account = BankAccount.objects.first()
         self.assertIsNotNone(vendor)
         self.assertEqual(vendor.company_name, company)
@@ -479,10 +466,18 @@ class BankAccountTestCase(TestCase):
 
 
 class InvoiceItemModelTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def setUp(self):
         address = Address.objects.create()
         vendor = Vendor.objects.create(address=address)
-        customer = Customer.objects.create(address=address, vendor=vendor)
+        customer = Customer.objects.create(address=address, user=self.user)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer,
                                               date=now())
 
@@ -666,10 +661,18 @@ class InvoiceItemModelTestCase(TestCase):
 
 
 class InvoiceModelTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def setUp(self):
         address = Address.objects.create()
-        vendor = Vendor.objects.create(address=address)
-        _ = Customer.objects.create(address=address, vendor=vendor)
+        _ = Vendor.objects.create(address=address)
+        _ = Customer.objects.create(address=address, user=self.user)
 
     def tearDown(self):
         Vendor.objects.all().delete()
@@ -810,12 +813,20 @@ class InvoiceModelTestCase(TestCase):
 
 
 class InvoicePDFViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def setUp(self):
-        _ = Address.objects.create()
-        vendor = Vendor.objects.create(address=Address.objects.first())
-        _ = Customer.objects.create(address=Address.objects.first(), vendor=vendor)
-        self.invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
-                                              customer=Customer.objects.first(), date=now())
+        address = Address.objects.create()
+        vendor = Vendor.objects.create(address=address)
+        customer = Customer.objects.create(address=address, user=self.user)
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
+                                              customer=customer, date=now())
 
     def test_pdf(self):
         response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}))

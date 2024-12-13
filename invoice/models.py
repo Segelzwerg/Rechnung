@@ -7,6 +7,7 @@ try:
 except ImportError:
     from typing_extensions import deprecated
 
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
@@ -80,7 +81,7 @@ class Customer(Model):
     last_name = CharField(max_length=120)
     email = EmailField(max_length=256)
     address = OneToOneField(Address, on_delete=CASCADE)
-    vendor = ForeignKey('Vendor', on_delete=CASCADE)
+    user = ForeignKey(User, on_delete=CASCADE)
 
     @property
     def full_name(self):
