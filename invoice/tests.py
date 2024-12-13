@@ -246,6 +246,38 @@ class UpdateCustomerViewTestCase(TestCase):
                              errors=['This field is required.'])
 
 
+class CustomerListViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        cls.url = reverse('customer-list')
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
+    def test_only_users_customers(self):
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com",
+                                           address=Address.objects.create(
+                                               line_1='Musterstraße 1',
+                                               postcode='12345', city='Musterstadt',
+                                               country='Germany'),
+                                           user=self.user)
+        second_customer = Customer.objects.create(first_name="Johnny", last_name="Doe", email="John@doe.com",
+                                                  address=Address.objects.create(
+                                                      line_1='Musterstraße 1',
+                                                      postcode='12345', city='Musterstadt',
+                                                      country='Germany'),
+                                                  user=second_user)
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        customer_list = response.context_data['customer_list']
+        self.assertEqual(len(customer_list), 1)
+        self.assertEqual(customer_list[0], customer)
+        self.assertNotIn(second_customer, customer_list)
+
+
 class CustomerModelTestCase(TestCase):
     @classmethod
     def setUpClass(cls):

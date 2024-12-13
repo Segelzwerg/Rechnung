@@ -83,6 +83,10 @@ class CustomerListView(ListView):
     """List all customers."""
     model = Customer
 
+    def get_queryset(self, **kwargs):
+        query_set = super().get_queryset(**kwargs)
+        return query_set.filter(user_id=self.request.user.id)
+
 
 class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Create a new invoice."""
