@@ -3,7 +3,7 @@
 {% load django_bootstrap5 %}
 
 {% block content %}
-    <a class="btn btn-primary" role="button" href="{% url "invoice-add" %}">Add invoice</a>
+    <a class="btn btn-primary" role="button" href="{% url "invoice-add" %}">{% translate "Add invoice" %}</a>
     <table class="table">
         <thead>
         <tr>
