@@ -13,7 +13,7 @@ from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, 
     DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices, BooleanField
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext_lazy as _, pgettext_lazy
 from schwifty import IBAN, BIC
 
 from invoice.errors import FinalError
@@ -64,7 +64,7 @@ def validate_bic(value):
 
 class BankAccount(Model):
     """Defines a bank account."""
-    owner = CharField(_('owner'), max_length=120, default='')
+    owner = CharField(pgettext_lazy('account owner', 'owner'), max_length=120, default='')
     iban = CharField(_('IBAN'), max_length=120, validators=[validate_iban])
     bic = CharField(_('BIC'), max_length=120, validators=[validate_bic])
 
@@ -237,16 +237,16 @@ class Invoice(Model):
 def validate_real_values(value):
     """Validate real values."""
     if isnan(value):
-        raise ValidationError(_('Value must not be nan.'))
+        raise ValidationError('Value must not be nan.')
     if isinf(value):
-        raise ValidationError(_('Value must not be inf or -inf.'))
+        raise ValidationError('Value must not be inf or -inf.')
 
 
 @deprecated('Deprecated in 0.1 and remove in 1.0')
 def validate_two_digits_decimals(value):
     """Allow only two decimal digits."""
     if str(value)[::-1].find('.') > 2:
-        raise ValidationError(_('Price must have only two decimal digits.'))
+        raise ValidationError('Price must have only two decimal digits.')
 
 
 class InvoiceItem(Model):
