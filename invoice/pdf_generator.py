@@ -1,7 +1,7 @@
 """PDF generation utilities."""
 
 import reportlab.lib.pagesizes
-from django.utils.translation import gettext
+from django.utils.translation import gettext, pgettext
 from reportlab.graphics.barcode.qr import QrCode
 from reportlab.graphics.barcode.qrencoder import QR8bitByte
 from reportlab.lib import colors
@@ -22,6 +22,19 @@ def gen_invoice_pdf(invoice, filename_or_io):
 
     pdf_object = canvas.Canvas(filename_or_io)
     pdf_object.setFontSize(12)
+
+    # Labels for translation
+    invoice_label = gettext('Invoice')
+    invoice_number_label = pgettext('invoice number', 'Number')
+    date_label = gettext('Date')
+    delivery_date_label = gettext('Delivery Date')
+    due_date_label = gettext('Due Date')
+    net_total_label = gettext("Net Total")
+    vat_label = gettext("VAT")
+    total_label = gettext("Total")
+    tax_id_label = gettext("Tax ID")
+    iban_label = gettext("IBAN")
+    bic_label = gettext("BIC")
 
     def render_lines(x, y, lines):
         """Render lines."""
@@ -68,12 +81,12 @@ def gen_invoice_pdf(invoice, filename_or_io):
 
     # Title, number, date
     title = Paragraph(f"""
-        <font size="16"><b>{gettext('Invoice')}</b></font><br/>
+        <font size="16"><b>{invoice_label}</b></font><br/>
         <font size="12">
-        {gettext('Number')}: {invoice.invoice_number}<br/>
-        {gettext('Date')}: {invoice.date}
-        {f'<br />{gettext('Delivery Date')}: {invoice.delivery_date}' if invoice.delivery_date else ""}
-        {f'<br />{gettext('Due Date')}: {invoice.due_date}' if invoice.due_date else ""}
+        {invoice_number_label}: {invoice.invoice_number}<br/>
+        {date_label}: {invoice.date}
+        {f'<br />{delivery_date_label}: {invoice.delivery_date}' if invoice.delivery_date else ""}
+        {f'<br />{due_date_label}: {invoice.due_date}' if invoice.due_date else ""}
         </font>
 """)
     _, h = title.wrapOn(pdf_object, A4_WIDTH, A4_HEIGHT)
@@ -96,20 +109,21 @@ def gen_invoice_pdf(invoice, filename_or_io):
     table.drawOn(pdf_object, x_left, table_y_end)
 
     # Totals
+
     render_lines_left_right(-(A4_WIDTH - x_left), table_y_end, [
-        [f'{gettext("Net Total")}: ', invoice.net_total_string],
-        [f'{gettext("VAT")}: ', invoice.tax_amount_string],
-        [f'{gettext("Total")}: ', invoice.total_string]
+        [f'{net_total_label}: ', invoice.net_total_string],
+        [f'{vat_label}: ', invoice.tax_amount_string],
+        [f'{total_label}: ', invoice.total_string]
     ])
 
     # Tax ID and bank account info
     bottom_y = 100
     lines = []
     if invoice.vendor.tax_id:
-        lines += [[f'{gettext("Tax ID")}: ', f"{invoice.vendor.tax_id}"]]
+        lines += [[f'{tax_id_label}: ', f"{invoice.vendor.tax_id}"]]
     if invoice.vendor.bank_account:
-        lines += [[f'{gettext("IBAN")}: ', f"{IBAN(invoice.vendor.bank_account.iban).formatted}"],
-                  [f'{gettext("BIC")}: ', f"{BIC(invoice.vendor.bank_account.bic)}"]]
+        lines += [[f'{iban_label}: ', f"{IBAN(invoice.vendor.bank_account.iban).formatted}"],
+                  [f'{bic_label}: ', f"{BIC(invoice.vendor.bank_account.bic)}"]]
     if lines:
         render_lines_left_right(x_left, bottom_y, lines)
 
@@ -118,7 +132,7 @@ def gen_invoice_pdf(invoice, filename_or_io):
         data = epc_qr.gen_epc_qr_data(str(invoice.vendor), invoice.vendor.bank_account.iban,
                                       beneficiary_bic=invoice.vendor.bank_account.bic,
                                       eur_amount=invoice.total,
-                                      remittance_info=f"{gettext("Invoice")}: {invoice.invoice_number}",
+                                      remittance_info=f"{invoice_label}: {invoice.invoice_number}",
                                       encoding=encoding)
         qr_data = QR8bitByte(data.encode(encoding))
         # version must be <= 13 and error correction must be M!
