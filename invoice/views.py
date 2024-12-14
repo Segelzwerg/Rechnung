@@ -1,9 +1,10 @@
 """Defines the views of the invoice app."""
 import io
 
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import FileResponse, HttpResponseRedirect
+from django.http import FileResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
@@ -141,14 +142,22 @@ class InvoiceDeleteView(SuccessMessageMixin, DeleteView):
     success_message = 'Invoice was deleted successfully.'
 
 
-class InvoiceListView(ListView):
+class InvoiceListView(LoginRequiredMixin, ListView):
     """List all invoices."""
     model = Invoice
 
+    def get_queryset(self, **kwargs):
+        """Filter the invoice list by the logged in user."""
+        query_set = super().get_queryset(**kwargs)
+        return query_set.filter(user_id=self.request.user.id)
 
-def pdf_invoice(request, invoice_id) -> FileResponse:
-    """Generate an invoice as PDF file."""
+
+@login_required
+def pdf_invoice(request, invoice_id) -> HttpResponseForbidden | FileResponse:
+    """Generate an invoice as PDF file. It will raise a 403 Forbidden if the user is not the vendor of the invoice."""
     invoice = get_object_or_404(Invoice, pk=invoice_id)
+    if invoice.vendor.user != request.user:
+        return HttpResponseForbidden("You are not allowed to view this invoice.")
     buffer = io.BytesIO()
     pdf_generator.gen_invoice_pdf(invoice, buffer)
     buffer.seek(0)
@@ -259,6 +268,7 @@ class VendorCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         vendor = form.save(commit=False)
         vendor.address = address
         vendor.bank_account = bank_account
+        vendor.user = self.request.user
         return super().form_valid(form)
 
 

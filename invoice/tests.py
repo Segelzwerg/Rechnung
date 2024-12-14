@@ -384,6 +384,14 @@ class AddVendorViewTestCase(TestCase):
 
 
 class UpdateVendorViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def setUp(self):
         owner, iban, bic = build_bank_fields().example()
         vendor = Vendor.objects.create(name="John", company_name="Doe Company",
@@ -392,7 +400,8 @@ class UpdateVendorViewTestCase(TestCase):
                                            postcode='12345', city='Musterstadt',
                                            country='Germany'),
                                        bank_account=BankAccount.objects.create(owner=owner, iban=iban,
-                                                                               bic=bic))
+                                                                               bic=bic),
+                                       user=self.user)
         self.url = reverse('vendor-update', args=[vendor.id])
 
     def tearDown(self):
@@ -508,7 +517,7 @@ class InvoiceItemModelTestCase(TestCase):
 
     def setUp(self):
         address = Address.objects.create()
-        vendor = Vendor.objects.create(address=address)
+        vendor = Vendor.objects.create(address=address, user=self.user)
         customer = Customer.objects.create(address=address, user=self.user)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer,
                                               date=now())
@@ -703,7 +712,7 @@ class InvoiceModelTestCase(TestCase):
 
     def setUp(self):
         address = Address.objects.create()
-        _ = Vendor.objects.create(address=address)
+        _ = Vendor.objects.create(address=address, user=self.user)
         _ = Customer.objects.create(address=address, user=self.user)
 
     def tearDown(self):
@@ -855,7 +864,7 @@ class InvoicePDFViewTestCase(TestCase):
 
     def setUp(self):
         address = Address.objects.create()
-        vendor = Vendor.objects.create(address=address)
+        vendor = Vendor.objects.create(address=address, user=self.user)
         customer = Customer.objects.create(address=address, user=self.user)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
                                               customer=customer, date=now())
@@ -863,6 +872,36 @@ class InvoicePDFViewTestCase(TestCase):
     def test_pdf(self):
         response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}))
         self.assertEqual(response.status_code, 200)
+
+    def test_unauthorized(self):
+        self.client.logout()
+        response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}), follow=True)
+        self.assertRedirects(response, '/accounts/login/?next=/invoice/1/pdf/')
+
+    def test_forbidden(self):
+        second_user = User.objects.create_user(username="test2", password="password")
+        self.client.force_login(second_user)
+        response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}))
+        self.assertEqual(response.status_code, 403)
+
+
+class InvoiceListViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        cls.url = reverse('invoice-list')
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
+    def test_only_users_invoices(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        invoice_list = response.context_data['invoice_list']
+        self.assertEqual(len(invoice_list), 1)
+        self.assertEqual(invoice_list[0], invoice)
+        self.assertNotIn(second_invoice, invoice_list)
 
 
 class AddInvoiceTestCase(TestCase):

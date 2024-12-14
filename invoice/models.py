@@ -99,6 +99,7 @@ class Vendor(Model):
     address: Address = OneToOneField(Address, on_delete=CASCADE)
     tax_id = CharField(max_length=120, null=True, blank=True)
     bank_account: BankAccount = OneToOneField(BankAccount, on_delete=CASCADE, null=True, blank=True)
+    user = ForeignKey(User, on_delete=CASCADE)
 
     class Meta:
         """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""
