@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-05 11:56+0000\n"
+"POT-Creation-Date: 2024-12-14 15:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,42 +18,42 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: rechnung/prod_settings.py:111 rechnung/test_settings.py:107
-msgid "German"
-msgstr ""
-
 #: rechnung/prod_settings.py:112 rechnung/test_settings.py:108
+msgid "German"
+msgstr "Deutsch"
+
+#: rechnung/prod_settings.py:113 rechnung/test_settings.py:109
 msgid "English"
-msgstr ""
+msgstr "Englisch"
 
 #: templates/base.html:22
 msgid "Rechnung"
-msgstr ""
+msgstr "Rechnung"
 
 #: templates/base.html:28
 msgid "Invoices"
-msgstr ""
+msgstr "Rechnungen"
 
 #: templates/base.html:32 templates/base.html:47 templates/base.html:62
 msgid "List"
-msgstr ""
+msgstr "Liste"
 
 #: templates/base.html:36 templates/base.html:51 templates/base.html:66
 msgid "Add"
-msgstr ""
+msgstr "Hinzufügen"
 
 #: templates/base.html:43
 msgid "Customers"
-msgstr ""
+msgstr "Kunden"
 
 #: templates/base.html:58
 msgid "Vendors"
-msgstr ""
+msgstr "Anbieter"
 
 #: templates/base.html:78
 msgid "Logout"
-msgstr ""
+msgstr "Ausloggen"
 
 #: templates/base.html:97
 msgid "Go"
-msgstr ""
+msgstr "Wechseln"
