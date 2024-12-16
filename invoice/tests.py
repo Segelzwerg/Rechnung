@@ -870,13 +870,15 @@ class InvoicePDFViewTestCase(TestCase):
                                               customer=customer, date=now())
 
     def test_pdf(self):
-        response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}))
+        response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get('Content-Type'), 'application/pdf')
         self.assertEqual(response.status_code, 200)
 
     def test_unauthorized(self):
         self.client.logout()
         response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}), follow=True)
-        self.assertRedirects(response, '/accounts/login/?next=/invoice/1/pdf/')
+        self.assertRedirects(response, f'/accounts/login/?next=/invoice/{self.invoice.pk}/pdf/')
 
     def test_forbidden(self):
         second_user = User.objects.create_user(username="test2", password="password")
