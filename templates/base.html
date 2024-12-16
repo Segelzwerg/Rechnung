@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <title>Rechnung</title>
 </head>
+{% load i18n %}
+
 {# Load the tag library #}
 {% load django_bootstrap5 %}
 
@@ -17,51 +19,51 @@
 
 {% block navbar %}
     <nav class="navbar navbar-expand-md bg-dark" data-bs-theme="dark">
-        <a class="navbar-brand" href="{% url "start" %}">Rechnung</a>
+        <a class="navbar-brand" href="{% url "start" %}">{% translate "Rechnung" %}</a>
         <div class="container-fluid">
             <ul class="navbar-nav justify-content">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#"
                        role="button" data-bs-toggle="dropdown"
-                       aria-expanded="false">Invoices</a>
+                       aria-expanded="false">{% translate "Invoices" %}</a>
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="{% url "invoice-list" %}">List</a>
+                               href="{% url "invoice-list" %}">{% translate "List" %}</a>
                         </li>
                         <li>
                             <a class="dropdown-item"
-                               href="{% url "invoice-add" %}">Add</a>
+                               href="{% url "invoice-add" %}">{% translate "Add" %}</a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#"
                        role="button" data-bs-toggle="dropdown"
-                       aria-expanded="false">Customers</a>
+                       aria-expanded="false">{% translate "Customers" %}</a>
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="{% url "customer-list" %}">List</a>
+                               href="{% url "customer-list" %}">{% translate "List" %}</a>
                         </li>
                         <li>
                             <a class="dropdown-item"
-                               href="{% url "customer-add" %}">Add</a>
+                               href="{% url "customer-add" %}">{% translate "Add" %}</a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#"
                        role="button" data-bs-toggle="dropdown"
-                       aria-expanded="false">Vendors</a>
+                       aria-expanded="false">{% translate "Vendors" %}</a>
                     <ul class="dropdown-menu">
                         <li>
                             <a class="dropdown-item"
-                               href="{% url "vendor-list" %}">List</a>
+                               href="{% url "vendor-list" %}">{% translate "List" %}</a>
                         </li>
                         <li>
                             <a class="dropdown-item"
-                               href="{% url "vendor-add" %}">Add</a>
+                               href="{% url "vendor-add" %}">{% translate "Add" %}</a>
                         </li>
                     </ul>
                 </li>
@@ -77,6 +79,23 @@
                     </form>
                 </div>
             {% endif %}
+            <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+                <input name="next" type="hidden" value="{{ redirect_to }}">
+                <label>
+                    <select class="form-select" name="language">
+                        {% get_current_language as LANGUAGE_CODE %}
+                        {% get_available_languages as LANGUAGES %}
+                        {% get_language_info_list for LANGUAGES as languages %}
+                        {% for language in languages %}
+                            <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
+                                    selected{% endif %}>
+                                {{ language.name_local }} ({{ language.code }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <button type="submit" class="btn btn-info">{% translate "Go" %}</button>
+            </form>
         </div>
     </nav>
 {% endblock navbar %}
