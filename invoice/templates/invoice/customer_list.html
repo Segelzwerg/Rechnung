@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load django_bootstrap5 %}
 
 {% block content %}
@@ -6,11 +7,11 @@
     <table class="table">
         <thead>
         <tr>
-            <th scope="col">First Name</th>
-            <th scope="col">Last Name</th>
-            <th scope="col">Email</th>
-            <th scope="col">Address</th>
-            <th scope="col">Action</th>
+            <th scope="col">{% translate "First Name" %}</th>
+            <th scope="col">{% translate "Last Name" %}</th>
+            <th scope="col">{% translate "Email" %}</th>
+            <th scope="col">{% translate "Address" %}</th>
+            <th scope="col">{% translate "Actions" %}</th>
         </tr>
         </thead>
         <tbody>
@@ -21,8 +22,8 @@
                 <td>{{ customer.email }}</td>
                 <td>{{ customer.address }}</td>
                 <td>
-                    <a href="{% url "customer-update" customer.id %}">Update</a> /
-                    <a href="{% url "customer-delete" customer.id %}">Delete</a>
+                    <a href="{% url "customer-update" customer.id %}">{% translate "Update" %}</a> /
+                    <a href="{% url "customer-delete" customer.id %}">{% translate "Delete" %}</a>
                 </td>
             </tr>
         {% endfor %}

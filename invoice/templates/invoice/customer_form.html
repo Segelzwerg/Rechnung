@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load django_bootstrap5 %}
 
 {% block content %}
@@ -14,9 +15,9 @@
             {% bootstrap_form address_form layout="floating" %}
             <input type="submit" class="btn btn-primary"
                     {% if customer %}
-                   value="Update Customer"
+                   value="{% translate "Update Customer" %}"
                     {% else %}
-                   value="Create Customer"{% endif %}>
+                   value="{% translate "Create Customer" %}"{% endif %}>
         </form>
     </div>
 {% endblock content %}
