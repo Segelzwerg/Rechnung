@@ -7,6 +7,8 @@
 ![GitHub Release Date](https://img.shields.io/github/release-date/Segelzwerg/Rechnung)
 ![GitHub License](https://img.shields.io/github/license/Segelzwerg/Rechnung)
 
+![Static Badge](https://img.shields.io/badge/translation-German-brightgreen)
+
 Django App for invoices
 
 Check out our [documentation](https://rechnung-django.readthedocs.io/en/latest/)

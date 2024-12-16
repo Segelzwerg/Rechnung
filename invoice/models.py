@@ -14,6 +14,7 @@ from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, 
     DateField, UniqueConstraint, OneToOneField, Q, F, TextChoices, BooleanField
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
+from django.utils.translation import gettext_lazy as _, pgettext_lazy
 from schwifty import IBAN, BIC
 
 from invoice.errors import FinalError
@@ -23,13 +24,17 @@ MAX_VALUE_DJANGO_SAVE = 2147483647
 
 class Address(Model):
     """Defines any type of address. For vendors as well as customers."""
-    line_1 = CharField(max_length=200)
-    line_2 = CharField(max_length=200, null=True, blank=True)
-    line_3 = CharField(max_length=200, null=True, blank=True)
-    postcode = CharField(max_length=10)
-    city = CharField(max_length=120)
-    state = CharField(max_length=200, null=True, blank=True)
-    country = CharField(max_length=120)
+    line_1 = CharField(_('first address line'), max_length=200)
+    line_2 = CharField(_('second address line'), max_length=200, null=True, blank=True)
+    line_3 = CharField(_('third address line'), max_length=200, null=True, blank=True)
+    postcode = CharField(_('postcode'), max_length=10)
+    city = CharField(_('city'), max_length=120)
+    state = CharField(_('state'), max_length=200, null=True, blank=True)
+    country = CharField(_('country'), max_length=120)
+
+    class Meta:
+        verbose_name = _('address')
+        verbose_name_plural = _('addresses')
 
     def __str__(self):
         export = self.line_1
@@ -47,7 +52,7 @@ def validate_iban(value):
         iban = IBAN(value)
         iban.validate()
     except ValueError as err:
-        raise ValidationError('Invalid IBAN.') from err
+        raise ValidationError(_('Invalid IBAN.')) from err
 
 
 def validate_bic(value):
@@ -55,14 +60,14 @@ def validate_bic(value):
     try:
         BIC(value).validate()
     except ValueError as err:
-        raise ValidationError('Invalid BIC.') from err
+        raise ValidationError(_('Invalid BIC.')) from err
 
 
 class BankAccount(Model):
     """Defines a bank account."""
-    owner = CharField(max_length=120, default='')
-    iban = CharField(max_length=120, validators=[validate_iban])
-    bic = CharField(max_length=120, validators=[validate_bic])
+    owner = CharField(pgettext_lazy('account owner', 'owner'), max_length=120, default='')
+    iban = CharField(_('IBAN'), max_length=120, validators=[validate_iban])
+    bic = CharField(_('BIC'), max_length=120, validators=[validate_bic])
 
     def save(self, *args, **kwargs):
         """Save the bank account."""
@@ -74,14 +79,22 @@ class BankAccount(Model):
             self.bic = BIC(self.bic)
         super().save(*args, **kwargs)
 
+    class Meta:
+        verbose_name = _('bank account')
+        verbose_name_plural = _('bank accounts')
+
 
 class Customer(Model):
     """Defines a customer."""
-    first_name = CharField(max_length=120)
-    last_name = CharField(max_length=120)
-    email = EmailField(max_length=256)
-    address = OneToOneField(Address, on_delete=CASCADE)
-    user = ForeignKey(User, on_delete=CASCADE)
+    first_name = CharField(_('first name'), max_length=120)
+    last_name = CharField(_('last name'), max_length=120)
+    email = EmailField(_('email'), max_length=256)
+    address = OneToOneField(Address, verbose_name=_('address'), on_delete=CASCADE)
+    user = ForeignKey(User, verbose_name=_('user'), on_delete=CASCADE)
+
+    class Meta:
+        verbose_name = _('customer')
+        verbose_name_plural = _('customers')
 
     @property
     def full_name(self):
@@ -94,15 +107,18 @@ class Customer(Model):
 
 class Vendor(Model):
     """Defines profiles for the invoicer."""
-    name = CharField(max_length=255)
-    company_name = CharField(max_length=255, null=True, blank=True)
-    address: Address = OneToOneField(Address, on_delete=CASCADE)
-    tax_id = CharField(max_length=120, null=True, blank=True)
-    bank_account: BankAccount = OneToOneField(BankAccount, on_delete=CASCADE, null=True, blank=True)
+    name = CharField(_('name'), max_length=255)
+    company_name = CharField(_('company name'), max_length=255, null=True, blank=True)
+    address: Address = OneToOneField(Address, verbose_name=_('address'), on_delete=CASCADE)
+    tax_id = CharField(_('tax ID'), max_length=120, null=True, blank=True)
+    bank_account: BankAccount = OneToOneField(BankAccount, verbose_name=_('bank account'), on_delete=CASCADE, null=True,
+                                              blank=True)
     user = ForeignKey(User, on_delete=CASCADE)
 
     class Meta:
         """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""
+        verbose_name = _('vendor')
+        verbose_name_plural = _('vendors')
         constraints = [UniqueConstraint(fields=['name', 'company_name'],
                                         name='unique_name_and_company_name')]
 
@@ -118,35 +134,38 @@ class Invoice(Model):
     # pylint: disable=too-many-ancestors
     class Currency(TextChoices):
         """Definition of commonly used currencies."""
-        EUR = 'EUR', 'Euro'
-        USD = 'USD', 'US Dollar'
-        JPY = 'JPY', 'Japanese Yen'
-        GBP = 'GBP', 'Pound Sterling'
-        CHF = 'CHF', 'Swiss Franc'
-        CAD = 'CAD', 'Canadian Dollar'
-        AUD = 'AUD', 'Australian Dollar'
-        NZD = 'NZD', 'New Zealand Dollar'
-        SEK = 'SEK', 'Swedish Krona'
-        DKK = 'DKK', 'Danish Krone'
-        NOK = 'NOK', 'Norwegian Krone'
-        HKD = 'HKD', 'Hong Kong Dollar'
-        CNY = 'CNY', 'Chinese Yuan'
+        EUR = 'EUR', _('Euro')
+        USD = 'USD', _('US Dollar')
+        JPY = 'JPY', _('Japanese Yen')
+        GBP = 'GBP', _('Pound Sterling')
+        CHF = 'CHF', _('Swiss Franc')
+        CAD = 'CAD', _('Canadian Dollar')
+        AUD = 'AUD', _('Australian Dollar')
+        NZD = 'NZD', _('New Zealand Dollar')
+        SEK = 'SEK', _('Swedish Krona')
+        DKK = 'DKK', _('Danish Krone')
+        NOK = 'NOK', _('Norwegian Krone')
+        HKD = 'HKD', _('Hong Kong Dollar')
+        CNY = 'CNY', _('Chinese Yuan')
 
-    invoice_number = IntegerField(validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
-    date = DateField()
-    vendor = ForeignKey(Vendor, on_delete=CASCADE)
-    customer = ForeignKey(Customer, on_delete=CASCADE)
-    currency = CharField(max_length=3, choices=Currency, default=Currency.EUR)
-    due_date = DateField(null=True, blank=True)
-    delivery_date = DateField(null=True, blank=True)
-    paid = BooleanField(default=False)
-    final = BooleanField(default=False)
+    invoice_number = IntegerField(_('invoice number'), validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
+    date = DateField(_('date'))
+    vendor = ForeignKey(Vendor, verbose_name=_('vendor'), on_delete=CASCADE)
+    customer = ForeignKey(Customer, verbose_name=_('customer'), on_delete=CASCADE)
+    currency = CharField(_('currency'), max_length=3, choices=Currency,
+                         default=Currency.EUR)
+    due_date = DateField(_('due date'), null=True, blank=True)
+    delivery_date = DateField(_('delivery date'), null=True, blank=True)
+    paid = BooleanField(_('paid'), default=False)
+    final = BooleanField(_('final'), default=False)
 
     class Meta:
         """
         Meta configuration of invoice. Ensure uniques of the combination invoice number and
         vendor profile.
         """
+        verbose_name = _('invoice')
+        verbose_name_plural = _('invoices')
         constraints = [UniqueConstraint(fields=['vendor', 'invoice_number'],
                                         name='unique_invoice_numbers_per_vendor'),
                        CheckConstraint(check=Q(due_date__gte=F('date')), name='due_date_gte_date')]
@@ -167,7 +186,7 @@ class Invoice(Model):
     @property
     def table_export(self):
         """Get the line items as list and export all of them as table with a header row."""
-        header = ['Name', 'Description', 'Quantity', 'Price', 'Tax', 'Net Total', 'Total']
+        header = [_('Name'), _('Description'), _('Quantity'), _('Price'), _('Tax'), _('Net Total'), _('Total')]
         item_list = [item.list_export for item in self.items]
         return [header] + item_list
 
@@ -235,19 +254,19 @@ def validate_two_digits_decimals(value):
 
 class InvoiceItem(Model):
     """Line item of an invoice."""
-    name = CharField(max_length=120)
-    description = CharField(max_length=1000)
-    quantity = DecimalField(max_digits=19, decimal_places=4,
+    name = CharField(_('invoice item'), max_length=120)
+    description = CharField(_('description'), max_length=1000)
+    quantity = DecimalField(_('quantity'), max_digits=19, decimal_places=4,
                             validators=[MinValueValidator(Decimal('0.0000')),
                                         MaxValueValidator(Decimal('1000000.0000'))])
-    unit = CharField(max_length=120, null=True, blank=True)
-    price = DecimalField(max_digits=19, decimal_places=2,
+    unit = CharField(_('unit'), max_length=120, null=True, blank=True)
+    price = DecimalField(_('price'), max_digits=19, decimal_places=2,
                          validators=[MinValueValidator(Decimal('-1000000.00')),
                                      MaxValueValidator(Decimal('1000000.00'))])
-    tax = DecimalField(max_digits=5, decimal_places=4,
+    tax = DecimalField(_('tax rate'), max_digits=5, decimal_places=4,
                        validators=[MinValueValidator(Decimal('0.0000')),
                                    MaxValueValidator(Decimal('1.0000'))])
-    invoice = ForeignKey(Invoice, on_delete=CASCADE)
+    invoice = ForeignKey(Invoice, verbose_name=_('invoice'), on_delete=CASCADE)
 
     @property
     def net_total(self) -> Decimal:

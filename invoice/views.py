@@ -7,6 +7,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.http import FileResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy, reverse
+from django.utils.translation import gettext as _
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.views.generic import TemplateView
 
@@ -26,7 +27,7 @@ class CustomerCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Customer
     form_class = CustomerForm
     success_url = reverse_lazy('customer-list')
-    success_message = 'Customer was created successfully.'
+    success_message = _('Customer was created successfully.')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -54,7 +55,7 @@ class CustomerUpdateView(SuccessMessageMixin, UpdateView):
     form_class = CustomerForm
     model = Customer
     success_url = reverse_lazy('customer-list')
-    success_message = 'Customer was updated successfully.'
+    success_message = _('Customer was updated successfully.')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -77,7 +78,7 @@ class CustomerDeleteView(SuccessMessageMixin, DeleteView):
     """Delete an existing customer."""
     model = Customer
     success_url = reverse_lazy('customer-list')
-    success_message = 'Customer was deleted successfully.'
+    success_message = _('Customer was deleted successfully.')
 
 
 class CustomerListView(ListView):
@@ -94,7 +95,7 @@ class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Create a new invoice."""
     form_class = InvoiceForm
     model = Invoice
-    success_message = 'Invoice was created successfully.'
+    success_message = _('Invoice was created successfully.')
 
     def get_success_url(self):
         return reverse('invoice-update', kwargs={'pk': self.object.id})
@@ -105,7 +106,7 @@ class InvoiceUpdateView(SuccessMessageMixin, UpdateView):
     form_class = InvoiceForm
     model = Invoice
     success_url = reverse_lazy('invoice-list')
-    success_message = 'Invoice was updated successfully.'
+    success_message = _('Invoice was updated successfully.')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -120,7 +121,7 @@ class InvoicePaidView(SuccessMessageMixin, UpdateView):
     """Mark an invoice as paid"""
     model = Invoice
     fields = ['paid']
-    success_message = 'Invoice was marked as paid successfully.'
+    success_message = _('Invoice was marked as paid successfully.')
     template_name = 'invoice/invoice_paid.html'
 
     def get_success_url(self):
@@ -139,7 +140,7 @@ class InvoiceDeleteView(SuccessMessageMixin, DeleteView):
     """Delete an existing invoice."""
     model = Invoice
     success_url = reverse_lazy('invoice-list')
-    success_message = 'Invoice was deleted successfully.'
+    success_message = _('Invoice was deleted successfully.')
 
 
 class InvoiceListView(LoginRequiredMixin, ListView):
@@ -169,7 +170,7 @@ class InvoiceItemCreateView(SuccessMessageMixin, CreateView):
     template_name = 'invoice/invoice_form.html'
     form_class = InvoiceItemForm
     model = InvoiceItem
-    success_message = 'Invoice item was created successfully.'
+    success_message = _('Invoice item was created successfully.')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -199,7 +200,7 @@ class InvoiceItemUpdateView(SuccessMessageMixin, UpdateView):
     form_class = InvoiceItemForm
     model = InvoiceItem
     pk_url_kwarg = 'invoice_item_id'
-    success_message = 'Invoice item was updated successfully.'
+    success_message = _('Invoice item was updated successfully.')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -220,7 +221,7 @@ class InvoiceItemDeleteView(SuccessMessageMixin, DeleteView):
     """Delete an existing invoice item."""
     model = InvoiceItem
     pk_url_kwarg = 'invoice_item_id'
-    success_message = 'Invoice item was deleted successfully.'
+    success_message = _('Invoice item was deleted successfully.')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -243,7 +244,7 @@ class VendorCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     form_class = VendorForm
     model = Vendor
     success_url = reverse_lazy('vendor-list')
-    success_message = 'Vendor was created successfully.'
+    success_message = _('Vendor was created successfully.')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -278,7 +279,7 @@ class VendorUpdateView(SuccessMessageMixin, UpdateView):
     form_class = VendorForm
     model = Vendor
     success_url = reverse_lazy('vendor-list')
-    success_message = 'Vendor was updated successfully.'
+    success_message = _('Vendor was updated successfully.')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -307,7 +308,7 @@ class VendorDeleteView(SuccessMessageMixin, DeleteView):
     """Delete an existing vendor."""
     model = Vendor
     success_url = reverse_lazy('vendor-list')
-    success_message = 'Vendor was deleted successfully.'
+    success_message = _('Vendor was deleted successfully.')
 
 
 class VendorListView(ListView):

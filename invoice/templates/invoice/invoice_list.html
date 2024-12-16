@@ -1,20 +1,21 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load django_bootstrap5 %}
 
 {% block content %}
-    <a class="btn btn-primary" role="button" href="{% url "invoice-add" %}">Add invoice</a>
+    <a class="btn btn-primary" role="button" href="{% url "invoice-add" %}">{% translate "Add invoice" %}</a>
     <table class="table">
         <thead>
         <tr>
-            <th scope="col">Invoice Number</th>
-            <th scope="col">Date</th>
-            <th scope="col">Due Date</th>
-            <th scope="col">Vendor</th>
-            <th scope="col">Customer</th>
-            <th scope="col">Net Total</th>
-            <th scope="col">Total</th>
-            <th scope="col">Paid</th>
-            <th scope="col">Action</th>
+            <th scope="col">{% translate "Invoice Number" %}</th>
+            <th scope="col">{% translate "Date" %}</th>
+            <th scope="col">{% translate "Due Date" %}</th>
+            <th scope="col">{% translate "Vendor" %}</th>
+            <th scope="col">{% translate "Customer" %}</th>
+            <th scope="col">{% translate "Net Total" %}</th>
+            <th scope="col">{% translate "Total" %}</th>
+            <th scope="col">{% translate "Paid" %}</th>
+            <th scope="col">{% translate "Actions" %}</th>
         </tr>
         </thead>
         <tbody>
@@ -33,9 +34,9 @@
                 <td class="text-end">{{ invoice.total_string }}</td>
                 <td>{{ invoice.paid }}</td>
                 <td>
-                    <a href="{% url "invoice-update" invoice.id %}">Update</a> /
-                    <a href="{% url "invoice-delete" invoice.id %}">Delete</a> /
-                    <a href="{% url "invoice-pdf" invoice.id %}">PDF</a> /
+                    <a href="{% url "invoice-update" invoice.id %}">{% translate "Update" %}</a> /
+                    <a href="{% url "invoice-delete" invoice.id %}">{% translate "Delete" %}</a> /
+                    <a href="{% url "invoice-pdf" invoice.id %}">{% translate "PDF" %}</a> /
                     <a href="{% url "invoice-paid" invoice.id %}">Mark paid</a>
                 </td>
             </tr>
