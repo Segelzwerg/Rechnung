@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rechnung"
-version = "0.2.0"
+version = "0.3.0"
 description = ""
 authors = ["Segelzwerg <25705862+Segelzwerg@users.noreply.github.com>", "iTitus <iTitus@users.noreply.github.com>"]
 readme = "README.md"
@@ -20,7 +20,7 @@ bandit = "^1.8"
 flake8 = "^7.1"
 coverage = "^7.6"
 pylint-django = "^2.6"
-hypothesis = "^6.121"
+hypothesis = "^6.122"
 
 
 [tool.poetry.group.doc.dependencies]
