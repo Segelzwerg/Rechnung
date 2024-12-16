@@ -7,6 +7,9 @@ try:
 except ImportError:
     from typing_extensions import deprecated
 
+# This is the recommended way as per django documentation.
+# Source: https://docs.djangoproject.com/en/5.1/topics/auth/customizing/#extending-the-existing-user-model
+# pylint: disable=import-auth-user
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
