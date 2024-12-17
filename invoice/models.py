@@ -93,7 +93,7 @@ class Customer(Model):
     last_name = CharField(_('last name'), max_length=120)
     email = EmailField(_('email'), max_length=256)
     address = OneToOneField(Address, verbose_name=_('address'), on_delete=CASCADE)
-    user = ForeignKey(User, verbose_name=_('user'), on_delete=CASCADE)
+    vendor = OneToOneField('Vendor', verbose_name=_('vendor'), on_delete=CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name = _('customer')
