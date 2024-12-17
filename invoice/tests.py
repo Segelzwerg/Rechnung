@@ -878,6 +878,7 @@ class InvoicePDFViewTestCase(TestCase):
                                               customer=customer, date=now())
 
     def test_pdf(self):
+        self.client.force_login(self.user)
         response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get('Content-Type'), 'application/pdf')
