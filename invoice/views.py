@@ -148,7 +148,7 @@ class InvoiceListView(LoginRequiredMixin, ListView):
     model = Invoice
 
     def get_queryset(self, **kwargs):
-        """Filter the invoice list by the logged in user."""
+        """Filter the invoice list by the logged-in user."""
         query_set = super().get_queryset(**kwargs)
         return query_set.filter(user_id=self.request.user.id)
 
