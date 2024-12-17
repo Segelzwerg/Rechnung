@@ -125,6 +125,10 @@ class AddCustomerViewTestCase(TestCase):
         self.client.force_login(self.user)
         first_name, last_name, email = customer_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
+        vendor_address = Address.objects.create(line_1=address_line_1 + 'a', line_2=address_line_2,
+                                                line_3=address_line_3,
+                                                city=city, postcode=postcode, state=state, country=country)
+        vendor = Vendor.objects.create(name="Test", company_name="Test", user=self.user, address=vendor_address)
         response = self.client.post(self.url, data={
             'first_name': first_name,
             'last_name': last_name,
@@ -136,6 +140,7 @@ class AddCustomerViewTestCase(TestCase):
             'postcode': postcode,
             'state': state,
             'country': country,
+            'vendor': vendor.id,
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/customers/')
@@ -192,12 +197,14 @@ class UpdateCustomerViewTestCase(TestCase):
         Customer.objects.all().delete()
 
     def test_get(self):
+        self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/customer_form.html')
 
     @given(build_customer_fields(), build_address_fields())
     def test_update_vendor(self, customer_fields, address_fields):
+        self.client.force_login(self.user)
         first_name, last_name, email = customer_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
         response = self.client.post(self.url, data={
@@ -211,6 +218,7 @@ class UpdateCustomerViewTestCase(TestCase):
             'postcode': postcode,
             'state': state,
             'country': country,
+            'vendor': self.vendor.id,
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/customers/')
@@ -221,6 +229,7 @@ class UpdateCustomerViewTestCase(TestCase):
         self.assertEqual(customer.address, address)
 
     def test_update_invalid_input_customer(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'first_name': 'John',
             'last_name': '',
@@ -235,6 +244,7 @@ class UpdateCustomerViewTestCase(TestCase):
                              errors=['This field is required.'])
 
     def test_update_invalid_input_address(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'first_name': 'John',
             'last_name': 'Doe',
@@ -247,6 +257,39 @@ class UpdateCustomerViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
+
+    def test_auth_required(self):
+        url = reverse("customer-update", args=[1])
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+
+    def test_not_own_customer_get(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        url = reverse('customer-update', args=[customer.id])
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, '/customers/')
+
+    def test_not_own_customer_post(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        url = reverse('customer-update', args=[customer.id])
+        first_name = 'John'
+        response = self.client.post(url, data={
+            'first_name': first_name,
+        }, follow=True)
+        self.assertRedirects(response, '/customers/')
 
 
 class CustomerListViewTestCase(TestCase):

@@ -1,8 +1,9 @@
 """Defines the views of the invoice app."""
 import io
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import FileResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
@@ -48,13 +49,25 @@ class CustomerCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return super().form_valid(form)
 
 
-class CustomerUpdateView(SuccessMessageMixin, UpdateView):
+class CustomerUpdateView(UserPassesTestMixin, UpdateView):
     """Update an existing customer."""
     template_name = 'invoice/customer_form.html'
     form_class = CustomerForm
     model = Customer
     success_url = reverse_lazy('customer-list')
     success_message = _('Customer was updated successfully.')
+    permission_denied_message = _('You are not allowed to edit this customer.')
+
+    def test_func(self):
+        """Check if the user is the owner of the customer."""
+        return self.request.user == self.get_object().vendor.user
+
+    def handle_no_permission(self):
+        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
+        if self.request.user.is_authenticated:
+            messages.warning(self.request, self.permission_denied_message)
+            return HttpResponseRedirect(reverse('customer-list'))
+        return HttpResponseRedirect(f'{reverse('login')}?next={self.request.path}')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
