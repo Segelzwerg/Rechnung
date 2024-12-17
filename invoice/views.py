@@ -313,3 +313,8 @@ class VendorDeleteView(SuccessMessageMixin, DeleteView):
 class VendorListView(ListView):
     """List all vendors."""
     model = Vendor
+
+    def get_queryset(self, **kwargs):
+        """Filter the customer list by the logged-in user."""
+        query_set = super().get_queryset(**kwargs)
+        return query_set.filter(user_id=self.request.user.id)

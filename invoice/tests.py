@@ -475,6 +475,32 @@ class UpdateVendorViewTestCase(TestCase):
                              errors=['This field is required.'])
 
 
+class VendorListViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        cls.vendor = Vendor.objects.create(name="John", company_name="Doe Company", address=address, user=cls.user)
+        cls.url = reverse('vendor-list')
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
+    def test_only_users_vendors(self):
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        second_address = Address.objects.create(line_1="Test2", postcode="12345", city="Test2", country="Germany")
+        second_vendor = Vendor.objects.create(name="Test2", company_name="Test2", user=second_user,
+                                              address=second_address)
+
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        vendors = response.context_data['vendor_list']
+        self.assertEqual(len(vendors), 1)
+        self.assertEqual(vendors[0], self.vendor)
+        self.assertNotIn(second_vendor, vendors)
+
+
 class BankAccountTestCase(TestCase):
     def test_bic_overwrite(self):
         user_iban = 'DE02500105170137075030'
