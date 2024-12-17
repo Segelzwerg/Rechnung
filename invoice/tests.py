@@ -892,13 +892,24 @@ class InvoiceListViewTestCase(TestCase):
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
         cls.url = reverse('invoice-list')
+        cls.address = Address.objects.create()
+        cls.vendor = Vendor()
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
+        Address.objects.all().delete()
 
     def test_only_users_invoices(self):
+        second_address = Address.objects.create()
+        customer = Customer.objects.create(user=self.user, address=self.address)
+        second_user = User.objects.create_user(username="test2", password="password")
+        second_vendor = Vendor.objects.create(user=second_user, address=second_address)
         self.client.force_login(self.user)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(),
+                                         customer=customer)
+        second_invoice = Invoice.objects.create(invoice_number=2, vendor=second_vendor, date=now(),
+                                                customer=customer)
         response = self.client.get(self.url)
         invoice_list = response.context_data['invoice_list']
         self.assertEqual(len(invoice_list), 1)
