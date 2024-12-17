@@ -45,7 +45,6 @@ class CustomerCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         address = address_form.save()
         customer = form.save(commit=False)
         customer.address = address
-        customer.user = self.request.user
         return super().form_valid(form)
 
 
@@ -86,9 +85,9 @@ class CustomerListView(ListView):
     model = Customer
 
     def get_queryset(self, **kwargs):
-        """Filter the customer list by the logged in user."""
+        """Filter the customer list by the logged-in user."""
         query_set = super().get_queryset(**kwargs)
-        return query_set.filter(user_id=self.request.user.id)
+        return query_set.filter(vendor__user_id=self.request.user.id)
 
 
 class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -150,7 +149,7 @@ class InvoiceListView(LoginRequiredMixin, ListView):
     def get_queryset(self, **kwargs):
         """Filter the invoice list by the logged-in user."""
         query_set = super().get_queryset(**kwargs)
-        return query_set.filter(user_id=self.request.user.id)
+        return query_set.filter(vendor__user_id=self.request.user.id)
 
 
 @login_required

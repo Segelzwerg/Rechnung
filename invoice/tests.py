@@ -171,10 +171,13 @@ class UpdateCustomerViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        cls.vendor = Vendor.objects.create(name="Test", company_name="Test", user=cls.user, address=address)
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
+        Vendor.objects.all().delete()
 
     def setUp(self):
         customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com",
@@ -182,7 +185,7 @@ class UpdateCustomerViewTestCase(TestCase):
                                                line_1='Musterstraße 1',
                                                postcode='12345', city='Musterstadt',
                                                country='Germany'),
-                                           user=self.user)
+                                           vendor=self.vendor)
         self.url = reverse('customer-update', args=[customer.id])
 
     def tearDown(self):
@@ -250,6 +253,8 @@ class CustomerListViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        cls.vendor = Vendor.objects.create(name="Test", company_name="Test", user=cls.user, address=address)
         cls.url = reverse('customer-list')
 
     @classmethod
@@ -258,18 +263,21 @@ class CustomerListViewTestCase(TestCase):
 
     def test_only_users_customers(self):
         second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        second_address = Address.objects.create(line_1="Test2", postcode="12345", city="Test2", country="Germany")
+        second_vendor = Vendor.objects.create(name="Test2", company_name="Test2", user=second_user,
+                                              address=second_address)
         customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com",
                                            address=Address.objects.create(
                                                line_1='Musterstraße 1',
                                                postcode='12345', city='Musterstadt',
                                                country='Germany'),
-                                           user=self.user)
+                                           vendor=self.vendor)
         second_customer = Customer.objects.create(first_name="Johnny", last_name="Doe", email="John@doe.com",
                                                   address=Address.objects.create(
                                                       line_1='Musterstraße 1',
                                                       postcode='12345', city='Musterstadt',
                                                       country='Germany'),
-                                                  user=second_user)
+                                                  vendor=second_vendor)
         self.client.force_login(self.user)
         response = self.client.get(self.url)
         customer_list = response.context_data['customer_list']
@@ -292,7 +300,7 @@ class CustomerModelTestCase(TestCase):
         address = Address.objects.create(line_1="Musterstraße 1", postcode="12345", city="Musterstadt",
                                          country="Germany")
         customer = Customer.objects.create(first_name='John', last_name='Doe', email=long_email, address=address,
-                                           user=self.user)
+                                           )
         with self.assertRaises(ValidationError):
             customer.full_clean()
 
@@ -518,7 +526,7 @@ class InvoiceItemModelTestCase(TestCase):
     def setUp(self):
         address = Address.objects.create()
         vendor = Vendor.objects.create(address=address, user=self.user)
-        customer = Customer.objects.create(address=address, user=self.user)
+        customer = Customer.objects.create(address=address, vendor=vendor)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer,
                                               date=now())
 
@@ -712,8 +720,8 @@ class InvoiceModelTestCase(TestCase):
 
     def setUp(self):
         address = Address.objects.create()
-        _ = Vendor.objects.create(address=address, user=self.user)
-        _ = Customer.objects.create(address=address, user=self.user)
+        vendor = Vendor.objects.create(address=address, user=self.user)
+        _ = Customer.objects.create(address=address, vendor=vendor)
 
     def tearDown(self):
         Vendor.objects.all().delete()
@@ -865,7 +873,7 @@ class InvoicePDFViewTestCase(TestCase):
     def setUp(self):
         address = Address.objects.create()
         vendor = Vendor.objects.create(address=address, user=self.user)
-        customer = Customer.objects.create(address=address, user=self.user)
+        customer = Customer.objects.create(address=address, vendor=vendor)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
                                               customer=customer, date=now())
 
@@ -893,7 +901,7 @@ class InvoiceListViewTestCase(TestCase):
         cls.user = User.objects.create_user(username="test", password="password")
         cls.url = reverse('invoice-list')
         cls.address = Address.objects.create()
-        cls.vendor = Vendor()
+        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
 
     @classmethod
     def tearDownClass(cls):
@@ -902,7 +910,7 @@ class InvoiceListViewTestCase(TestCase):
 
     def test_only_users_invoices(self):
         second_address = Address.objects.create()
-        customer = Customer.objects.create(user=self.user, address=self.address)
+        customer = Customer.objects.create(vendor=self.vendor, address=self.address)
         second_user = User.objects.create_user(username="test2", password="password")
         second_vendor = Vendor.objects.create(user=second_user, address=second_address)
         self.client.force_login(self.user)
