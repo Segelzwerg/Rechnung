@@ -142,7 +142,7 @@ class InvoiceDeleteView(SuccessMessageMixin, DeleteView):
     success_message = _('Invoice was deleted successfully.')
 
 
-class InvoiceListView(LoginRequiredMixin, ListView):
+class InvoiceListView(LoginRequiredMixin, ListView):  # pylint: disable=too-many-ancestors
     """List all invoices."""
     model = Invoice
 
