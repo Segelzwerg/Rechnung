@@ -71,7 +71,7 @@ class CustomerUpdateView(UserPassesTestMixin, UpdateView):
             return HttpResponseRedirect(reverse('customer-list'))
         next_url = reverse('customer-update', args=[self.kwargs['pk']])
         base_url = reverse('login')
-        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))
+        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
         return HttpResponseRedirect(url)
 
     def get_context_data(self, **kwargs):
