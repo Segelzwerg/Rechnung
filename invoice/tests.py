@@ -329,6 +329,60 @@ class CustomerListViewTestCase(TestCase):
         self.assertNotIn(second_customer, customer_list)
 
 
+class CustomerDeleteViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        cls.vendor = Vendor.objects.create(name="Test", company_name="Test", user=cls.user, address=address)
+        cls.customer = Customer.objects.create(first_name='John', last_name='Doe', email='john@doe.com',
+                                               vendor=cls.vendor, address=address, )
+
+    @classmethod
+    def tearDownClass(cls):
+        Customer.objects.all().delete()
+        Vendor.objects.all().delete()
+        Address.objects.all().delete()
+        User.objects.all().delete()
+
+    def setUp(self):
+        address = Address.objects.create(line_1="Test2", postcode="12345", city="Test", country="Germany")
+        self.customer = Customer.objects.create(first_name='John', last_name='Doe', email='john@doe.com',
+                                                vendor=self.vendor, address=address, )
+
+    def tearDown(self):
+        Customer.objects.all().delete()
+
+    def test_auth_required(self):
+        url = reverse("customer-delete", args=[self.customer.id])
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+        self.assertEqual(Customer.objects.count(), 1)
+
+    def test_not_own_customer_get(self):
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        self.client.force_login(second_user)
+        url = reverse('customer-delete', args=[self.customer.id])
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, '/customers/')
+        self.assertEqual(Customer.objects.count(), 1)
+
+    def test_not_own_customer_post(self):
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        self.client.force_login(second_user)
+        url = reverse('customer-delete', args=[self.customer.id])
+        response = self.client.post(url, follow=True)
+        self.assertRedirects(response, '/customers/')
+        self.assertEqual(Customer.objects.count(), 1)
+
+    def test_delete_customer(self):
+        self.client.force_login(self.user)
+        url = reverse("customer-delete", args=[self.customer.id])
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, '/customers/')
+        self.assertEqual(Customer.objects.count(), 0)
+
+
 class CustomerModelTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
