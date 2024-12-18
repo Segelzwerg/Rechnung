@@ -67,7 +67,8 @@ class CustomerUpdateView(UserPassesTestMixin, UpdateView):
         if self.request.user.is_authenticated:
             messages.warning(self.request, self.permission_denied_message)
             return HttpResponseRedirect(reverse('customer-list'))
-        return HttpResponseRedirect(f'{reverse('login')}?next={self.request.path}')
+        next_url = reverse('customer-update', args=[self.kwargs['pk']])
+        return HttpResponseRedirect(f'{reverse('login')}?next={next_url}')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
