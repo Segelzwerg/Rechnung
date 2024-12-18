@@ -185,13 +185,13 @@ class UpdateCustomerViewTestCase(TestCase):
         Vendor.objects.all().delete()
 
     def setUp(self):
-        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com",
-                                           address=Address.objects.create(
-                                               line_1='Musterstraße 1',
-                                               postcode='12345', city='Musterstadt',
-                                               country='Germany'),
-                                           vendor=self.vendor)
-        self.url = reverse('customer-update', args=[customer.id])
+        self.customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com",
+                                                address=Address.objects.create(
+                                                    line_1='Musterstraße 1',
+                                                    postcode='12345', city='Musterstadt',
+                                                    country='Germany'),
+                                                vendor=self.vendor)
+        self.url = reverse('customer-update', args=[self.customer.id])
 
     def tearDown(self):
         Customer.objects.all().delete()
@@ -259,7 +259,7 @@ class UpdateCustomerViewTestCase(TestCase):
                              errors=['This field is required.'])
 
     def test_auth_required(self):
-        url = reverse("customer-update", args=[1])
+        url = reverse("customer-update", args=[self.customer.id])
         response = self.client.post(f"{url}", follow=True)
         self.assertRedirects(response, f"/accounts/login/?next={url}")
 
