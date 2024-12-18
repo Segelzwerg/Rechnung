@@ -32,6 +32,7 @@ class CustomerCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['form'].fields['vendor'].queryset = Vendor.objects.filter(user_id=self.request.user.id)
         if self.request.POST:
             context['address_form'] = AddressForm(self.request.POST)
         else:
@@ -72,6 +73,7 @@ class CustomerUpdateView(UserPassesTestMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['form'].fields['vendor'].queryset = Vendor.objects.filter(user_id=self.request.user.id)
         if self.request.POST:
             context['address_form'] = AddressForm(self.request.POST)
         else:
