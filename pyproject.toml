@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rechnung"
-version = "0.3.0"
+version = "0.3.1"
 description = ""
 authors = ["Segelzwerg <25705862+Segelzwerg@users.noreply.github.com>", "iTitus <iTitus@users.noreply.github.com>"]
 readme = "README.md"
