@@ -8,6 +8,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.http import FileResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy, reverse
+from django.utils.http import urlencode
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.views.generic import TemplateView
@@ -69,7 +70,9 @@ class CustomerUpdateView(UserPassesTestMixin, UpdateView):
             messages.warning(self.request, self.permission_denied_message)
             return HttpResponseRedirect(reverse('customer-list'))
         next_url = reverse('customer-update', args=[self.kwargs['pk']])
-        return HttpResponseRedirect(f'{reverse('login')}?next={next_url}')
+        base_url = reverse('login')
+        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))
+        return HttpResponseRedirect(url)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
