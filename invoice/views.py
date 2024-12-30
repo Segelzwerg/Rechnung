@@ -92,11 +92,25 @@ class CustomerUpdateView(UserPassesTestMixin, UpdateView):
         return super().form_valid(form)
 
 
-class CustomerDeleteView(SuccessMessageMixin, DeleteView):
+class CustomerDeleteView(UserPassesTestMixin, SuccessMessageMixin, DeleteView):
     """Delete an existing customer."""
     model = Customer
     success_url = reverse_lazy('customer-list')
     success_message = _('Customer was deleted successfully.')
+
+    def test_func(self):
+        """Check if the user is the owner of the customer."""
+        return self.request.user == self.get_object().vendor.user
+
+    def handle_no_permission(self):
+        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
+        if self.request.user.is_authenticated:
+            messages.warning(self.request, self.permission_denied_message)
+            return HttpResponseRedirect(reverse('customer-list'))
+        next_url = reverse('customer-delete', args=[self.kwargs['pk']])
+        base_url = reverse('login')
+        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
+        return HttpResponseRedirect(url)
 
 
 class CustomerListView(ListView):
