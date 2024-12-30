@@ -335,8 +335,6 @@ class CustomerDeleteViewTestCase(TestCase):
         cls.user = User.objects.create_user(username="test", password="password")
         address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
         cls.vendor = Vendor.objects.create(name="Test", company_name="Test", user=cls.user, address=address)
-        cls.customer = Customer.objects.create(first_name='John', last_name='Doe', email='john@doe.com',
-                                               vendor=cls.vendor, address=address, )
 
     @classmethod
     def tearDownClass(cls):
