@@ -163,12 +163,26 @@ class InvoiceUpdateView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
         return HttpResponseRedirect(url)
 
 
-class InvoicePaidView(SuccessMessageMixin, UpdateView):
+class InvoicePaidView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
     """Mark an invoice as paid"""
     model = Invoice
     fields = ['paid']
     success_message = _('Invoice was marked as paid successfully.')
     template_name = 'invoice/invoice_paid.html'
+
+    def test_func(self):
+        """Check if the user is the owner of the customer."""
+        return self.request.user == self.get_object().vendor.user
+
+    def handle_no_permission(self):
+        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
+        if self.request.user.is_authenticated:
+            messages.warning(self.request, self.permission_denied_message)
+            return HttpResponseRedirect(reverse('customer-list'))
+        next_url = reverse('invoice-paid', args=[self.kwargs['pk']])
+        base_url = reverse('login')
+        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
+        return HttpResponseRedirect(url)
 
     def get_success_url(self):
         """Redirect to the invoice detail page."""
