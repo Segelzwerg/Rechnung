@@ -156,7 +156,7 @@ class InvoiceUpdateView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
         """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
         if self.request.user.is_authenticated:
             messages.warning(self.request, self.permission_denied_message)
-            return HttpResponseRedirect(reverse('customer-list'))
+            return HttpResponseRedirect(reverse('invoice-list'))
         next_url = reverse('invoice-update', args=[self.kwargs['pk']])
         base_url = reverse('login')
         url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
@@ -178,7 +178,7 @@ class InvoicePaidView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
         """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
         if self.request.user.is_authenticated:
             messages.warning(self.request, self.permission_denied_message)
-            return HttpResponseRedirect(reverse('customer-list'))
+            return HttpResponseRedirect(reverse('invoice-list'))
         next_url = reverse('invoice-paid', args=[self.kwargs['pk']])
         base_url = reverse('login')
         url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
@@ -196,11 +196,25 @@ class InvoicePaidView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class InvoiceDeleteView(SuccessMessageMixin, DeleteView):
+class InvoiceDeleteView(UserPassesTestMixin, SuccessMessageMixin, DeleteView):
     """Delete an existing invoice."""
     model = Invoice
     success_url = reverse_lazy('invoice-list')
     success_message = _('Invoice was deleted successfully.')
+
+    def test_func(self):
+        """Check if the user is the owner of the customer."""
+        return self.request.user == self.get_object().vendor.user
+
+    def handle_no_permission(self):
+        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
+        if self.request.user.is_authenticated:
+            messages.warning(self.request, self.permission_denied_message)
+            return HttpResponseRedirect(reverse('invoice-list'))
+        next_url = reverse('invoice-delete', args=[self.kwargs['pk']])
+        base_url = reverse('login')
+        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
+        return HttpResponseRedirect(url)
 
 
 class InvoiceListView(LoginRequiredMixin, ListView):  # pylint: disable=too-many-ancestors
@@ -225,12 +239,28 @@ def pdf_invoice(request, invoice_id) -> HttpResponseForbidden | FileResponse:
     return FileResponse(buffer, as_attachment=False, filename="invoice.pdf")
 
 
-class InvoiceItemCreateView(SuccessMessageMixin, CreateView):
+class InvoiceItemCreateView(UserPassesTestMixin, SuccessMessageMixin, CreateView):
     """Create a new invoice item."""
     template_name = 'invoice/invoice_form.html'
     form_class = InvoiceItemForm
     model = InvoiceItem
     success_message = _('Invoice item was created successfully.')
+
+    def test_func(self):
+        """Check if the user is the owner of the customer."""
+        invoice_id = self.kwargs['invoice_id']
+        invoice = get_object_or_404(Invoice, pk=invoice_id)
+        return self.request.user == invoice.vendor.user
+
+    def handle_no_permission(self):
+        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
+        if self.request.user.is_authenticated:
+            messages.warning(self.request, self.permission_denied_message)
+            return HttpResponseRedirect(reverse('invoice-list'))
+        next_url = reverse('invoice-item-add', args=[self.kwargs['invoice_id']])
+        base_url = reverse('login')
+        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
+        return HttpResponseRedirect(url)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
