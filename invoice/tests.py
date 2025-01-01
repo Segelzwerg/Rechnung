@@ -1277,6 +1277,82 @@ class InvoiceItemCreateViewTestCase(TestCase):
         self.assertEqual(InvoiceItem.objects.all().count(), 0)
 
 
+class InvoiceItemUpdateViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        cls.address = Address.objects.create()
+        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
+        cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+        Address.objects.all().delete()
+        Vendor.objects.all().delete()
+
+    def setUp(self):
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(),
+                                              customer=self.customer)
+        self.item = InvoiceItem.objects.create(name='Work', description='Hard', quantity=1, unit='Hour', price=1000,
+                                               tax=0.19, invoice=self.invoice)
+
+    def tearDown(self):
+        InvoiceItem.objects.all().delete()
+        Invoice.objects.all().delete()
+
+    def test_post(self):
+        self.client.force_login(self.user)
+        url = reverse('invoice-item-update', args=[self.invoice.id, self.item.id])
+        data = {'name': 'Party', 'description': self.item.description, 'quantity': self.item.quantity,
+                'unit': self.item.unit, 'price': self.item.price, 'tax': self.item.tax}
+        response = self.client.post(url, data=data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(InvoiceItem.objects.get().name, 'Party')
+
+    def test_auth_required(self):
+        url = reverse('invoice-item-update', args=[self.invoice.id, self.item.id])
+        data = {'name': 'Party', 'description': self.item.description, 'quantity': self.item.quantity,
+                'unit': self.item.unit, 'price': self.item.price, 'tax': self.item.tax}
+        response = self.client.post(url, data=data, follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+        self.assertEqual(InvoiceItem.objects.get().name, 'Work')
+
+    def test_not_own_invoice_get(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+        item = InvoiceItem.objects.create(name='Work', description='Hard', quantity=1, unit='Hour', price=1000,
+                                          tax=0.19, invoice=invoice)
+        url = reverse('invoice-item-update', args=[invoice.id, item.id])
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, '/invoices/')
+
+    def test_not_own_invoice_post(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+        item = InvoiceItem.objects.create(name='Work', description='Hard', quantity=1, unit='Hour', price=1000,
+                                          tax=0.19, invoice=invoice)
+        data = {'name': 'Party', 'description': item.description, 'quantity': item.quantity,
+                'unit': item.unit, 'price': item.price, 'tax': item.tax}
+        url = reverse('invoice-item-update', args=[invoice.id, item.id])
+        response = self.client.post(url, data=data, follow=True)
+        self.assertRedirects(response, '/invoices/')
+        self.assertEqual(InvoiceItem.objects.get(invoice_id=invoice.id).name, 'Work')
+
+
 class AddInvoiceTestCase(TestCase):
     def test_login_required(self):
         url = reverse("invoice-add")

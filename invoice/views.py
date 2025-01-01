@@ -284,13 +284,29 @@ class InvoiceItemCreateView(UserPassesTestMixin, SuccessMessageMixin, CreateView
         return super().form_valid(form)
 
 
-class InvoiceItemUpdateView(SuccessMessageMixin, UpdateView):
+class InvoiceItemUpdateView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
     """Update an existing invoice item."""
     template_name = 'invoice/invoice_form.html'
     form_class = InvoiceItemForm
     model = InvoiceItem
     pk_url_kwarg = 'invoice_item_id'
     success_message = _('Invoice item was updated successfully.')
+
+    def test_func(self):
+        """Check if the user is the owner of the customer."""
+        invoice_id = self.kwargs['invoice_id']
+        invoice = get_object_or_404(Invoice, pk=invoice_id)
+        return self.request.user == invoice.vendor.user
+
+    def handle_no_permission(self):
+        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
+        if self.request.user.is_authenticated:
+            messages.warning(self.request, self.permission_denied_message)
+            return HttpResponseRedirect(reverse('invoice-list'))
+        next_url = reverse('invoice-item-update', args=[self.kwargs['invoice_id'], self.kwargs['invoice_item_id']])
+        base_url = reverse('login')
+        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
+        return HttpResponseRedirect(url)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
