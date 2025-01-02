@@ -18,6 +18,22 @@ from invoice.forms import InvoiceItemForm, AddressForm, BankAccountForm, Custome
 from invoice.models import Vendor, Customer, Invoice, InvoiceItem
 
 
+class OwnMixin(UserPassesTestMixin):
+    def test_func(self):
+        """Check if the user is the owner of the customer."""
+        return self.request.user == self.get_object().vendor.user
+
+    def handle_no_permission(self, login_redirect='start', permission_redirect='start'):
+        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
+        if self.request.user.is_authenticated:
+            messages.warning(self.request, self.permission_denied_message)
+            return HttpResponseRedirect(reverse(permission_redirect))
+        next_url = reverse(login_redirect, args=[self.kwargs['pk']])
+        base_url = reverse('login')
+        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
+        return HttpResponseRedirect(url)
+
+
 class StartView(TemplateView):
     """The start page."""
     template_name = 'invoice/start.html'
@@ -51,7 +67,7 @@ class CustomerCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return super().form_valid(form)
 
 
-class CustomerUpdateView(UserPassesTestMixin, UpdateView):
+class CustomerUpdateView(OwnMixin, UpdateView):
     """Update an existing customer."""
     template_name = 'invoice/customer_form.html'
     form_class = CustomerForm
@@ -60,19 +76,8 @@ class CustomerUpdateView(UserPassesTestMixin, UpdateView):
     success_message = _('Customer was updated successfully.')
     permission_denied_message = _('You are not allowed to edit this customer.')
 
-    def test_func(self):
-        """Check if the user is the owner of the customer."""
-        return self.request.user == self.get_object().vendor.user
-
-    def handle_no_permission(self):
-        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
-        if self.request.user.is_authenticated:
-            messages.warning(self.request, self.permission_denied_message)
-            return HttpResponseRedirect(reverse('customer-list'))
-        next_url = reverse('customer-update', args=[self.kwargs['pk']])
-        base_url = reverse('login')
-        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
-        return HttpResponseRedirect(url)
+    def handle_no_permission(self, login_redirect='customer-update', permission_redirect='customer-list'):
+        return super().handle_no_permission(login_redirect, permission_redirect)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -92,25 +97,14 @@ class CustomerUpdateView(UserPassesTestMixin, UpdateView):
         return super().form_valid(form)
 
 
-class CustomerDeleteView(UserPassesTestMixin, SuccessMessageMixin, DeleteView):
+class CustomerDeleteView(OwnMixin, SuccessMessageMixin, DeleteView):
     """Delete an existing customer."""
     model = Customer
     success_url = reverse_lazy('customer-list')
     success_message = _('Customer was deleted successfully.')
 
-    def test_func(self):
-        """Check if the user is the owner of the customer."""
-        return self.request.user == self.get_object().vendor.user
-
-    def handle_no_permission(self):
-        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
-        if self.request.user.is_authenticated:
-            messages.warning(self.request, self.permission_denied_message)
-            return HttpResponseRedirect(reverse('customer-list'))
-        next_url = reverse('customer-delete', args=[self.kwargs['pk']])
-        base_url = reverse('login')
-        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
-        return HttpResponseRedirect(url)
+    def handle_no_permission(self, login_redirect='customer-delete', permission_redirect='customer-list'):
+        return super().handle_no_permission(login_redirect, permission_redirect)
 
 
 class CustomerListView(ListView):
@@ -133,7 +127,7 @@ class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return reverse('invoice-update', kwargs={'pk': self.object.id})
 
 
-class InvoiceUpdateView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
+class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
     """Update an existing invoice."""
     form_class = InvoiceForm
     model = Invoice
@@ -148,41 +142,19 @@ class InvoiceUpdateView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
             context['invoice_item_form'] = InvoiceItemForm()
         return context
 
-    def test_func(self):
-        """Check if the user is the owner of the customer."""
-        return self.request.user == self.get_object().vendor.user
-
-    def handle_no_permission(self):
-        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
-        if self.request.user.is_authenticated:
-            messages.warning(self.request, self.permission_denied_message)
-            return HttpResponseRedirect(reverse('invoice-list'))
-        next_url = reverse('invoice-update', args=[self.kwargs['pk']])
-        base_url = reverse('login')
-        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
-        return HttpResponseRedirect(url)
+    def handle_no_permission(self, login_redirect='invoice-update', permission_redirect='invoice-list'):
+        return super().handle_no_permission(login_redirect, permission_redirect)
 
 
-class InvoicePaidView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
+class InvoicePaidView(OwnMixin, SuccessMessageMixin, UpdateView):
     """Mark an invoice as paid"""
     model = Invoice
     fields = ['paid']
     success_message = _('Invoice was marked as paid successfully.')
     template_name = 'invoice/invoice_paid.html'
 
-    def test_func(self):
-        """Check if the user is the owner of the customer."""
-        return self.request.user == self.get_object().vendor.user
-
-    def handle_no_permission(self):
-        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
-        if self.request.user.is_authenticated:
-            messages.warning(self.request, self.permission_denied_message)
-            return HttpResponseRedirect(reverse('invoice-list'))
-        next_url = reverse('invoice-paid', args=[self.kwargs['pk']])
-        base_url = reverse('login')
-        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
-        return HttpResponseRedirect(url)
+    def handle_no_permission(self, login_redirect='invoice-paid', permission_redirect='invoice-list'):
+        return super().handle_no_permission(login_redirect, permission_redirect)
 
     def get_success_url(self):
         """Redirect to the invoice detail page."""
@@ -196,25 +168,14 @@ class InvoicePaidView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class InvoiceDeleteView(UserPassesTestMixin, SuccessMessageMixin, DeleteView):
+class InvoiceDeleteView(OwnMixin, SuccessMessageMixin, DeleteView):
     """Delete an existing invoice."""
     model = Invoice
     success_url = reverse_lazy('invoice-list')
     success_message = _('Invoice was deleted successfully.')
 
-    def test_func(self):
-        """Check if the user is the owner of the customer."""
-        return self.request.user == self.get_object().vendor.user
-
-    def handle_no_permission(self):
-        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
-        if self.request.user.is_authenticated:
-            messages.warning(self.request, self.permission_denied_message)
-            return HttpResponseRedirect(reverse('invoice-list'))
-        next_url = reverse('invoice-delete', args=[self.kwargs['pk']])
-        base_url = reverse('login')
-        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
-        return HttpResponseRedirect(url)
+    def handle_no_permission(self, login_redirect='invoice-delete', permission_redirect='invoice-list'):
+        return super().handle_no_permission(login_redirect, permission_redirect)
 
 
 class InvoiceListView(LoginRequiredMixin, ListView):  # pylint: disable=too-many-ancestors
