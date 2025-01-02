@@ -511,6 +511,7 @@ class UpdateVendorViewTestCase(TestCase):
         Vendor.objects.all().delete()
 
     def test_get(self):
+        self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/vendor_form.html')
@@ -520,6 +521,7 @@ class UpdateVendorViewTestCase(TestCase):
         name, company, tax_id = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
         owner, iban, bic = bank_fields
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
@@ -546,6 +548,7 @@ class UpdateVendorViewTestCase(TestCase):
         self.assertEqual(vendor.bank_account, bank_account)
 
     def test_update_invalid_input_address(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'name': 'John',
             'company_name': 'John Doe Company',
@@ -558,6 +561,7 @@ class UpdateVendorViewTestCase(TestCase):
                              errors=['This field is required.'])
 
     def test_update_invalid_input_bank_account(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'name': 'John',
             'company_name': 'John Doe Company',

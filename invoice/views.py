@@ -41,6 +41,29 @@ class OwnMixin(UserPassesTestMixin):
         return HttpResponseRedirect(url)
 
 
+class OwnVendorMixin(UserPassesTestMixin):
+    """Use in views that have a vendor object to verify ownership."""
+
+    def test_func(self):
+        """Check if the user is the owner of the object via vendor's user."""
+        return self.request.user == self.get_object().user
+
+    def handle_no_permission(self, login_redirect='start', permission_redirect='start'):
+        """
+        Redirects to login if the user is not authenticated. Otherwise, redirect to the the permission page.
+        :param login_redirect: Name of the target view after logging in as an owner.
+        :param permission_redirect: Name of the target view if user's permissions are not sufficient.
+        :return: HTTP redirect.
+        """
+        if self.request.user.is_authenticated:
+            messages.warning(self.request, self.permission_denied_message)
+            return HttpResponseRedirect(reverse(permission_redirect))
+        next_url = reverse(login_redirect, args=[self.kwargs['pk']])
+        base_url = reverse('login')
+        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
+        return HttpResponseRedirect(url)
+
+
 class OwnItemMixin(UserPassesTestMixin):
     """Use in views that are invoice item related and require a permission check."""
 
@@ -362,13 +385,16 @@ class VendorCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return super().form_valid(form)
 
 
-class VendorUpdateView(SuccessMessageMixin, UpdateView):
+class VendorUpdateView(OwnVendorMixin, SuccessMessageMixin, UpdateView):
     """Update an existing vendor. Including the bank account and address."""
     template_name = 'invoice/vendor_form.html'
     form_class = VendorForm
     model = Vendor
     success_url = reverse_lazy('vendor-list')
     success_message = _('Vendor was updated successfully.')
+
+    def handle_no_permission(self, login_redirect='vendor-update', permission_redirect='vendor-list'):
+        return super().handle_no_permission(login_redirect=login_redirect, permission_redirect=permission_redirect)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -393,11 +419,14 @@ class VendorUpdateView(SuccessMessageMixin, UpdateView):
         return super().form_valid(form)
 
 
-class VendorDeleteView(SuccessMessageMixin, DeleteView):
+class VendorDeleteView(OwnVendorMixin, SuccessMessageMixin, DeleteView):
     """Delete an existing vendor."""
     model = Vendor
     success_url = reverse_lazy('vendor-list')
     success_message = _('Vendor was deleted successfully.')
+
+    def handle_no_permission(self, login_redirect='vendor-delete', permission_redirect='vendor-list'):
+        return super().handle_no_permission(login_redirect=login_redirect, permission_redirect=permission_redirect)
 
 
 class VendorListView(ListView):
