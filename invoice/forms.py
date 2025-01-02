@@ -32,7 +32,7 @@ class CustomerForm(ModelForm):
 
     class Meta:
         model = Customer
-        fields = ['first_name', 'last_name', 'email']
+        fields = ['first_name', 'last_name', 'email', 'vendor']
 
 
 class AddressForm(ModelForm):
