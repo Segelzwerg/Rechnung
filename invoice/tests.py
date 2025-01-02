@@ -573,6 +573,22 @@ class UpdateVendorViewTestCase(TestCase):
         self.assertFormError(response.context_data['bank_form'], 'iban',
                              errors=['This field is required.'])
 
+    def test_auth_required(self):
+        response = self.client.post(self.url, follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={self.url}")
+
+    def test_not_own_vendor_get(self):
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        self.client.force_login(second_user)
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, '/vendors/')
+
+    def test_not_own_vendor_post(self):
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        self.client.force_login(second_user)
+        response = self.client.post(self.url, follow=True)
+        self.assertRedirects(response, '/vendors/')
+
 
 class VendorListViewTestCase(TestCase):
     @classmethod
@@ -598,6 +614,50 @@ class VendorListViewTestCase(TestCase):
         self.assertEqual(len(vendors), 1)
         self.assertEqual(vendors[0], self.vendor)
         self.assertNotIn(second_vendor, vendors)
+
+
+class VendorDeleteViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        cls.address = Address.objects.create()
+        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+        Address.objects.all().delete()
+        Vendor.objects.all().delete()
+
+    def test_auth_required(self):
+        url = reverse("vendor-delete", args=[self.vendor.id])
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+
+    def test_not_own_invoice_get(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        url = reverse('vendor-delete', args=[vendor.id])
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, '/vendors/')
+        self.assertEqual(Vendor.objects.all().count(), 2)
+
+    def test_not_own_invoice_post(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+
+        url = reverse('vendor-delete', args=[vendor.id])
+        response = self.client.post(url, data={
+            'invoice_number': 2000,
+        }, follow=True)
+        self.assertRedirects(response, '/vendors/')
+        self.assertEqual(Vendor.objects.all().count(), 2)
 
 
 class BankAccountTestCase(TestCase):
