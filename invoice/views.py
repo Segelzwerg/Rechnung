@@ -19,16 +19,49 @@ from invoice.models import Vendor, Customer, Invoice, InvoiceItem
 
 
 class OwnMixin(UserPassesTestMixin):
+    """Use in views that have an object with a vendor field to verify ownership."""
+
     def test_func(self):
-        """Check if the user is the owner of the customer."""
+        """Check if the user is the owner of the object via a vendor field."""
         return self.request.user == self.get_object().vendor.user
 
     def handle_no_permission(self, login_redirect='start', permission_redirect='start'):
-        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
+        """
+        Redirects to login if the user is not authenticated. Otherwise, redirect to the the permission page.
+        :param login_redirect: Name of the target view after logging in as an owner.
+        :param permission_redirect: Name of the target view if user's permissions are not sufficient.
+        :return: HTTP redirect.
+        """
         if self.request.user.is_authenticated:
             messages.warning(self.request, self.permission_denied_message)
             return HttpResponseRedirect(reverse(permission_redirect))
         next_url = reverse(login_redirect, args=[self.kwargs['pk']])
+        base_url = reverse('login')
+        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
+        return HttpResponseRedirect(url)
+
+
+class OwnItemMixin(UserPassesTestMixin):
+    """Use in views that are invoice item related and require a permission check."""
+
+    def test_func(self):
+        """Check if the user is the owner of the customer."""
+        invoice_id = self.kwargs['invoice_id']
+        invoice = get_object_or_404(Invoice, pk=invoice_id)
+        return self.request.user == invoice.vendor.user
+
+    def handle_no_permission(self, login_args=None, permission_redirect='start', login_redirect='start'):
+        """
+        Redirects to login if the user is not authenticated. Otherwise, redirect to the the permission page.
+        :param login_args: Arguments to login redirect.
+        :param login_redirect: Name of the target view after logging in as an owner.
+        :param permission_redirect: Name of the target view if user's permissions are not sufficient.
+        :return: HTTP redirect.
+        """
+        if self.request.user.is_authenticated:
+            messages.warning(self.request, self.permission_denied_message)
+            return HttpResponseRedirect(reverse(permission_redirect))
+        next_url = reverse(login_redirect, args=login_args)
         base_url = reverse('login')
         url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
         return HttpResponseRedirect(url)
@@ -200,28 +233,19 @@ def pdf_invoice(request, invoice_id) -> HttpResponseForbidden | FileResponse:
     return FileResponse(buffer, as_attachment=False, filename="invoice.pdf")
 
 
-class InvoiceItemCreateView(UserPassesTestMixin, SuccessMessageMixin, CreateView):
+class InvoiceItemCreateView(OwnItemMixin, SuccessMessageMixin, CreateView):
     """Create a new invoice item."""
     template_name = 'invoice/invoice_form.html'
     form_class = InvoiceItemForm
     model = InvoiceItem
     success_message = _('Invoice item was created successfully.')
 
-    def test_func(self):
-        """Check if the user is the owner of the customer."""
-        invoice_id = self.kwargs['invoice_id']
-        invoice = get_object_or_404(Invoice, pk=invoice_id)
-        return self.request.user == invoice.vendor.user
-
-    def handle_no_permission(self):
-        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
-        if self.request.user.is_authenticated:
-            messages.warning(self.request, self.permission_denied_message)
-            return HttpResponseRedirect(reverse('invoice-list'))
-        next_url = reverse('invoice-item-add', args=[self.kwargs['invoice_id']])
-        base_url = reverse('login')
-        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
-        return HttpResponseRedirect(url)
+    def handle_no_permission(self, login_args=None, permission_redirect='invoice-list',
+                             login_redirect='invoice-item-add'):
+        if login_args is None:
+            login_args = [self.kwargs['invoice_id']]
+        return super().handle_no_permission(login_redirect=login_redirect, login_args=login_args,
+                                            permission_redirect=permission_redirect, )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -245,7 +269,7 @@ class InvoiceItemCreateView(UserPassesTestMixin, SuccessMessageMixin, CreateView
         return super().form_valid(form)
 
 
-class InvoiceItemUpdateView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
+class InvoiceItemUpdateView(OwnItemMixin, SuccessMessageMixin, UpdateView):
     """Update an existing invoice item."""
     template_name = 'invoice/invoice_form.html'
     form_class = InvoiceItemForm
@@ -253,21 +277,12 @@ class InvoiceItemUpdateView(UserPassesTestMixin, SuccessMessageMixin, UpdateView
     pk_url_kwarg = 'invoice_item_id'
     success_message = _('Invoice item was updated successfully.')
 
-    def test_func(self):
-        """Check if the user is the owner of the customer."""
-        invoice_id = self.kwargs['invoice_id']
-        invoice = get_object_or_404(Invoice, pk=invoice_id)
-        return self.request.user == invoice.vendor.user
-
-    def handle_no_permission(self):
-        """Redirects to login if the user is not authenticated. Otherwise, redirect to the customer list."""
-        if self.request.user.is_authenticated:
-            messages.warning(self.request, self.permission_denied_message)
-            return HttpResponseRedirect(reverse('invoice-list'))
-        next_url = reverse('invoice-item-update', args=[self.kwargs['invoice_id'], self.kwargs['invoice_item_id']])
-        base_url = reverse('login')
-        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
-        return HttpResponseRedirect(url)
+    def handle_no_permission(self, login_args=None, permission_redirect='invoice-list',
+                             login_redirect='invoice-item-update'):
+        if login_args is None:
+            login_args = [self.kwargs['invoice_id'], self.kwargs['invoice_item_id']]
+        return super().handle_no_permission(login_redirect=login_redirect, login_args=login_args,
+                                            permission_redirect=permission_redirect, )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -284,11 +299,18 @@ class InvoiceItemUpdateView(UserPassesTestMixin, SuccessMessageMixin, UpdateView
         return reverse('invoice-update', kwargs={'pk': self.kwargs['invoice_id']})
 
 
-class InvoiceItemDeleteView(SuccessMessageMixin, DeleteView):
+class InvoiceItemDeleteView(OwnItemMixin, SuccessMessageMixin, DeleteView):
     """Delete an existing invoice item."""
     model = InvoiceItem
     pk_url_kwarg = 'invoice_item_id'
     success_message = _('Invoice item was deleted successfully.')
+
+    def handle_no_permission(self, login_args=None, permission_redirect='invoice-list',
+                             login_redirect='invoice-item-delete'):
+        if login_args is None:
+            login_args = [self.kwargs['invoice_id'], self.kwargs['invoice_item_id']]
+        return super().handle_no_permission(login_redirect=login_redirect, login_args=login_args,
+                                            permission_redirect=permission_redirect, )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
