@@ -17,5 +17,5 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends gettext && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-RUN pip install --find-links . rechnung
+RUN pip install --no-index --find-links . rechnung
 CMD python manage.py migrate --settings=$DJANGO_SETTINGS_MODULE; python manage.py collectstatic --no-input --settings=$DJANGO_SETTINGS_MODULE; django-admin compilemessages; gunicorn --bind=0.0.0.0 --timeout 600 rechnung.wsgi
