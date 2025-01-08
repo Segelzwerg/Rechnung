@@ -743,6 +743,17 @@ class InvoiceModelTestCase(TestCase):
         with self.assertRaises(FinalError):
             invoice.save()
 
+    def test_tax_amount_per_rate(self):
+        date = now()
+        due_date = date
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.19'))
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.07'))
+        self.assertEqual(invoice.tax_amount_per_rate, {'19%': Decimal('19'), '7%': Decimal('7')})
+
 
 class InvoicePDFViewTestCase(TestCase):
     def setUp(self):
