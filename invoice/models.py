@@ -230,7 +230,7 @@ class Invoice(Model):
         """Get the sum of tax amount."""
         tax_amount = Decimal(sum(item.tax_amount for item in self.items))
         if self.discount:
-            return self.discount.calculate_net_total(tax_amount)
+            return self.discount.calculate_tax_amount(tax_amount)
         return tax_amount
 
     @property
