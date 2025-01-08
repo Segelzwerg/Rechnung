@@ -1,4 +1,5 @@
 """Models for invoice app."""
+from abc import abstractmethod
 from decimal import Decimal
 from math import isnan, isinf
 
@@ -125,6 +126,34 @@ class Vendor(Model):
         return self.name
 
 
+class Discount(Model):
+    amount = DecimalField(_('discount'), max_digits=20, decimal_places=2)
+
+    @abstractmethod
+    def calculate_net_total(self, value: Decimal) -> Decimal:
+        pass
+
+    @abstractmethod
+    def calculate_tax_amount(self, value: Decimal) -> Decimal:
+        pass
+
+
+class FlatDiscount(Discount):
+    def calculate_net_total(self, value: Decimal) -> Decimal:
+        return value - self.amount
+
+    def calculate_tax_amount(self, value: Decimal) -> Decimal:
+        return value
+
+
+class RelativeDiscount(Discount):
+    def calculate_net_total(self, value: Decimal) -> Decimal:
+        return value - value * self.amount
+
+    def calculate_tax_amount(self, value: Decimal) -> Decimal:
+        return value - value * self.amount
+
+
 class Invoice(Model):
     """Defines an invoice."""
 
@@ -155,6 +184,7 @@ class Invoice(Model):
     delivery_date = DateField(_('delivery date'), null=True, blank=True)
     paid = BooleanField(_('paid'), default=False)
     final = BooleanField(_('final'), default=False)
+    discount = ForeignKey(Discount, verbose_name=_('discount'), on_delete=CASCADE, null=True, blank=True)
 
     class Meta:
         """
@@ -190,12 +220,18 @@ class Invoice(Model):
     @property
     def net_total(self) -> Decimal:
         """Get the sum of net total."""
-        return Decimal(sum(item.net_total for item in self.items))
+        net_total = Decimal(sum(item.net_total for item in self.items))
+        if self.discount:
+            return self.discount.calculate_net_total(net_total)
+        return net_total
 
     @property
     def tax_amount(self):
         """Get the sum of tax amount."""
-        return Decimal(sum(item.tax_amount for item in self.items))
+        tax_amount = Decimal(sum(item.tax_amount for item in self.items))
+        if self.discount:
+            return self.discount.calculate_net_total(tax_amount)
+        return tax_amount
 
     @property
     def total(self) -> Decimal:
