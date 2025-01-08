@@ -14,7 +14,7 @@ from hypothesis.strategies import characters, text, emails, composite, decimals,
 
 from invoice.errors import FinalError
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE, \
-    BankAccount
+    BankAccount, FlatDiscount, RelativeDiscount
 
 GERMAN_TAX_RATE = Decimal('0.19')
 HUNDRED = Decimal('100')
@@ -743,6 +743,31 @@ class InvoiceModelTestCase(TestCase):
         with self.assertRaises(FinalError):
             invoice.save()
 
+    def test_flat_discount(self):
+        date = now()
+        due_date = date
+        discount = FlatDiscount.objects.create(amount=Decimal('100'), )
+
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=date, due_date=due_date,
+                                         discount=discount)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('200'),
+                                   tax=Decimal('0.19'))
+        self.assertEqual(invoice.net_total, Decimal('100'))
+        self.assertEqual(invoice.total, Decimal('119'))
+
+    def test_relative_discount(self):
+        date = now()
+        due_date = date
+        discount = RelativeDiscount.objects.create(amount=Decimal('0.2'), )
+
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=date, due_date=due_date,
+                                         discount=discount)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.19'))
+        self.assertEqual(invoice.net_total, Decimal('80'))
+        self.assertEqual(invoice.total, Decimal('96'))
 
 class InvoicePDFViewTestCase(TestCase):
     def setUp(self):
