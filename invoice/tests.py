@@ -1030,7 +1030,7 @@ class InvoiceModelTestCase(TestCase):
         self.assertEqual(invoice.tax_amount, Decimal('0.19'))
         self.assertEqual(invoice.total, Decimal('1.19'))
         self.assertEqual(invoice.net_total_string, f'1.00 EUR')
-        self.assertEqual(invoice.tax_amount_string, f'0.19 EUR')
+        self.assertEqual(invoice.tax_amount_strings, {'19%': f'0.19 EUR'})
         self.assertEqual(invoice.total_string, f'1.19 EUR')
 
     def test_save_final_model_on_creation(self):
@@ -1045,6 +1045,38 @@ class InvoiceModelTestCase(TestCase):
         with self.assertRaises(FinalError):
             invoice.save()
 
+    def test_tax_amount_per_rate(self):
+        date = now()
+        due_date = date
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.19'))
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.07'))
+        self.assertEqual(invoice.tax_amount_per_rate, {'19%': Decimal('19'), '7%': Decimal('7')})
+
+    def test_tax_amount_strings(self):
+        date = now()
+        due_date = date
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.19'))
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.07'))
+        self.assertEqual(invoice.tax_amount_strings, {'19%': '19.00 EUR', '7%': '7.00 EUR'})
+
+    def test_tax_amount_strings_exclude_zero_rate(self):
+        date = now()
+        due_date = date
+        invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
+                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.19'))
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0'))
+        self.assertEqual(invoice.tax_amount_strings, {'19%': '19.00 EUR'})
 
 class InvoicePDFViewTestCase(TestCase):
     @classmethod
