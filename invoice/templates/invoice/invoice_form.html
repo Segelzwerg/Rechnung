@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load django_bootstrap5 %}
-
 {% block content %}
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-sm-4">
-                <form method="post" class="form-horizontal"
+                <form method="post" class="form-horizontal" id="invoice-form"
                         {% if invoice %}
                       action="{% url "invoice-update" invoice.id %}"
                         {% else %}
@@ -19,7 +18,7 @@
                             {% endif %}
                     >
                         {% bootstrap_form form layout="floating" %}
-                        <input type="submit" class="btn btn-primary"
+                        <input type="button" class="btn btn-primary" id="invoice_submit"
                                 {% if invoice %}
                                value="{% translate "Update Invoice" %}"
                                 {% else %}
@@ -102,7 +101,21 @@
             </div>
         </div>
     </div>
-
+    <script type="text/javascript">
+        const submitButton = document.getElementById('invoice_submit');
+        submitButton.addEventListener('click', function () {
+            const final_button = document.getElementById('id_final');
+            if (final_button.checked) {
+                if (confirm('Do you really want to finalize this invoice? It cannot be undone.')) {
+                    document.getElementById('invoice-form').submit();
+                } else {
+                    return false;
+                }
+            } else {
+                document.getElementById('invoice-form').submit();
+            }
+        })
+    </script>
     {% if invoice and invoice_item_form and not invoice.final %}
         <div class="modal fade" id="InvoiceItemModal" tabindex="-1"
              aria-labelledby="InvoiceItemModalLabel"
