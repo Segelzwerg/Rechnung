@@ -1,6 +1,10 @@
 """Models for invoice app."""
+import operator
+from collections import Counter
 from decimal import Decimal
+from functools import reduce
 from math import isnan, isinf
+from typing import Dict
 
 try:
     from warnings import deprecated
@@ -193,9 +197,17 @@ class Invoice(Model):
         return Decimal(sum(item.net_total for item in self.items))
 
     @property
-    def tax_amount(self):
+    def tax_amount(self) -> Decimal:
         """Get the sum of tax amount."""
         return Decimal(sum(item.tax_amount for item in self.items))
+
+    @property
+    def tax_amount_per_rate(self) -> Dict[str, Decimal]:
+        """Get the sum of tax amount per tax rate."""
+        if self.items:
+            tax_rates = [{item.tax_string: item.tax_amount} for item in self.items]
+            return dict(reduce(operator.add, map(Counter, tax_rates)))
+        return {}
 
     @property
     def total(self) -> Decimal:
@@ -223,9 +235,10 @@ class Invoice(Model):
         return f'{self.net_total_rounded} {self.currency}'
 
     @property
-    def tax_amount_string(self):
-        """Get the tax amount string."""
-        return f'{self.tax_amount_rounded} {self.currency}'
+    def tax_amount_strings(self) -> Dict[str, str]:
+        """Get the tax amount strings as dictionary with the rate as key and the amount string as value."""
+        return {rate: f'{amount.quantize(Decimal("0.01"))} {self.currency}' for rate, amount in
+                self.tax_amount_per_rate.items()}
 
     @property
     def total_string(self) -> str:
