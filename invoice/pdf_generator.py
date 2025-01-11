@@ -108,14 +108,16 @@ def gen_invoice_pdf(invoice, filename_or_io):
     table_y_end = table_y_start - table_height
     table.drawOn(pdf_object, x_left, table_y_end)
 
-    # Totals
-    total_lists = [
-        [f'{net_total_label}: ', invoice.net_total_string],
-    ]
-    for tax_amount in invoice.tax_amount_strings:
-        total_lists.append([f'{vat_label}: ', tax_amount])
-    total_lists.append([f'{total_label}: ', invoice.total_string])
-    render_lines_left_right(-(A4_WIDTH - x_left), table_y_end, total_lists)
+    # Totals Table
+    totals_data = [[f'{net_total_label}: ', '', invoice.net_total_string]]
+    for rate, amount in invoice.tax_amount_strings.items():
+        totals_data.append([f'{vat_label}: ', rate, amount])
+    totals_data.append([f'{total_label}: ', '', invoice.total_string])
+    totals_table = Table(data=totals_data)
+    _, table_height = totals_table.wrapOn(pdf_object, A4_WIDTH - 2 * x_left, A4_HEIGHT)
+    table_y_start = table_y_end - 20
+    table_y_end = table_y_start - table_height
+    totals_table.drawOn(pdf_object, x_left, table_y_end)
 
     # Tax ID and bank account info
     bottom_y = 100

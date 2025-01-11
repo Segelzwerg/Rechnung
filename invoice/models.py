@@ -4,7 +4,7 @@ from collections import Counter
 from decimal import Decimal
 from functools import reduce
 from math import isnan, isinf
-from typing import List, Dict
+from typing import Dict
 
 try:
     from warnings import deprecated
@@ -233,14 +233,10 @@ class Invoice(Model):
         return f'{self.net_total_rounded} {self.currency}'
 
     @property
-    def tax_amount_strings(self) -> List[str]:
-        """Get the tax amount string."""
-
-        def tax_per_rate_string(rate: str, amount: Decimal) -> str:
-            return f'{rate}: {amount.quantize((Decimal('0.01')))} {self.currency}'
-
-        mapped_string = map(tax_per_rate_string, self.tax_amount_per_rate.keys(), self.tax_amount_per_rate.values())
-        return list(mapped_string)
+    def tax_amount_strings(self) -> Dict[str, str]:
+        """Get the tax amount strings as dictionary with the rate as key and the amount string as value."""
+        return {rate: f'{amount.quantize(Decimal("0.01"))} {self.currency}' for rate, amount in
+                self.tax_amount_per_rate.items()}
 
     @property
     def total_string(self) -> str:
