@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load django_bootstrap5 %}
-
 {% block content %}
     <div class="container">
         <div class="row justify-content-center">
@@ -107,7 +106,7 @@
         submitButton.addEventListener('click', function () {
             const final_button = document.getElementById('id_final');
             if (final_button.checked) {
-                if (confirm('Are you sure you want to submit the form?')) {
+                if (confirm('Do you really want to finalize this invoice? It cannot be undone.')) {
                     document.getElementById('invoice-form').submit();
                 } else {
                     return false;
