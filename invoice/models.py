@@ -204,8 +204,10 @@ class Invoice(Model):
     @property
     def tax_amount_per_rate(self) -> Dict[str, Decimal]:
         """Get the sum of tax amount per tax rate."""
-        tax_rates = [{item.tax_string: item.tax_amount} for item in self.items]
-        return dict(reduce(operator.add, map(Counter, tax_rates)))
+        if self.items:
+            tax_rates = [{item.tax_string: item.tax_amount} for item in self.items]
+            return dict(reduce(operator.add, map(Counter, tax_rates)))
+        return {}
 
     @property
     def total(self) -> Decimal:
