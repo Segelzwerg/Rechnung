@@ -728,7 +728,7 @@ class InvoiceModelTestCase(TestCase):
         self.assertEqual(invoice.tax_amount, Decimal('0.19'))
         self.assertEqual(invoice.total, Decimal('1.19'))
         self.assertEqual(invoice.net_total_string, f'1.00 EUR')
-        self.assertEqual(invoice.tax_amount_string, f'0.19 EUR')
+        self.assertEqual(invoice.tax_amount_strings, {'19%': f'0.19 EUR'})
         self.assertEqual(invoice.total_string, f'1.19 EUR')
 
     def test_save_final_model_on_creation(self):
@@ -764,6 +764,7 @@ class InvoiceModelTestCase(TestCase):
         InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
                                    tax=Decimal('0.07'))
         self.assertEqual(invoice.tax_amount_strings, {'19%': '19.00 EUR', '7%': '7.00 EUR'})
+
 
 class InvoicePDFViewTestCase(TestCase):
     def setUp(self):
