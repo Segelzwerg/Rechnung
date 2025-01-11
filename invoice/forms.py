@@ -13,9 +13,9 @@ class InvoiceForm(ModelForm):
         fields = ['invoice_number', 'date', 'due_date', 'delivery_date', 'vendor', 'customer', 'currency',
                   'paid', 'final']
         widgets = {
-            'date': DateInput(attrs={'type': 'date'}),
-            'due_date': DateInput(attrs={'type': 'date'}),
-            'delivery_date': DateInput(attrs={'type': 'date'}),
+            'date': DateInput(attrs={'type': 'date-local'}),
+            'due_date': DateInput(attrs={'type': 'date-local'}),
+            'delivery_date': DateInput(attrs={'type': 'date-local'}),
         }
 
 
