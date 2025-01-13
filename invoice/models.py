@@ -11,6 +11,10 @@ try:
 except ImportError:
     from typing_extensions import deprecated
 
+# This is the recommended way as per django documentation.
+# Source: https://docs.djangoproject.com/en/5.1/topics/auth/customizing/#extending-the-existing-user-model
+# pylint: disable=imported-auth-user
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Model, CharField, ForeignKey, CASCADE, EmailField, IntegerField, \
@@ -93,6 +97,7 @@ class Customer(Model):
     last_name = CharField(_('last name'), max_length=120)
     email = EmailField(_('email'), max_length=256)
     address = OneToOneField(Address, verbose_name=_('address'), on_delete=CASCADE)
+    vendor = ForeignKey('Vendor', verbose_name=_('vendor'), on_delete=CASCADE)
 
     class Meta:
         verbose_name = _('customer')
@@ -115,6 +120,7 @@ class Vendor(Model):
     tax_id = CharField(_('tax ID'), max_length=120, null=True, blank=True)
     bank_account: BankAccount = OneToOneField(BankAccount, verbose_name=_('bank account'), on_delete=CASCADE, null=True,
                                               blank=True)
+    user = ForeignKey(User, on_delete=CASCADE)
 
     class Meta:
         """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""

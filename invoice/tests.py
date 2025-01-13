@@ -3,6 +3,7 @@ from decimal import Decimal
 from math import inf, nan
 
 import schwifty
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.timezone import now
@@ -100,10 +101,19 @@ def build_invoice_item(draw):
 
 
 class AddCustomerViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def setUp(self):
         self.url = reverse('customer-add')
 
     def test_get(self):
+        self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/customer_form.html')
@@ -112,8 +122,13 @@ class AddCustomerViewTestCase(TestCase):
     @example(('John', 'Doe', 'john@doe.com'),
              ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'))
     def test_add_customer(self, customer_fields, address_fields):
+        self.client.force_login(self.user)
         first_name, last_name, email = customer_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
+        vendor_address = Address.objects.create(line_1=address_line_1 + 'a', line_2=address_line_2,
+                                                line_3=address_line_3,
+                                                city=city, postcode=postcode, state=state, country=country)
+        vendor = Vendor.objects.create(name="Test", company_name="Test", user=self.user, address=vendor_address)
         response = self.client.post(self.url, data={
             'first_name': first_name,
             'last_name': last_name,
@@ -125,17 +140,19 @@ class AddCustomerViewTestCase(TestCase):
             'postcode': postcode,
             'state': state,
             'country': country,
+            'vendor': vendor.id,
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/customers/')
         customer = Customer.objects.get(first_name=first_name, last_name=last_name)
-        address = Address.objects.first()
+        address = Address.objects.get(line_1=address_line_1)
         self.assertIsNotNone(customer)
         self.assertIsNotNone(address)
         self.assertEqual(customer.email, email)
         self.assertEqual(customer.address, address)
 
     def test_update_invalid_input_address(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'first_name': 'John',
             'last_name': 'Doe',
@@ -149,26 +166,45 @@ class AddCustomerViewTestCase(TestCase):
         self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
 
+    def test_login_required(self):
+        url = reverse("customer-add")
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+
 
 class UpdateCustomerViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        cls.vendor = Vendor.objects.create(name="Test", company_name="Test", user=cls.user, address=address)
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+        Vendor.objects.all().delete()
+
     def setUp(self):
-        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com",
-                                           address=Address.objects.create(
-                                               line_1='Musterstraße 1',
-                                               postcode='12345', city='Musterstadt',
-                                               country='Germany'))
-        self.url = reverse('customer-update', args=[customer.id])
+        self.customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com",
+                                                address=Address.objects.create(
+                                                    line_1='Musterstraße 1',
+                                                    postcode='12345', city='Musterstadt',
+                                                    country='Germany'),
+                                                vendor=self.vendor)
+        self.url = reverse('customer-update', args=[self.customer.id])
 
     def tearDown(self):
         Customer.objects.all().delete()
 
     def test_get(self):
+        self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/customer_form.html')
 
     @given(build_customer_fields(), build_address_fields())
     def test_update_vendor(self, customer_fields, address_fields):
+        self.client.force_login(self.user)
         first_name, last_name, email = customer_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
         response = self.client.post(self.url, data={
@@ -182,16 +218,18 @@ class UpdateCustomerViewTestCase(TestCase):
             'postcode': postcode,
             'state': state,
             'country': country,
+            'vendor': self.vendor.id,
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/customers/')
         customer = Customer.objects.get(first_name=first_name, last_name=last_name)
-        address = Address.objects.first()
+        address = Address.objects.get(line_1=address_line_1)
         self.assertIsNotNone(customer)
         self.assertEqual(customer.email, email)
         self.assertEqual(customer.address, address)
 
     def test_update_invalid_input_customer(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'first_name': 'John',
             'last_name': '',
@@ -206,6 +244,7 @@ class UpdateCustomerViewTestCase(TestCase):
                              errors=['This field is required.'])
 
     def test_update_invalid_input_address(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'first_name': 'John',
             'last_name': 'Doe',
@@ -219,22 +258,162 @@ class UpdateCustomerViewTestCase(TestCase):
         self.assertFormError(response.context_data['address_form'], 'line_1',
                              errors=['This field is required.'])
 
+    def test_auth_required(self):
+        url = reverse("customer-update", args=[self.customer.id])
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+
+    def test_not_own_customer_get(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        url = reverse('customer-update', args=[customer.id])
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, '/customers/')
+
+    def test_not_own_customer_post(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        url = reverse('customer-update', args=[customer.id])
+        first_name = 'John'
+        response = self.client.post(url, data={
+            'first_name': first_name,
+        }, follow=True)
+        self.assertRedirects(response, '/customers/')
+
+
+class CustomerListViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        cls.vendor = Vendor.objects.create(name="Test", company_name="Test", user=cls.user, address=address)
+        cls.url = reverse('customer-list')
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
+    def test_only_users_customers(self):
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        second_address = Address.objects.create(line_1="Test2", postcode="12345", city="Test2", country="Germany")
+        second_vendor = Vendor.objects.create(name="Test2", company_name="Test2", user=second_user,
+                                              address=second_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com",
+                                           address=Address.objects.create(
+                                               line_1='Musterstraße 1',
+                                               postcode='12345', city='Musterstadt',
+                                               country='Germany'),
+                                           vendor=self.vendor)
+        second_customer = Customer.objects.create(first_name="Johnny", last_name="Doe", email="John@doe.com",
+                                                  address=Address.objects.create(
+                                                      line_1='Musterstraße 1',
+                                                      postcode='12345', city='Musterstadt',
+                                                      country='Germany'),
+                                                  vendor=second_vendor)
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        customer_list = response.context_data['customer_list']
+        self.assertEqual(len(customer_list), 1)
+        self.assertEqual(customer_list[0], customer)
+        self.assertNotIn(second_customer, customer_list)
+
+
+class CustomerDeleteViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        cls.vendor = Vendor.objects.create(name="Test", company_name="Test", user=cls.user, address=address)
+
+    @classmethod
+    def tearDownClass(cls):
+        Customer.objects.all().delete()
+        Vendor.objects.all().delete()
+        Address.objects.all().delete()
+        User.objects.all().delete()
+
+    def setUp(self):
+        address = Address.objects.create(line_1="Test2", postcode="12345", city="Test", country="Germany")
+        self.customer = Customer.objects.create(first_name='John', last_name='Doe', email='john@doe.com',
+                                                vendor=self.vendor, address=address, )
+
+    def tearDown(self):
+        Customer.objects.all().delete()
+
+    def test_auth_required(self):
+        url = reverse("customer-delete", args=[self.customer.id])
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+        self.assertEqual(Customer.objects.count(), 1)
+
+    def test_not_own_customer_get(self):
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        self.client.force_login(second_user)
+        url = reverse('customer-delete', args=[self.customer.id])
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, '/customers/')
+        self.assertEqual(Customer.objects.count(), 1)
+
+    def test_not_own_customer_post(self):
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        self.client.force_login(second_user)
+        url = reverse('customer-delete', args=[self.customer.id])
+        response = self.client.post(url, follow=True)
+        self.assertRedirects(response, '/customers/')
+        self.assertEqual(Customer.objects.count(), 1)
+
+    def test_delete_customer(self):
+        self.client.force_login(self.user)
+        url = reverse("customer-delete", args=[self.customer.id])
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, '/customers/')
+        self.assertEqual(Customer.objects.count(), 0)
+
 
 class CustomerModelTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def test_long_email(self):
         long_email = 'a' * 240 + '@' + 'b' * 20 + '.com'
         address = Address.objects.create(line_1="Musterstraße 1", postcode="12345", city="Musterstadt",
                                          country="Germany")
-        customer = Customer.objects.create(first_name='John', last_name='Doe', email=long_email, address=address)
+        customer = Customer.objects.create(first_name='John', last_name='Doe', email=long_email, address=address,
+                                           )
         with self.assertRaises(ValidationError):
             customer.full_clean()
 
 
 class AddVendorViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def setUp(self):
         self.url = reverse('vendor-add')
 
     def test_get(self):
+        self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/vendor_form.html')
@@ -244,6 +423,7 @@ class AddVendorViewTestCase(TestCase):
              ('Musterstraße 1', '', '', 'Musterstadt', '12345', '', 'Germany'),
              ('John Doe', 'ES9620686250804690656114', 'CAHMESMM'))
     def test_add_vendor(self, vendor_fields, address_fields, bank_fields):
+        self.client.force_login(self.user)
         name, company, tax_id = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
         owner, iban, bic = bank_fields
@@ -265,7 +445,7 @@ class AddVendorViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/vendors/')
         vendor = Vendor.objects.get(name=name)
-        address = Address.objects.first()
+        address = Address.objects.get(line_1=address_line_1)
         bank_account = BankAccount.objects.first()
         self.assertIsNotNone(vendor)
         self.assertEqual(vendor.company_name, company)
@@ -273,6 +453,7 @@ class AddVendorViewTestCase(TestCase):
         self.assertEqual(vendor.bank_account, bank_account)
 
     def test_update_invalid_input_address(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'name': 'John',
             'company_name': 'John Doe Company',
@@ -286,6 +467,7 @@ class AddVendorViewTestCase(TestCase):
                              errors=['This field is required.'])
 
     def test_update_invalid_input_bank_account(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'name': 'John',
             'company_name': 'John Doe Company',
@@ -298,8 +480,21 @@ class AddVendorViewTestCase(TestCase):
         self.assertFormError(response.context_data['bank_form'], 'iban',
                              errors=['This field is required.'])
 
+    def test_login_required(self):
+        url = reverse("vendor-add")
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+
 
 class UpdateVendorViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def setUp(self):
         owner, iban, bic = build_bank_fields().example()
         vendor = Vendor.objects.create(name="John", company_name="Doe Company",
@@ -308,13 +503,15 @@ class UpdateVendorViewTestCase(TestCase):
                                            postcode='12345', city='Musterstadt',
                                            country='Germany'),
                                        bank_account=BankAccount.objects.create(owner=owner, iban=iban,
-                                                                               bic=bic))
+                                                                               bic=bic),
+                                       user=self.user)
         self.url = reverse('vendor-update', args=[vendor.id])
 
     def tearDown(self):
         Vendor.objects.all().delete()
 
     def test_get(self):
+        self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invoice/vendor_form.html')
@@ -324,6 +521,7 @@ class UpdateVendorViewTestCase(TestCase):
         name, company, tax_id = vendor_fields
         address_line_1, address_line_2, address_line_3, city, postcode, state, country = address_fields
         owner, iban, bic = bank_fields
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'name': name,
             'company_name': company,
@@ -342,7 +540,7 @@ class UpdateVendorViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/vendors/')
         vendor = Vendor.objects.get(name=name)
-        address = Address.objects.first()
+        address = Address.objects.get(line_1=address_line_1)
         bank_account = BankAccount.objects.first()
         self.assertIsNotNone(vendor)
         self.assertEqual(vendor.company_name, company)
@@ -350,6 +548,7 @@ class UpdateVendorViewTestCase(TestCase):
         self.assertEqual(vendor.bank_account, bank_account)
 
     def test_update_invalid_input_address(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'name': 'John',
             'company_name': 'John Doe Company',
@@ -362,6 +561,7 @@ class UpdateVendorViewTestCase(TestCase):
                              errors=['This field is required.'])
 
     def test_update_invalid_input_bank_account(self):
+        self.client.force_login(self.user)
         response = self.client.post(self.url, data={
             'name': 'John',
             'company_name': 'John Doe Company',
@@ -372,6 +572,92 @@ class UpdateVendorViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context_data['bank_form'], 'iban',
                              errors=['This field is required.'])
+
+    def test_auth_required(self):
+        response = self.client.post(self.url, follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={self.url}")
+
+    def test_not_own_vendor_get(self):
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        self.client.force_login(second_user)
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, '/vendors/')
+
+    def test_not_own_vendor_post(self):
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        self.client.force_login(second_user)
+        response = self.client.post(self.url, follow=True)
+        self.assertRedirects(response, '/vendors/')
+
+
+class VendorListViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        cls.vendor = Vendor.objects.create(name="John", company_name="Doe Company", address=address, user=cls.user)
+        cls.url = reverse('vendor-list')
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
+    def test_only_users_vendors(self):
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        second_address = Address.objects.create(line_1="Test2", postcode="12345", city="Test2", country="Germany")
+        second_vendor = Vendor.objects.create(name="Test2", company_name="Test2", user=second_user,
+                                              address=second_address)
+
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        vendors = response.context_data['vendor_list']
+        self.assertEqual(len(vendors), 1)
+        self.assertEqual(vendors[0], self.vendor)
+        self.assertNotIn(second_vendor, vendors)
+
+
+class VendorDeleteViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        cls.address = Address.objects.create()
+        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+        Address.objects.all().delete()
+        Vendor.objects.all().delete()
+
+    def test_auth_required(self):
+        url = reverse("vendor-delete", args=[self.vendor.id])
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+
+    def test_not_own_invoice_get(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        url = reverse('vendor-delete', args=[vendor.id])
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, '/vendors/')
+        self.assertEqual(Vendor.objects.all().count(), 2)
+
+    def test_not_own_invoice_post(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+
+        url = reverse('vendor-delete', args=[vendor.id])
+        response = self.client.post(url, data={
+            'invoice_number': 2000,
+        }, follow=True)
+        self.assertRedirects(response, '/vendors/')
+        self.assertEqual(Vendor.objects.all().count(), 2)
 
 
 class BankAccountTestCase(TestCase):
@@ -414,10 +700,18 @@ class BankAccountTestCase(TestCase):
 
 
 class InvoiceItemModelTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def setUp(self):
         address = Address.objects.create()
-        vendor = Vendor.objects.create(address=address)
-        customer = Customer.objects.create(address=address)
+        vendor = Vendor.objects.create(address=address, user=self.user)
+        customer = Customer.objects.create(address=address, vendor=vendor)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer,
                                               date=now())
 
@@ -601,10 +895,18 @@ class InvoiceItemModelTestCase(TestCase):
 
 
 class InvoiceModelTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def setUp(self):
         address = Address.objects.create()
-        _ = Vendor.objects.create(address=address)
-        _ = Customer.objects.create(address=address)
+        vendor = Vendor.objects.create(address=address, user=self.user)
+        _ = Customer.objects.create(address=address, vendor=vendor)
 
     def tearDown(self):
         Vendor.objects.all().delete()
@@ -777,13 +1079,378 @@ class InvoiceModelTestCase(TestCase):
         self.assertEqual(invoice.tax_amount_strings, {'19%': '19.00 EUR'})
 
 class InvoicePDFViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
     def setUp(self):
         address = Address.objects.create()
-        vendor = Vendor.objects.create(address=Address.objects.first())
-        customer = Customer.objects.create(address=Address.objects.first())
-        self.invoice = Invoice.objects.create(invoice_number=1, vendor=Vendor.objects.first(),
-                                              customer=Customer.objects.first(), date=now())
+        vendor = Vendor.objects.create(address=address, user=self.user)
+        customer = Customer.objects.create(address=address, vendor=vendor)
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
+                                              customer=customer, date=now())
 
     def test_pdf(self):
-        response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}))
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}), follow=True)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get('Content-Type'), 'application/pdf')
+        self.assertEqual(response.status_code, 200)
+
+    def test_unauthorized(self):
+        self.client.logout()
+        response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}), follow=True)
+        self.assertRedirects(response, f'/accounts/login/?next=/invoice/{self.invoice.pk}/pdf/')
+
+    def test_forbidden(self):
+        second_user = User.objects.create_user(username="test2", password="password")
+        self.client.force_login(second_user)
+        response = self.client.get(reverse('invoice-pdf', kwargs={'invoice_id': self.invoice.pk}))
+        self.assertEqual(response.status_code, 403)
+
+
+class InvoiceListViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        cls.url = reverse('invoice-list')
+        cls.address = Address.objects.create()
+        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+        Address.objects.all().delete()
+
+    def test_only_users_invoices(self):
+        second_address = Address.objects.create()
+        customer = Customer.objects.create(vendor=self.vendor, address=self.address)
+        second_user = User.objects.create_user(username="test2", password="password")
+        second_vendor = Vendor.objects.create(user=second_user, address=second_address)
+        self.client.force_login(self.user)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(),
+                                         customer=customer)
+        second_invoice = Invoice.objects.create(invoice_number=2, vendor=second_vendor, date=now(),
+                                                customer=customer)
+        response = self.client.get(self.url)
+        invoice_list = response.context_data['invoice_list']
+        self.assertEqual(len(invoice_list), 1)
+        self.assertEqual(invoice_list[0], invoice)
+        self.assertNotIn(second_invoice, invoice_list)
+
+
+class InvoiceUpdateViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        cls.address = Address.objects.create()
+        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
+        cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+        Address.objects.all().delete()
+        Vendor.objects.all().delete()
+
+    def setUp(self):
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(),
+                                              customer=self.customer)
+
+    def test_auth_required(self):
+        url = reverse("invoice-update", args=[self.invoice.id])
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+
+    def test_not_own_invoice_get(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+        url = reverse('invoice-update', args=[invoice.id])
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, '/invoices/')
+
+    def test_not_own_invoice_post(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+
+        url = reverse('invoice-update', args=[invoice.id])
+        response = self.client.post(url, data={
+            'invoice_number': 2000,
+        }, follow=True)
+        self.assertRedirects(response, '/invoices/')
+
+
+class InvoicePaidViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        cls.address = Address.objects.create()
+        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
+        cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+        Address.objects.all().delete()
+        Vendor.objects.all().delete()
+
+    def setUp(self):
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(),
+                                              customer=self.customer)
+
+    def test_auth_required(self):
+        url = reverse("invoice-paid", args=[self.invoice.id])
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+
+    def test_not_own_invoice_get(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+        url = reverse('invoice-paid', args=[invoice.id])
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, '/invoices/')
+
+    def test_not_own_invoice_post(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+
+        url = reverse('invoice-paid', args=[invoice.id])
+        response = self.client.post(url, data={
+            'invoice_number': 2000,
+        }, follow=True)
+        self.assertRedirects(response, '/invoices/')
+
+
+class InvoiceDeleteViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        cls.address = Address.objects.create()
+        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
+        cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+        Address.objects.all().delete()
+        Vendor.objects.all().delete()
+
+    def setUp(self):
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(),
+                                              customer=self.customer)
+
+    def test_auth_required(self):
+        url = reverse("invoice-delete", args=[self.invoice.id])
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+
+    def test_not_own_invoice_get(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+        url = reverse('invoice-delete', args=[invoice.id])
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, '/invoices/')
+        self.assertEqual(Invoice.objects.all().count(), 2)
+
+    def test_not_own_invoice_post(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+
+        url = reverse('invoice-delete', args=[invoice.id])
+        response = self.client.post(url, data={
+            'invoice_number': 2000,
+        }, follow=True)
+        self.assertRedirects(response, '/invoices/')
+        self.assertEqual(Invoice.objects.all().count(), 2)
+
+
+class InvoiceItemCreateViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        cls.address = Address.objects.create()
+        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
+        cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+        Address.objects.all().delete()
+        Vendor.objects.all().delete()
+
+    def setUp(self):
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(),
+                                              customer=self.customer)
+
+    def test_post(self):
+        self.client.force_login(self.user)
+        url = reverse('invoice-item-add', args=[self.invoice.id])
+        response = self.client.post(url, data={
+            'name': 'Work', 'description': 'Hard', 'quantity': 1, 'unit': 'Hour', 'price': 1000, 'tax': 0.19
+        }, follow=True)
+        self.assertRedirects(response, f'/invoice/{self.invoice.id}/')
+        self.assertEqual(InvoiceItem.objects.all().count(), 1)
+
+    def test_auth_required(self):
+        url = reverse("invoice-item-add", args=[self.invoice.id])
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+        self.assertEqual(InvoiceItem.objects.all().count(), 0)
+
+    def test_not_own_invoice_get(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+        url = reverse('invoice-item-add', args=[invoice.id])
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, '/invoices/')
+        self.assertEqual(InvoiceItem.objects.all().count(), 0)
+
+    def test_not_own_invoice_post(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+
+        url = reverse('invoice-item-add', args=[invoice.id])
+        response = self.client.post(url, data={
+            'name': 'Work', 'description': 'Hard', 'quantity': 1, 'unit': 'Hour', 'price': 1000, 'tax': 0.19
+        }, follow=True)
+        self.assertRedirects(response, '/invoices/')
+        self.assertEqual(InvoiceItem.objects.all().count(), 0)
+
+
+class InvoiceItemUpdateViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+        cls.address = Address.objects.create()
+        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
+        cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+        Address.objects.all().delete()
+        Vendor.objects.all().delete()
+
+    def setUp(self):
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(),
+                                              customer=self.customer)
+        self.item = InvoiceItem.objects.create(name='Work', description='Hard', quantity=1, unit='Hour', price=1000,
+                                               tax=0.19, invoice=self.invoice)
+
+    def tearDown(self):
+        InvoiceItem.objects.all().delete()
+        Invoice.objects.all().delete()
+
+    def test_post(self):
+        self.client.force_login(self.user)
+        url = reverse('invoice-item-update', args=[self.invoice.id, self.item.id])
+        data = {'name': 'Party', 'description': self.item.description, 'quantity': self.item.quantity,
+                'unit': self.item.unit, 'price': self.item.price, 'tax': self.item.tax}
+        response = self.client.post(url, data=data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(InvoiceItem.objects.get().name, 'Party')
+
+    def test_auth_required(self):
+        url = reverse('invoice-item-update', args=[self.invoice.id, self.item.id])
+        data = {'name': 'Party', 'description': self.item.description, 'quantity': self.item.quantity,
+                'unit': self.item.unit, 'price': self.item.price, 'tax': self.item.tax}
+        response = self.client.post(url, data=data, follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
+        self.assertEqual(InvoiceItem.objects.get().name, 'Work')
+
+    def test_not_own_invoice_get(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+        item = InvoiceItem.objects.create(name='Work', description='Hard', quantity=1, unit='Hour', price=1000,
+                                          tax=0.19, invoice=invoice)
+        url = reverse('invoice-item-update', args=[invoice.id, item.id])
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, '/invoices/')
+
+    def test_not_own_invoice_post(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email="John@doe.com", address=address,
+                                           vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+        item = InvoiceItem.objects.create(name='Work', description='Hard', quantity=1, unit='Hour', price=1000,
+                                          tax=0.19, invoice=invoice)
+        data = {'name': 'Party', 'description': item.description, 'quantity': item.quantity,
+                'unit': item.unit, 'price': item.price, 'tax': item.tax}
+        url = reverse('invoice-item-update', args=[invoice.id, item.id])
+        response = self.client.post(url, data=data, follow=True)
+        self.assertRedirects(response, '/invoices/')
+        self.assertEqual(InvoiceItem.objects.get(invoice_id=invoice.id).name, 'Work')
+
+
+class AddInvoiceTestCase(TestCase):
+    def test_login_required(self):
+        url = reverse("invoice-add")
+        response = self.client.post(f"{url}", follow=True)
+        self.assertRedirects(response, f"/accounts/login/?next={url}")
