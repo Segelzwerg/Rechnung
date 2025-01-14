@@ -230,14 +230,6 @@ class Invoice(Model):
         return net_total
 
     @property
-    def tax_amount(self) -> Decimal:
-        """Get the sum of tax amount."""
-        tax_amount = Decimal(sum(item.tax_amount for item in self.items))
-        if self.discount:
-            return self.discount.calculate_tax_amount(tax_amount)
-        return tax_amount
-
-    @property
     def tax_amount_per_rate(self) -> Dict[str, Decimal]:
         """Get the sum of tax amount per tax rate."""
         if self.items:
@@ -248,7 +240,8 @@ class Invoice(Model):
     @property
     def total(self) -> Decimal:
         """Get the sum of total."""
-        return self.net_total + self.tax_amount
+        tax_amount = Decimal(sum(amount for amount in self.tax_amount_per_rate.values()))
+        return self.net_total + tax_amount
 
     @property
     def net_total_rounded(self) -> Decimal:
@@ -256,14 +249,9 @@ class Invoice(Model):
         return self.net_total.quantize(Decimal('0.01'))
 
     @property
-    def tax_amount_rounded(self) -> Decimal:
-        """Get the sum of tax amount rounded to two decimals."""
-        return self.tax_amount.quantize(Decimal('0.01'))
-
-    @property
     def total_rounded(self) -> Decimal:
         """Get the sum of total rounded to two decimals."""
-        return self.net_total_rounded + self.tax_amount_rounded
+        return self.total.quantize(Decimal('0.01'))
 
     @property
     def net_total_string(self) -> str:

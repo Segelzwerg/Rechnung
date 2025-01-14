@@ -710,11 +710,13 @@ class InvoiceModelTestCase(TestCase):
             item.invoice = invoice
             item.save()
 
+        tax_amount = Decimal(sum(item.tax_amount for item in invoice_items))
+        tax_amount_rounded = tax_amount.quantize(Decimal('0.01'))
         # high precision, internal representation
-        self.assertEqual(invoice.net_total + invoice.tax_amount, invoice.total)
+        self.assertEqual(invoice.net_total + tax_amount, invoice.total)
 
         # rounded to two decimals, customers expect this to be equal:
-        self.assertEqual(invoice.net_total_rounded + invoice.tax_amount_rounded, invoice.total_rounded)
+        self.assertEqual(invoice.net_total_rounded + tax_amount_rounded, invoice.total_rounded)
 
     def test_sum_tiny_vat(self):
         date = now()
@@ -725,7 +727,6 @@ class InvoiceModelTestCase(TestCase):
             InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('0.01'),
                                        tax=Decimal('0.19'))
         self.assertEqual(invoice.net_total, Decimal('1'))
-        self.assertEqual(invoice.tax_amount, Decimal('0.19'))
         self.assertEqual(invoice.total, Decimal('1.19'))
         self.assertEqual(invoice.net_total_string, f'1.00 EUR')
         self.assertEqual(invoice.tax_amount_strings, {'19%': f'0.19 EUR'})
@@ -775,6 +776,7 @@ class InvoiceModelTestCase(TestCase):
         InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
                                    tax=Decimal('0'))
         self.assertEqual(invoice.tax_amount_strings, {'19%': '19.00 EUR'})
+
     def test_flat_discount(self):
         date = now()
         due_date = date
