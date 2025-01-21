@@ -10,7 +10,7 @@ python = "^3.12"
 django = "^5.1"
 django-bootstrap5 = "^24.3"
 reportlab = "^4.2"
-schwifty = "^2024.11"
+schwifty = "^2025.1"
 gunicorn = "^23.0"
 psycopg = { extras = ["binary"], version = "^3.2" }
 
