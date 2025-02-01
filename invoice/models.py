@@ -245,6 +245,17 @@ class Invoice(Model):
         """Get the total string."""
         return f'{self.total_rounded} {self.currency}'
 
+    @property
+    def compliant(self) -> bool:
+        """Get if the invoice is compliant."""
+        if len(self.items) == 0:
+            return False
+        if not self.delivery_date:
+            return False
+        if not self.vendor.tax_id:
+            return False
+        return True
+
 
 @deprecated('Deprecated in 0.1 and remove in 1.0')
 def validate_real_values(value):
