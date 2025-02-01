@@ -123,7 +123,7 @@ class CustomerCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return super().form_valid(form)
 
 
-class CustomerUpdateView(OwnMixin, UpdateView):
+class CustomerUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
     """Update an existing customer."""
     template_name = 'invoice/customer_form.html'
     form_class = CustomerForm
