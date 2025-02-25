@@ -20,7 +20,7 @@ bandit = "^1.8"
 flake8 = "^7.1"
 coverage = "^7.6"
 pylint-django = "^2.6"
-hypothesis = "^6.126"
+hypothesis = "^6.127"
 
 
 [tool.poetry.group.doc.dependencies]
