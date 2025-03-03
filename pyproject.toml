@@ -24,7 +24,7 @@ hypothesis = "^6.127"
 
 
 [tool.poetry.group.doc.dependencies]
-sphinx = "^8.2.1"
+sphinx = "^8.2.3"
 
 [build-system]
 requires = ["poetry-core"]
