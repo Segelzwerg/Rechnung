@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 django = "^5.1"
-django-bootstrap5 = "^24.3"
+django-bootstrap5 = "^25.1"
 reportlab = "^4.3"
 schwifty = "^2025.1"
 gunicorn = "^23.0"
