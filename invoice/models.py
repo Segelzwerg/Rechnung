@@ -121,6 +121,7 @@ class Vendor(Model):
     bank_account: BankAccount = OneToOneField(BankAccount, verbose_name=_('bank account'), on_delete=CASCADE, null=True,
                                               blank=True)
     user = ForeignKey(User, on_delete=CASCADE)
+    invoice_counter = IntegerField(_('invoice counter'), default=0)
 
     class Meta:
         """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""
@@ -133,6 +134,11 @@ class Vendor(Model):
         if self.company_name:
             return self.company_name
         return self.name
+
+    def get_next_invoice_counter(self) -> int:
+        self.invoice_counter += 1
+        self.save()
+        return self.invoice_counter
 
 
 class Invoice(Model):
@@ -155,7 +161,8 @@ class Invoice(Model):
         HKD = 'HKD', _('Hong Kong Dollar')
         CNY = 'CNY', _('Chinese Yuan')
 
-    invoice_number = IntegerField(_('invoice number'), validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
+    invoice_number = IntegerField(_('invoice number'), validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)],
+                                  null=True, blank=True)
     date = DateField(_('date'))
     vendor = ForeignKey(Vendor, verbose_name=_('vendor'), on_delete=CASCADE)
     customer = ForeignKey(Customer, verbose_name=_('customer'), on_delete=CASCADE)

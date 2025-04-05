@@ -14,6 +14,7 @@ from hypothesis.strategies import characters, text, emails, composite, decimals,
     sampled_from, lists
 
 from invoice.errors import FinalError
+from invoice.invoice_number_generator import InvoiceNumberFormat, Year, Counter, InvoiceNumberGenerator
 from invoice.models import Address, Customer, Vendor, InvoiceItem, Invoice, MAX_VALUE_DJANGO_SAVE, \
     BankAccount
 
@@ -1078,6 +1079,7 @@ class InvoiceModelTestCase(TestCase):
                                    tax=Decimal('0'))
         self.assertEqual(invoice.tax_amount_strings, {'19%': '19.00 EUR'})
 
+
 class InvoicePDFViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -1454,3 +1456,51 @@ class AddInvoiceTestCase(TestCase):
         url = reverse("invoice-add")
         response = self.client.post(f"{url}", follow=True)
         self.assertRedirects(response, f"/accounts/login/?next={url}")
+
+
+class InvoiceNumberFormatTest(TestCase):
+    def test_year_number(self):
+        format = '<year><counter>'
+        formatter = InvoiceNumberFormat(format)
+        expected = [Year, Counter]
+        self.assertEqual(expected, formatter.get_elements())
+
+
+class InvoiceNumberGeneratorTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
+    def setUp(self):
+        address = Address.objects.create()
+        self.vendor = Vendor.objects.create(address=address, user=self.user)
+        self.customer = Customer.objects.create(address=address, vendor=self.vendor)
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
+        Customer.objects.all().delete()
+        Address.objects.all().delete()
+        Invoice.objects.all().delete()
+        InvoiceItem.objects.all().delete()
+
+    def test_year_number(self):
+        format = '<year><counter>'
+        formatter = InvoiceNumberFormat(format)
+        date = now()
+        invoice = Invoice.objects.create(date=date, customer=self.customer, vendor=self.vendor)
+        invoice_number_generator = InvoiceNumberGenerator(formatter)
+        self.assertEqual(invoice_number_generator.get_invoice_number(invoice), f'{date.year}1')
+
+    def test_year_number_increase(self):
+        format = '<year><counter>'
+        formatter = InvoiceNumberFormat(format)
+        date = now()
+        first_invoice = Invoice.objects.create(date=date, customer=self.customer, vendor=self.vendor)
+        second_invoice = Invoice.objects.create(date=date, customer=self.customer, vendor=self.vendor)
+        invoice_number_generator = InvoiceNumberGenerator(formatter)
+        self.assertEqual(invoice_number_generator.get_invoice_number(first_invoice), f'{date.year}1')
+        self.assertEqual(invoice_number_generator.get_invoice_number(second_invoice), f'{date.year}2')
