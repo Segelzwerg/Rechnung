@@ -1,5 +1,6 @@
 """Models for invoice app."""
 import operator
+import warnings
 from collections import Counter
 from decimal import Decimal
 from functools import reduce
@@ -24,7 +25,7 @@ from django.db.models.fields import DecimalField
 from django.utils.translation import gettext_lazy as _, pgettext_lazy
 from schwifty import IBAN, BIC
 
-from invoice.errors import FinalError
+from invoice.errors import FinalError, IncompliantWarning
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
 
@@ -183,6 +184,9 @@ class Invoice(Model):
             initial = Invoice.objects.get(pk=self.pk)
             if initial.final:
                 raise FinalError()
+
+        if self.final and not self.compliant:
+            warnings.warn("Invoice is not compliant", IncompliantWarning)
         super().save(*args, **kwargs)
 
     @property
@@ -250,6 +254,17 @@ class Invoice(Model):
     def total_string(self) -> str:
         """Get the total string."""
         return f'{self.total_rounded} {self.currency}'
+
+    @property
+    def compliant(self) -> bool:
+        """Get if the invoice is compliant."""
+        if len(self.items) == 0:
+            return False
+        if not self.delivery_date:
+            return False
+        if not self.vendor.tax_id:
+            return False
+        return True
 
 
 @deprecated('Deprecated in 0.1 and remove in 1.0')
