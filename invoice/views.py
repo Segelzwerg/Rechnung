@@ -1,6 +1,7 @@
 """Defines the views of the invoice app."""
 
 import io
+from warnings import catch_warnings
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -14,6 +15,7 @@ from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView
 
 from invoice import pdf_generator
+from invoice.errors import IncompliantWarning
 from invoice.forms import AddressForm, BankAccountForm, CustomerForm, InvoiceForm, InvoiceItemForm, VendorForm
 from invoice.models import Customer, Invoice, InvoiceItem, Vendor
 
@@ -199,6 +201,16 @@ class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
     model = Invoice
     success_url = reverse_lazy("invoice-list")
     success_message = _("Invoice was updated successfully.")
+
+    def form_valid(self, form):
+        """Raises a warning message if set final and is not compliant."""
+        with catch_warnings(record=True) as warning:
+            super().form_valid(form)
+            if len([_ for _ in warning if issubclass(_.category, IncompliantWarning)]) > 0:
+                messages.warning(self.request, "The invoice is not compliant.")
+                next_url = reverse('invoice-update', args=[self.kwargs['pk']])
+                return HttpResponseRedirect(next_url)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
