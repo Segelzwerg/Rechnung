@@ -187,7 +187,9 @@ class Invoice(Model):
 
     @property
     def items(self):
-        """Get list of invoice items."""
+        """Get list of invoice items. Returns 0 if the invoice is not saved yet."""
+        if self.pk is not None:
+            return 0
         return list(self.invoiceitem_set.all())
 
     @property
