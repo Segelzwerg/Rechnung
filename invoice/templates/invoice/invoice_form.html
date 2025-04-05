@@ -17,7 +17,17 @@
                                 disabled
                             {% endif %}
                     >
-                        {% bootstrap_form form layout="floating" %}
+                        {% bootstrap_form form layout="floating" exclude="paid" %}
+
+                    </fieldset>
+                    {% if invoice.final %}
+                        {% bootstrap_field form.paid %}
+                    {% endif %}
+                    <fieldset
+                            {% if invoice.final %}
+                                disabled
+                            {% endif %}
+                    >
                         <input type="button" class="btn btn-primary" id="invoice_submit"
                                 {% if invoice %}
                                value="{% translate "Update Invoice" %}"
