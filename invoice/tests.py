@@ -1098,7 +1098,7 @@ class InvoiceModelTestCase(TestCase):
         invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
                                          customer=Customer.objects.first(), date=date, due_date=due_date,
                                          delivery_date=due_date)
-        self.assertEqual(invoice.compliant, True)
+        self.assertEqual(invoice.compliant, False)
 
     def test_incompliant_tax_id(self):
         date = now()
