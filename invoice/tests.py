@@ -12,7 +12,7 @@ from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
 from hypothesis.strategies import characters, composite, decimals, emails, lists, sampled_from, text
 
-from invoice.errors import FinalError
+from invoice.errors import FinalError, IncompliantWarning
 from invoice.models import MAX_VALUE_DJANGO_SAVE, Address, BankAccount, Customer, Invoice, InvoiceItem, Vendor
 
 GERMAN_TAX_RATE = Decimal("0.19")
@@ -1321,6 +1321,33 @@ class InvoiceModelTestCase(TestCase):
                                          customer=Customer.objects.first(), date=date, due_date=due_date)
         InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
                                    tax=Decimal('0.19'))
+        self.assertEqual(invoice.compliant, False)
+
+    def test_set_final_incompliant(self):
+        date = now()
+        due_date = date
+        vendor = Vendor.objects.first()
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
+                                         customer=Customer.objects.first(), date=date, due_date=due_date,
+                                         delivery_date=due_date)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.19'))
+        invoice.final = True
+        self.assertEqual(invoice.compliant, False)
+        with self.assertWarns(IncompliantWarning):
+            invoice.save()
+
+    def test_not_final_incompliant_no_warning(self):
+        date = now()
+        due_date = date
+        vendor = Vendor.objects.first()
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
+                                         customer=Customer.objects.first(), date=date, due_date=due_date,
+                                         delivery_date=due_date)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.19'))
+        invoice.final = False
+        invoice.save()
         self.assertEqual(invoice.compliant, False)
 
 

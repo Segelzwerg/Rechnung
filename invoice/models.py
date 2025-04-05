@@ -1,6 +1,7 @@
 """Models for invoice app."""
 
 import operator
+import warnings
 from collections import Counter
 from decimal import Decimal
 from functools import reduce
@@ -36,7 +37,7 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.translation import pgettext_lazy
 from schwifty import BIC, IBAN
 
-from invoice.errors import FinalError
+from invoice.errors import FinalError, IncompliantWarning
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
 
@@ -237,7 +238,10 @@ class Invoice(Model):
         if self.final and self.pk is not None:
             initial = Invoice.objects.get(pk=self.pk)
             if initial.final:
-                raise FinalError
+                raise FinalError()
+
+        if self.final and not self.compliant:
+            warnings.warn(IncompliantWarning())
         super().save(*args, **kwargs)
 
     @property
