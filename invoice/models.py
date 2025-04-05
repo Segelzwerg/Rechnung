@@ -241,7 +241,7 @@ class Invoice(Model):
                 raise FinalError()
 
         if self.final and not self.compliant:
-            warnings.warn(IncompliantWarning())
+            warnings.warn("Invoice is not compliant", IncompliantWarning)
         super().save(*args, **kwargs)
 
     @property
