@@ -136,6 +136,7 @@ class Vendor(Model):
         return self.name
 
     def get_next_invoice_counter(self) -> int:
+        """Gets the next invoice number based on the counter and saves the new number as current counter."""
         self.invoice_counter += 1
         self.save()
         return self.invoice_counter
