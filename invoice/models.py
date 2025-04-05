@@ -4,7 +4,7 @@ from collections import Counter
 from decimal import Decimal
 from functools import reduce
 from math import isnan, isinf
-from typing import Dict
+from typing import Dict, List
 
 try:
     from warnings import deprecated
@@ -186,10 +186,10 @@ class Invoice(Model):
         super().save(*args, **kwargs)
 
     @property
-    def items(self):
-        """Get list of invoice items. Returns 0 if the invoice is not saved yet."""
+    def items(self) -> List['InvoiceItem']:
+        """Get list of invoice items. Returns empty list if the invoice is not saved yet."""
         if self.pk is None:
-            return 0
+            return []
         return list(self.invoiceitem_set.all())
 
     @property
