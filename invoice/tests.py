@@ -1504,3 +1504,11 @@ class InvoiceNumberGeneratorTest(TestCase):
         invoice_number_generator = InvoiceNumberGenerator(formatter)
         self.assertEqual(invoice_number_generator.get_invoice_number(first_invoice), f'{date.year}1')
         self.assertEqual(invoice_number_generator.get_invoice_number(second_invoice), f'{date.year}2')
+
+    def test_year_number_with_separator(self):
+        format = '<year>-<counter>'
+        formatter = InvoiceNumberFormat(format)
+        date = now()
+        invoice = Invoice.objects.create(date=date, customer=self.customer, vendor=self.vendor)
+        invoice_number_generator = InvoiceNumberGenerator(formatter)
+        self.assertEqual(invoice_number_generator.get_invoice_number(invoice), f'{date.year}-1')

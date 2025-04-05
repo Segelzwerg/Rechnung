@@ -1,3 +1,4 @@
+from itertools import chain
 from typing import List, Type, Optional
 
 from invoice.models import Invoice
@@ -33,10 +34,12 @@ class InvoiceNumberFormat:
             return Year
         if element == 'counter':
             return Counter
+        return element
 
-    def get_elements(self) -> List[Type[FormatElement]]:
+    def get_elements(self) -> List[Type[FormatElement] | str]:
         element_strings = self._format.split('>')
-        element_strings = [_.lstrip('<') for _ in element_strings if _]
+        element_strings = list(chain.from_iterable([_.split('<') for _ in element_strings if _]))
+        element_strings = [_ for _ in element_strings if _]
         return [self._convert_from_string(_) for _ in element_strings]
 
 
@@ -46,6 +49,13 @@ class InvoiceNumberGenerator:
     def __init__(self, format: InvoiceNumberFormat):
         self._format: InvoiceNumberFormat = format
 
+    def _compile_element(self, element: Type[FormatElement] | str, invoice: Invoice) -> str:
+        if isinstance(element, str):
+            return element
+        if issubclass(element, FormatElement):
+            return element.get(invoice)
+        raise TypeError
+
     def get_invoice_number(self, invoice: Invoice) -> str:
         format_elements = self._format.get_elements()
-        return ''.join(_.get(invoice=invoice) for _ in format_elements)
+        return ''.join(self._compile_element(element, invoice) for element in format_elements)
