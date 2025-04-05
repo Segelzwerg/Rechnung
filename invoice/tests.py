@@ -1078,6 +1078,12 @@ class InvoiceModelTestCase(TestCase):
                                    tax=Decimal('0'))
         self.assertEqual(invoice.tax_amount_strings, {'19%': '19.00 EUR'})
 
+    def test_invoice_items_without_save(self):
+        invoice = Invoice(invoice_number=1, vendor=Vendor.objects.first(),
+                          customer=Customer.objects.first(), date=now())
+        self.assertEqual(len(invoice.items), 0)
+
+
 class InvoicePDFViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
