@@ -4,6 +4,7 @@ RUN pip install poetry
 WORKDIR /app
 COPY invoice ./invoice/
 COPY rechnung ./rechnung/
+COPY static/ ./static/
 COPY templates/ ./templates/
 COPY README.md ./README.md
 COPY pyproject.toml poetry.lock ./
