@@ -2,20 +2,18 @@ ARG PYTHON_VERSION=3.13
 FROM python:${PYTHON_VERSION} AS poetry
 RUN pip install poetry
 WORKDIR /app
-COPY invoice ./invoice/
-COPY rechnung ./rechnung/
-COPY templates/ ./templates/
-COPY README.md ./README.md
-COPY pyproject.toml poetry.lock ./
+COPY . .
 RUN poetry build -f wheel -n
 LABEL authors="Segelzwerg"
 
 FROM python:${PYTHON_VERSION}-slim
 WORKDIR /app
 COPY --from=poetry /app/dist/ .
+COPY entrypoint.sh .
 RUN apt-get update && \
     apt-get install -y --no-install-recommends gettext && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-RUN pip install --find-links . rechnung
-CMD python manage.py migrate --settings=$DJANGO_SETTINGS_MODULE; python manage.py collectstatic --no-input --settings=$DJANGO_SETTINGS_MODULE; django-admin compilemessages; gunicorn --bind=0.0.0.0 --timeout 600 rechnung.wsgi
+RUN pip install --no-cache-dir --find-links . rechnung
+RUN chmod +x /app/entrypoint.sh
+CMD ["/app/entrypoint.sh"]
