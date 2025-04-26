@@ -149,3 +149,10 @@ LOGGING = {
         "level": "WARNING",
     },
 }
+
+
+CSRF_TRUSTED_ORIGINS = (
+    os.getenv("CSRF_TRUSTED_ORIGINS").split(",")
+    if os.getenv("CSRF_TRUSTED_ORIGINS")
+    else ["http://0.0.0.0"]
+)
