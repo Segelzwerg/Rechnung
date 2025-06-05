@@ -43,7 +43,7 @@ bandit = "^1.8"
 flake8 = "^7.2"
 coverage = "^7.8"
 pylint-django = "^2.6"
-hypothesis = "^6.133"
+hypothesis = "^6.135"
 
 [tool.poetry.group.docs.dependencies]
 sphinx = "^8.2"
