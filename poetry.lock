@@ -1140,14 +1140,14 @@ files = [
 
 [[package]]
 name = "schwifty"
-version = "2025.1.0"
-description = ""
+version = "2025.6.0"
+description = "IBAN parsing and validation"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "schwifty-2025.1.0-py3-none-any.whl", hash = "sha256:dca8abc9db4b7fc7f3b73a1f581ac1c3cc226a0902257275a3b08bd8275170ed"},
-    {file = "schwifty-2025.1.0.tar.gz", hash = "sha256:f492f3cbea3beb1fe0bf11a89075e6e413a5f500ee1afdb29a124a9a89b1a2ca"},
+    {file = "schwifty-2025.6.0-py3-none-any.whl", hash = "sha256:678a68d36237b2d23ef2c1e92265e32da9dcd8e3122554ff93bae6b9a47e3a0f"},
+    {file = "schwifty-2025.6.0.tar.gz", hash = "sha256:abad87f782a38f637d6e71e7dd7bb1986bb0911785234160bebbe717fbecb8b4"},
 ]
 
 [package.dependencies]
@@ -1463,4 +1463,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "e4eaefc92cc0fad0e98e09d8bab9dcb27f071cf06803d5ae5a55f6c4502ae47f"
+content-hash = "74231a786f8c1d08bc20d01d1abd20d1ead0fe79b9907ef02b35a679eff541d8"
