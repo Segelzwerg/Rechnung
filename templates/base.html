@@ -78,6 +78,11 @@
                         <button type="submit" class="btn btn-info">{% translate "Logout" %}</button>
                     </form>
                 </div>
+            {% else %}
+                <div class="d-flex">
+                    <a class="btn btn-info" href="{% url 'login' %}">{% translate "Login" %}</a>
+                    <a class="btn btn-info" href="{% url 'signup' %}">{% translate "Register" %}</a>
+                </div>
             {% endif %}
             <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
                 <input name="next" type="hidden" value="{{ redirect_to }}">
