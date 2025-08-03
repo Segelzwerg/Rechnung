@@ -16,7 +16,7 @@ jobs:
           python-version: '3.13'
 
       - name: Lint sources with flake8
-        run: poetry run flake8 rechnung --count --show-source --statistics
+        run: poetry run flake8 rechnung, invoice --count --show-source --statistics
       - uses: articulate/actions-markdownlint@v1
         with:
           ignore: static/
