@@ -33,7 +33,7 @@ include = [
 django = "^5.2"
 django-bootstrap5 = "^25.2"
 reportlab = "^4.4"
-schwifty = "^2025.7"
+schwifty = "^2025.9"
 gunicorn = "^23.0"
 psycopg = { extras = ["binary"], version = "^3.2" }
 
@@ -43,7 +43,7 @@ bandit = "^1.8"
 flake8 = "^7.3"
 coverage = "^7.10"
 pylint-django = "^2.6"
-hypothesis = "^6.139"
+hypothesis = "^6.140"
 
 [tool.poetry.group.docs.dependencies]
 sphinx = "^8.2"
