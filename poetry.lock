@@ -56,14 +56,14 @@ dev = ["backports.zoneinfo ; python_version < \"3.9\"", "freezegun (>=1.0,<2.0)"
 
 [[package]]
 name = "bandit"
-version = "1.8.6"
+version = "1.9.1"
 description = "Security oriented static analyser for python code."
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "bandit-1.8.6-py3-none-any.whl", hash = "sha256:3348e934d736fcdb68b6aa4030487097e23a501adf3e7827b63658df464dddd0"},
-    {file = "bandit-1.8.6.tar.gz", hash = "sha256:dbfe9c25fc6961c2078593de55fd19f2559f9e45b99f1272341f5b95dea4e56b"},
+    {file = "bandit-1.9.1-py3-none-any.whl", hash = "sha256:0a1f34c04f067ee28985b7854edaa659c9299bd71e1b7e18236e46cccc79720b"},
+    {file = "bandit-1.9.1.tar.gz", hash = "sha256:6dbafd1a51e276e065404f06980d624bad142344daeac3b085121fcfd117b7cf"},
 ]
 
 [package.dependencies]
@@ -1452,4 +1452,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "05bb8aaa13ccdee5efaec8de426250b7f6def372b93b33c0714f48018a091704"
+content-hash = "733e0aa8caf04e67027ba47ab917b37f28e5ecd586deb32f574dde8cc7602aaf"
