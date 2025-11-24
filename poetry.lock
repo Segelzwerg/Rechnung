@@ -419,14 +419,14 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "hypothesis"
-version = "6.147.0"
-description = "A library for property-based testing"
+version = "6.148.2"
+description = "The property-based testing library for Python"
 optional = false
-python-versions = ">=3.10"
+python-versions = ">=3.10.2"
 groups = ["dev"]
 files = [
-    {file = "hypothesis-6.147.0-py3-none-any.whl", hash = "sha256:de588807b6da33550d32f47bcd42b1a86d061df85673aa73e6443680249d185e"},
-    {file = "hypothesis-6.147.0.tar.gz", hash = "sha256:72e6004ea3bd1460bdb4640b6389df23b87ba7a4851893fd84d1375635d3e507"},
+    {file = "hypothesis-6.148.2-py3-none-any.whl", hash = "sha256:bf8ddc829009da73b321994b902b1964bcc3e5c3f0ed9a1c1e6a1631ab97c5fa"},
+    {file = "hypothesis-6.148.2.tar.gz", hash = "sha256:07e65d34d687ddff3e92a3ac6b43966c193356896813aec79f0a611c5018f4b1"},
 ]
 
 [package.dependencies]
@@ -1452,4 +1452,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "6761a7efa82e92dcc36101a7af8496d7ba3d9a106cad808b5645d9b22c4456ba"
+content-hash = "a7cbf66cbfb9f8c2f7e6c7e581e06b4ecefa0c55833e677fba195341387fa38b"
