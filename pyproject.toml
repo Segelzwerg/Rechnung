@@ -7,9 +7,17 @@ authors = [
     { name = "iTitus", email = "iTitus@users.noreply.github.com" }
 ]
 readme = "README.md"
-license = { text = "GPL-3.0-only" }
-requires-python = ">=3.12,<4.0"
-dynamic = ["dependencies"]
+license = "GPL-3.0-only"
+license-files = ["LICEN[CS]E*"]
+requires-python = ">=3.14"
+dependencies = [
+    "django>=6.0",
+    "django-bootstrap5>=25.3",
+    "reportlab>=4.4",
+    "schwifty>= 2025.9",
+    "gunicorn>=23.0",
+    "psycopg[binary]>=3.3"
+]
 
 [project.urls]
 homepage = "https://github.com/Segelzwerg/Rechnung"
@@ -17,44 +25,23 @@ source = "https://github.com/Segelzwerg/Rechnung"
 documentation = "https://rechnung-django.readthedocs.io"
 issues = "https://github.com/Segelzwerg/Rechnung/issues"
 
-[tool.poetry]
-requires-poetry = ">=2.0"
-packages = [
-    { include = "rechnung" },
-    { include = "invoice" }
+[dependency-groups]
+dev = [
+    "pytest>=9.0",
+    "pytest-django>=4.11",
+    "pylint>=3.3",
+    "pylint-django>=2.6",
+    "bandit>=1.9",
+    "flake8>=7.3",
+    "coverage>=7.12",
+    "hypothesis>=6.148",
+    "black>=25.12",
+    "ruff>=0.14",
 ]
-include = [
-    { path = "locale", format = ["sdist", "wheel"] },
-    { path = "static", format = ["sdist", "wheel"] },
-    { path = "templates", format = ["sdist", "wheel"] }
+docs = [
+    "sphinx>=8.2.0",
+    "sphinx-rtd-theme>=3.0",
 ]
-
-[tool.poetry.dependencies]
-django = "^5.2"
-django-bootstrap5 = "^25.3"
-reportlab = "^4.4"
-schwifty = "^2025.9"
-gunicorn = "^23.0"
-psycopg = { extras = ["binary"], version = "^3.2" }
-
-[tool.poetry.group.dev.dependencies]
-pylint = "^3.3"
-bandit = "^1.9"
-flake8 = "^7.3"
-coverage = "^7.12"
-pylint-django = "^2.6"
-hypothesis = "^6.148"
-
-[tool.poetry.group.docs.dependencies]
-sphinx = "^8.2"
-sphinx-rtd-theme = "^3.0"
-
-[tool.poetry.requires-plugins]
-poetry-plugin-export = ">=1.9"
-
-[build-system]
-requires = ["poetry-core>=2.0"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.bandit]
 exclude_dirs = ["*/migrations", "*/tests.py", "*/*settings.py"]

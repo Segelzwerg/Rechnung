@@ -11,17 +11,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: Whist-Team/actions/setup-poetry@v2
+      - uses: actions/checkout@v6
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
+          python-version-file: "pyproject.toml"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
 
       - name: Lint sources with flake8
-        run: poetry run flake8 rechnung --count --show-source --statistics
+        run: uv run flake8 rechnung --count --show-source --statistics
       - uses: articulate/actions-markdownlint@v1
         with:
           ignore: static/
       - name: Lint sources with pylint
-        run: poetry run pylint --load-plugins=pylint_django --django-settings-module=rechnung.test_settings rechnung invoice
+        run: uv run pylint --load-plugins=pylint_django --django-settings-module=rechnung.test_settings rechnung invoice
 
   security:
     runs-on: ubuntu-latest

@@ -175,7 +175,7 @@ class Invoice(Model):
         verbose_name_plural = _('invoices')
         constraints = [UniqueConstraint(fields=['vendor', 'invoice_number'],
                                         name='unique_invoice_numbers_per_vendor'),
-                       CheckConstraint(check=Q(due_date__gte=F('date')), name='due_date_gte_date')]
+                       CheckConstraint(condition=Q(due_date__gte=F('date')), name='due_date_gte_date')]
 
     def save(self, *args, **kwargs):
         """Save invoice unless it is marked final. Then an FinalError is raised."""
