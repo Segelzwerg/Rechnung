@@ -5,12 +5,7 @@ from collections import Counter
 from decimal import Decimal
 from functools import reduce
 from math import isinf, isnan
-from typing import Dict, List
-
-try:
-    from warnings import deprecated
-except ImportError:
-    from typing_extensions import deprecated
+from warnings import deprecated
 
 # This is the recommended way as per django documentation.
 # Source: https://docs.djangoproject.com/en/5.1/topics/auth/customizing/#extending-the-existing-user-model
@@ -208,7 +203,7 @@ class Invoice(Model):
         super().save(*args, **kwargs)
 
     @property
-    def items(self) -> List["InvoiceItem"]:
+    def items(self) -> list[InvoiceItem]:
         """Get list of invoice items. Returns empty list if the invoice is not saved yet."""
         if self.pk is None:
             return []
@@ -232,7 +227,7 @@ class Invoice(Model):
         return Decimal(sum(item.tax_amount for item in self.items))
 
     @property
-    def tax_amount_per_rate(self) -> Dict[str, Decimal]:
+    def tax_amount_per_rate(self) -> dict[str, Decimal]:
         """Get the sum of tax amount per tax rate."""
         if self.items:
             tax_rates = [{item.tax_string: item.tax_amount} for item in self.items]
@@ -265,7 +260,7 @@ class Invoice(Model):
         return f"{self.net_total_rounded} {self.currency}"
 
     @property
-    def tax_amount_strings(self) -> Dict[str, str]:
+    def tax_amount_strings(self) -> dict[str, str]:
         """Get the tax amount strings as dictionary with the rate as key and the amount string as value."""
         return {
             rate: f"{amount.quantize(Decimal('0.01'))} {self.currency}"

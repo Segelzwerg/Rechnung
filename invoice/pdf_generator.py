@@ -17,7 +17,6 @@ from invoice.models import Invoice
 
 def gen_invoice_pdf(invoice, filename_or_io):
     """Generate the invoice pdf document."""
-
     # pylint: disable=too-many-locals, too-many-statements
 
     pdf_object = canvas.Canvas(filename_or_io)
@@ -67,7 +66,8 @@ def gen_invoice_pdf(invoice, filename_or_io):
     def render_lines_left_right(x, y, lines, line_offset=0, line_height=16):
         """Render two-part lines left- and right-aligned.
         Expects lines to be a tuple with two elements.
-        The first element will be left-aligned, the second element will be right-aligned."""
+        The first element will be left-aligned, the second element will be right-aligned.
+        """
         max_width = max(map(pdf_object.stringWidth, [row[0] for row in lines])) + max(
             map(pdf_object.stringWidth, [row[1] for row in lines])
         )

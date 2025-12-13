@@ -41,7 +41,7 @@ docs = [
 ]
 
 [tool.ruff]
-extend-exclude = ["docs", "**/migrations", "**/test*.py", "**/*settings.py"]
+extend-exclude = ["docs", "**/migrations", "**/test*.py", "**/*settings.py", "manage.py"]
 line-length = 120
 
 [tool.ruff.format]
@@ -51,7 +51,8 @@ skip-magic-trailing-comma = true
 select = ["ALL"]
 ignore = [
     "ANN", # flake8-annotations
-    "Q", # flake8-quotes
+    "EM", # flake8-errmsg
+    "TRY003", # raise-vanilla-args
     "COM812", # missing-trailing-comma
     "D102", # undocumented-public-method
     "D104", # undocumented-public-package
@@ -68,4 +69,4 @@ split-on-trailing-comma = false
 [tool.pylint]
 max-line-length = 120
 load-plugins = "pylint_django"
-ignore-paths = ["docs", ".*/migrations", ".*/test.*.py", ".*/.*settings.py"]
+ignore-paths = ["docs", ".*/migrations", ".*/test.*.py", ".*/.*settings.py", "manage.py"]

@@ -1,7 +1,6 @@
 """EPC QR code generation utilities."""
 
 from decimal import Decimal
-from typing import Optional
 
 from schwifty import BIC, IBAN
 
@@ -21,8 +20,8 @@ _ENCODINGS = {
 def gen_epc_qr_data(
     beneficiary_name: str,
     beneficiary_iban: str,
-    beneficiary_bic: Optional[str] = None,
-    eur_amount: Optional[int | float | str | Decimal] = None,
+    beneficiary_bic: str | None = None,
+    eur_amount: float | str | Decimal | None = None,
     version: str = "001",
     encoding: str = "utf-8",
     instant: bool = False,
