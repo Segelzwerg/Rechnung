@@ -1,4 +1,4 @@
-"""Forms of the invoice app"""
+"""Forms of the invoice app."""
 
 from django.forms import ModelForm
 from django.forms.widgets import DateInput
@@ -7,7 +7,7 @@ from invoice.models import Address, BankAccount, Customer, Invoice, InvoiceItem,
 
 
 class InvoiceForm(ModelForm):
-    """Form for invoices"""
+    """Form for invoices."""
 
     class Meta:
         model = Invoice
@@ -30,7 +30,7 @@ class InvoiceForm(ModelForm):
 
 
 class InvoiceItemForm(ModelForm):
-    """Form for invoice items"""
+    """Form for invoice items."""
 
     class Meta:
         model = InvoiceItem

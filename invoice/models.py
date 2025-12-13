@@ -199,7 +199,7 @@ class Invoice(Model):
         if self.final and self.pk is not None:
             initial = Invoice.objects.get(pk=self.pk)
             if initial.final:
-                raise FinalError()
+                raise FinalError
         super().save(*args, **kwargs)
 
     @property
@@ -214,7 +214,7 @@ class Invoice(Model):
         """Get the line items as list and export all of them as table with a header row."""
         header = [_("Name"), _("Description"), _("Quantity"), _("Price"), _("Tax"), _("Net Total"), _("Total")]
         item_list = [item.list_export for item in self.items]
-        return [header] + item_list
+        return [header, *item_list]
 
     @property
     def net_total(self) -> Decimal:

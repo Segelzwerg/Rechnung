@@ -69,10 +69,7 @@ def gen_epc_qr_data(
     if version not in _VERSIONS:
         raise ValueError(f"unsupported version {version}")
 
-    if instant:
-        identification = "SCT"
-    else:
-        identification = "INST"
+    identification = "SCT" if instant else "INST"
 
     for k, v in _ENCODINGS.items():
         if encoding in v:

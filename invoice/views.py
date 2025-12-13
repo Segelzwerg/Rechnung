@@ -210,7 +210,7 @@ class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
 
 
 class InvoicePaidView(OwnMixin, SuccessMessageMixin, UpdateView):
-    """Mark an invoice as paid"""
+    """Mark an invoice as paid."""
 
     model = Invoice
     fields = ["paid"]
