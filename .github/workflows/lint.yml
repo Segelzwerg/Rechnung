@@ -24,24 +24,14 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
 
-      - name: Lint sources with flake8
-        run: uv run flake8 rechnung --count --show-source --statistics
-      - uses: articulate/actions-markdownlint@v1
+      - uses: DavidAnson/markdownlint-cli2-action@v22
         with:
-          ignore: static/
+          globs: "**/*.md"
+
+      - name: Lint sources with ruff
+        run: |
+          uv run ruff format --check
+          uv run ruff check
+
       - name: Lint sources with pylint
-        run: uv run pylint --load-plugins=pylint_django --django-settings-module=rechnung.test_settings rechnung invoice
-
-  security:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Run bandit
-        uses: tj-actions/bandit@v5
-        with:
-          targets: |
-            rechnung
-            invoice
-          options: "-r -c pyproject.toml"
+        run: uv run pylint --django-settings-module=rechnung.test_settings rechnung invoice

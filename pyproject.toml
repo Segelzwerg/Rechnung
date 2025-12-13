@@ -31,11 +31,8 @@ dev = [
     "pytest-django>=4.11",
     "pylint>=3.3",
     "pylint-django>=2.6",
-    "bandit>=1.9",
-    "flake8>=7.3",
     "coverage>=7.12",
     "hypothesis>=6.148",
-    "black>=25.12",
     "ruff>=0.14",
 ]
 docs = [
@@ -43,10 +40,28 @@ docs = [
     "sphinx-rtd-theme>=3.0",
 ]
 
-[tool.bandit]
-exclude_dirs = ["**/migrations", "**/test*.py", "**/*settings.py"]
+[tool.ruff]
+extend-exclude = ["docs", "**/migrations", "**/test*.py", "**/*settings.py"]
+line-length = 120
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN", # flake8-annotations
+    "Q", # flake8-quotes
+    "D102", # undocumented-public-method
+    "D104", # undocumented-public-package
+    "D105", # undocumented-magic-method
+    "D106", # undocumented-public-nested-class
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
 
 [tool.pylint]
 max-line-length = 120
 load-plugins = "pylint_django"
-ignore-paths = [".*/migrations", ".*/.*settings.py", ".*/tests.py"]
+ignore-paths = ["docs", ".*/migrations", ".*/test.*.py", ".*/.*settings.py"]
