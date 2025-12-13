@@ -39,13 +39,13 @@ jobs:
 
       - name: Run Tests (unit)
         run: |
-          uv run python manage.py collectstatic --settings=rechnung.test_settings --no-input
-          uv run coverage run manage.py test --settings=rechnung.test_settings
+          uv run python manage.py collectstatic --no-input
+          uv run coverage run manage.py test
         if: ${{ matrix.test-type == 'unit' }}
       - name: Run Tests (integration)
         run: |
-          uv run python manage.py collectstatic --settings=rechnung.test_settings --no-input
-          uv run coverage run manage.py test -k Integration --settings=rechnung.test_settings
+          uv run python manage.py collectstatic --no-input
+          uv run coverage run manage.py test -k Integration
         if: ${{ matrix.test-type == 'integration' }}
 
       - name: Create coverage report

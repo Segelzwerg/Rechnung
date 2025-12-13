@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: rechnung/prod_settings.py:112 rechnung/test_settings.py:108
+#: rechnung/settings.py:99
 msgid "German"
 msgstr "Deutsch"
 
-#: rechnung/prod_settings.py:113 rechnung/test_settings.py:109
+#: rechnung/settings.py:99
 msgid "English"
 msgstr "Englisch"
 

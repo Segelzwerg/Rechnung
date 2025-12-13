@@ -425,7 +425,9 @@ class CustomerModelTestCase(TestCase):
         address = Address.objects.create(
             line_1="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany"
         )
-        customer = Customer.objects.create(first_name="John", last_name="Doe", email=long_email, address=address, vendor=self.vendor)
+        customer = Customer.objects.create(
+            first_name="John", last_name="Doe", email=long_email, address=address, vendor=self.vendor
+        )
         with self.assertRaises(ValidationError):
             customer.full_clean()
 
