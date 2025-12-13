@@ -64,7 +64,9 @@ def gen_invoice_pdf(invoice, filename_or_io):
         return render_lines(x, y, all_lines)
 
     def render_lines_left_right(x, y, lines, line_offset=0, line_height=16):
-        """Render two-part lines left- and right-aligned.
+        """
+        Render two-part lines left- and right-aligned.
+
         Expects lines to be a tuple with two elements.
         The first element will be left-aligned, the second element will be right-aligned.
         """

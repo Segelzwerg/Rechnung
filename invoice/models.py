@@ -183,7 +183,9 @@ class Invoice(Model):
 
     class Meta:
         """
-        Meta configuration of invoice. Ensure uniques of the combination invoice number and
+        Meta configuration of invoice.
+
+        Ensures uniques of the combination invoice number and
         vendor profile.
         """
 

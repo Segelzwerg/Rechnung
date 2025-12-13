@@ -27,7 +27,8 @@ class OwnMixin(UserPassesTestMixin):
 
     def handle_no_permission(self, login_redirect="start", permission_redirect="start"):
         """
-        Redirects to login if the user is not authenticated. Otherwise, redirect to the the permission page.
+        Redirects to login if the user is not authenticated. Otherwise, redirect to the permission page.
+
         :param login_redirect: Name of the target view after logging in as an owner.
         :param permission_redirect: Name of the target view if user's permissions are not sufficient.
         :return: HTTP redirect.
@@ -50,7 +51,8 @@ class OwnVendorMixin(UserPassesTestMixin):
 
     def handle_no_permission(self, login_redirect="start", permission_redirect="start"):
         """
-        Redirects to login if the user is not authenticated. Otherwise, redirect to the the permission page.
+        Redirects to login if the user is not authenticated. Otherwise, redirect to the permission page.
+
         :param login_redirect: Name of the target view after logging in as an owner.
         :param permission_redirect: Name of the target view if user's permissions are not sufficient.
         :return: HTTP redirect.
@@ -75,7 +77,8 @@ class OwnItemMixin(UserPassesTestMixin):
 
     def handle_no_permission(self, login_args=None, permission_redirect="start", login_redirect="start"):
         """
-        Redirects to login if the user is not authenticated. Otherwise, redirect to the the permission page.
+        Redirects to login if the user is not authenticated. Otherwise, redirect to the permission page.
+
         :param login_args: Arguments to login redirect.
         :param login_redirect: Name of the target view after logging in as an owner.
         :param permission_redirect: Name of the target view if user's permissions are not sufficient.
@@ -148,7 +151,7 @@ class CustomerUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
         return context
 
     def form_valid(self, form):
-        """Updates an existing customer including the address."""
+        """Update an existing customer including the address."""
         address_form = AddressForm(instance=self.object.address, data=self.request.POST)
         if not address_form.is_valid():
             return self.form_invalid(form)
@@ -428,7 +431,7 @@ class VendorUpdateView(OwnVendorMixin, SuccessMessageMixin, UpdateView):
         return context
 
     def form_valid(self, form):
-        """Updates an existing vendor including the address and the bank account."""
+        """Update an existing vendor including the address and the bank account."""
         address_form = AddressForm(self.request.POST, instance=self.object.address)
         if not address_form.is_valid():
             return self.form_invalid(address_form)
