@@ -182,6 +182,19 @@ wheels = [
 ]
 
 [[package]]
+name = "django-debug-toolbar"
+version = "6.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "sqlparse" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c0/50/acae2dd379164f6f4c6b6b36fd48a4d21b02095a03f4df7c30a8d1f1a62c/django_debug_toolbar-6.1.0.tar.gz", hash = "sha256:e962ec350c9be8bdba918138e975a9cdb193f60ec396af2bb71b769e8e165519", size = 309141, upload-time = "2025-10-30T19:50:39.458Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6d/72/685c978af45ad08257e2c69687a873eda6b6531c79b6e6091794c41c5ff6/django_debug_toolbar-6.1.0-py3-none-any.whl", hash = "sha256:e214dea4494087e7cebdcea84223819c5eb97f9de3110a3665ad673f0ba98413", size = 269069, upload-time = "2025-10-30T19:50:37.71Z" },
+]
+
+[[package]]
 name = "docutils"
 version = "0.21.2"
 source = { registry = "https://pypi.org/simple" }
@@ -540,6 +553,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "coverage" },
+    { name = "django-debug-toolbar" },
     { name = "hypothesis" },
     { name = "pylint" },
     { name = "pylint-django" },
@@ -556,7 +570,7 @@ docs = [
 requires-dist = [
     { name = "django", specifier = ">=6.0" },
     { name = "django-bootstrap5", specifier = ">=25.3" },
-    { name = "environs", extras = ["django"], specifier = ">=14.5.0" },
+    { name = "environs", extras = ["django"], specifier = ">=14.5" },
     { name = "gunicorn", specifier = ">=23.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3" },
     { name = "reportlab", specifier = ">=4.4" },
@@ -566,6 +580,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "coverage", specifier = ">=7.13" },
+    { name = "django-debug-toolbar", specifier = ">=6.1.0" },
     { name = "hypothesis", specifier = ">=6.148" },
     { name = "pylint", specifier = ">=3.3" },
     { name = "pylint-django", specifier = ">=2.6" },

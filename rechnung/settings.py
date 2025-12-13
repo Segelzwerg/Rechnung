@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
+import sys
 from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
@@ -124,3 +126,11 @@ if not DEBUG:
     }
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["http://*", "https://*"])
+
+ENABLE_DEBUG_TOOLBAR = DEBUG and not ("test" in sys.argv or "PYTEST_VERSION" in os.environ)
+if ENABLE_DEBUG_TOOLBAR:
+    INSTALLED_APPS += ["debug_toolbar"]
+    MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
+
+if DEBUG:
+    INTERNAL_IPS = ["127.0.0.1"]

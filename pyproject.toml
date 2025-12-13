@@ -35,6 +35,7 @@ dev = [
     "coverage>=7.13",
     "hypothesis>=6.148",
     "ruff>=0.14",
+    "django-debug-toolbar>=6.1",
 ]
 docs = [
     "sphinx>=8.2", # 9.0 is blocked by sphinx-rtd-theme 3.0
