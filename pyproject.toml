@@ -55,6 +55,8 @@ select = ["ALL"]
 ignore = [
     "ANN", # flake8-annotations
     "EM", # flake8-errmsg
+    "FIX", # flake8-fix-me
+    "TD", # flake8-todos
     "TRY003", # raise-vanilla-args
     "RUF012", # mutable-class-default
     "COM812", # missing-trailing-comma
