@@ -1,7 +1,0 @@
-[flake8]
-exclude =
-    rechnung/settings.py
-    rechnung/test_settings.py
-    **/migrations/
-
-max-line-length = 100

@@ -1,7 +1,6 @@
 """EPC QR code generation utilities."""
 
 from decimal import Decimal
-from typing import Optional
 
 from schwifty import BIC, IBAN
 
@@ -18,11 +17,22 @@ _ENCODINGS = {
 }
 
 
-def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str, beneficiary_bic: Optional[str] = None,
-                    eur_amount: Optional[int | float | str | Decimal] = None,
-                    version: str = "001", encoding: str = "utf-8", instant: bool = False, purpose: str = "",
-                    structured_remittance_info: str = "", remittance_info: str = "", originator_info: str = "",
-                    always_add_bic: bool = True, use_crlf: bool = False) -> str:
+def gen_epc_qr_data(  # noqa: C901, PLR0912, PLR0913
+    beneficiary_name: str,
+    beneficiary_iban: str,
+    *,
+    beneficiary_bic: str | None = None,
+    eur_amount: float | str | Decimal | None = None,
+    version: str = "001",
+    encoding: str = "utf-8",
+    instant: bool = False,
+    purpose: str = "",
+    structured_remittance_info: str = "",
+    remittance_info: str = "",
+    originator_info: str = "",
+    always_add_bic: bool = True,
+    use_crlf: bool = False,
+) -> str:
     # pylint: disable=too-many-locals,too-many-arguments,too-many-positional-arguments,too-many-branches,line-too-long
     """Generate EPC QR code data (`Official`_, `Wikipedia`_) as a string.
 
@@ -60,10 +70,7 @@ def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str, beneficiary_bi
     if version not in _VERSIONS:
         raise ValueError(f"unsupported version {version}")
 
-    if instant:
-        identification = "SCT"
-    else:
-        identification = "INST"
+    identification = "SCT" if instant else "INST"
 
     for k, v in _ENCODINGS.items():
         if encoding in v:
@@ -107,17 +114,19 @@ def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str, beneficiary_bi
     originator_info = clean_text(originator_info, max_length=70)
 
     line_separator = "\r\n" if use_crlf else "\n"
-    return line_separator.join([
-        "BCD",
-        version,
-        encoding_key,
-        identification,
-        bic,
-        name,
-        iban,
-        eur_amount_str,
-        purpose,
-        structured_remittance_info,
-        remittance_info,
-        originator_info
-    ])
+    return line_separator.join(
+        [
+            "BCD",
+            version,
+            encoding_key,
+            identification,
+            bic,
+            name,
+            iban,
+            eur_amount_str,
+            purpose,
+            structured_remittance_info,
+            remittance_info,
+            originator_info,
+        ]
+    )
