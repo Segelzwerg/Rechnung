@@ -124,5 +124,3 @@ if not DEBUG:
     }
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["http://*", "https://*"])
-
-print(env.dump())
