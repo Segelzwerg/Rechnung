@@ -43,11 +43,11 @@ class Address(Model):
     """Defines any type of address. For vendors as well as customers."""
 
     line_1 = CharField(_("first address line"), max_length=200)
-    line_2 = CharField(_("second address line"), max_length=200, null=True, blank=True)
-    line_3 = CharField(_("third address line"), max_length=200, null=True, blank=True)
+    line_2 = CharField(_("second address line"), max_length=200, blank=True, default="")
+    line_3 = CharField(_("third address line"), max_length=200, blank=True, default="")
     postcode = CharField(_("postcode"), max_length=10)
     city = CharField(_("city"), max_length=120)
-    state = CharField(_("state"), max_length=200, null=True, blank=True)
+    state = CharField(_("state"), max_length=200, blank=True, default="")
     country = CharField(_("country"), max_length=120)
 
     class Meta:
@@ -88,6 +88,13 @@ class BankAccount(Model):
     iban = CharField(_("IBAN"), max_length=120, validators=[validate_iban])
     bic = CharField(_("BIC"), max_length=120, validators=[validate_bic])
 
+    class Meta:
+        verbose_name = _("bank account")
+        verbose_name_plural = _("bank accounts")
+
+    def __str__(self):
+        return f"BankAccount({self.owner},{self.iban},{self.bic})"
+
     def save(self, *args, **kwargs):
         """Save the bank account."""
         self.iban = IBAN(self.iban)
@@ -97,10 +104,6 @@ class BankAccount(Model):
         elif self.bic:
             self.bic = BIC(self.bic)
         super().save(*args, **kwargs)
-
-    class Meta:
-        verbose_name = _("bank account")
-        verbose_name_plural = _("bank accounts")
 
 
 class Customer(Model):
@@ -116,22 +119,22 @@ class Customer(Model):
         verbose_name = _("customer")
         verbose_name_plural = _("customers")
 
+    def __str__(self):
+        return self.full_name
+
     @property
     def full_name(self):
         """Get the full name of the customer (first name + last name)."""
         return f"{self.first_name} {self.last_name}"
-
-    def __str__(self):
-        return self.full_name
 
 
 class Vendor(Model):
     """Defines profiles for the invoicer."""
 
     name = CharField(_("name"), max_length=255)
-    company_name = CharField(_("company name"), max_length=255, null=True, blank=True)
+    company_name = CharField(_("company name"), max_length=255, blank=True, default="")
     address: Address = OneToOneField(Address, verbose_name=_("address"), on_delete=CASCADE)
-    tax_id = CharField(_("tax ID"), max_length=120, null=True, blank=True)
+    tax_id = CharField(_("tax ID"), max_length=120, blank=True, default="")
     bank_account: BankAccount = OneToOneField(
         BankAccount, verbose_name=_("bank account"), on_delete=CASCADE, null=True, blank=True
     )
@@ -195,6 +198,9 @@ class Invoice(Model):
             UniqueConstraint(fields=["vendor", "invoice_number"], name="unique_invoice_numbers_per_vendor"),
             CheckConstraint(condition=Q(due_date__gte=F("date")), name="due_date_gte_date"),
         ]
+
+    def __str__(self):
+        return f"Invoice({self.invoice_number},{self.vendor},{self.customer})"
 
     def save(self, *args, **kwargs):
         """Save invoice unless it is marked final. Then an FinalError is raised."""
@@ -287,7 +293,7 @@ def validate_real_values(value):
 @deprecated("Deprecated in 0.1 and remove in 1.0")
 def validate_two_digits_decimals(value):
     """Allow only two decimal digits."""
-    if str(value)[::-1].find(".") > 2:
+    if str(value)[::-1].find(".") > 2:  # noqa: PLR2004
         raise ValidationError("Price must have only two decimal digits.")
 
 
@@ -302,7 +308,7 @@ class InvoiceItem(Model):
         decimal_places=4,
         validators=[MinValueValidator(Decimal("0.0000")), MaxValueValidator(Decimal("1000000.0000"))],
     )
-    unit = CharField(_("unit"), max_length=120, null=True, blank=True)
+    unit = CharField(_("unit"), max_length=120, blank=True, default="")
     price = DecimalField(
         _("price"),
         max_digits=19,
@@ -316,6 +322,9 @@ class InvoiceItem(Model):
         validators=[MinValueValidator(Decimal("0.0000")), MaxValueValidator(Decimal("1.0000"))],
     )
     invoice = ForeignKey(Invoice, verbose_name=_("invoice"), on_delete=CASCADE)
+
+    def __str__(self):
+        return f"InvoiceItem({self.quantity}x{self.name},{self.price})"
 
     @property
     def net_total(self) -> Decimal:

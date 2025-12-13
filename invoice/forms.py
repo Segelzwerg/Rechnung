@@ -50,7 +50,7 @@ class AddressForm(ModelForm):
 
     class Meta:
         model = Address
-        fields = "__all__"
+        fields = ["line_1", "line_2", "line_3", "postcode", "city", "state", "country"]
 
 
 class BankAccountForm(ModelForm):
@@ -58,7 +58,7 @@ class BankAccountForm(ModelForm):
 
     class Meta:
         model = BankAccount
-        fields = "__all__"
+        fields = ["owner", "iban", "bic"]
 
 
 class VendorForm(ModelForm):

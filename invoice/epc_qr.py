@@ -17,9 +17,10 @@ _ENCODINGS = {
 }
 
 
-def gen_epc_qr_data(
+def gen_epc_qr_data(  # noqa: C901, PLR0912, PLR0913
     beneficiary_name: str,
     beneficiary_iban: str,
+    *,
     beneficiary_bic: str | None = None,
     eur_amount: float | str | Decimal | None = None,
     version: str = "001",

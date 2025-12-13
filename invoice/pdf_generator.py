@@ -15,7 +15,7 @@ from invoice.models import Invoice
 (A4_WIDTH, A4_HEIGHT) = reportlab.lib.pagesizes.A4
 
 
-def gen_invoice_pdf(invoice, filename_or_io):
+def gen_invoice_pdf(invoice, filename_or_io):  # noqa: C901, PLR0915
     """Generate the invoice pdf document."""
     # pylint: disable=too-many-locals, too-many-statements
 
@@ -159,7 +159,7 @@ def gen_invoice_pdf(invoice, filename_or_io):
         epc_qr_code = QrCode(value=[qr_data], qrVersion=None, qrLevel="M")
         w, h = epc_qr_code.wrapOn(pdf_object, A4_WIDTH - 2 * x_left, A4_HEIGHT)
         epc_qr_code.drawOn(pdf_object, A4_WIDTH - x_left - w, bottom_y - h)
-        if epc_qr_code.qr.version > 13:
+        if epc_qr_code.qr.version > 13:  # noqa: PLR2004
             raise ValueError("the epc qr code payload is limited to 331 bytes/version 13")
 
     pdf_object.showPage()

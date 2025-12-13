@@ -53,6 +53,7 @@ ignore = [
     "ANN", # flake8-annotations
     "EM", # flake8-errmsg
     "TRY003", # raise-vanilla-args
+    "RUF012", # mutable-class-default
     "COM812", # missing-trailing-comma
     "D102", # undocumented-public-method
     "D104", # undocumented-public-package
