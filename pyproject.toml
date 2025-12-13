@@ -52,6 +52,7 @@ select = ["ALL"]
 ignore = [
     "ANN", # flake8-annotations
     "Q", # flake8-quotes
+    "COM812", # missing-trailing-comma
     "D102", # undocumented-public-method
     "D104", # undocumented-public-package
     "D105", # undocumented-magic-method
@@ -60,6 +61,9 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
 
 [tool.pylint]
 max-line-length = 120
