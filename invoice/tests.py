@@ -413,6 +413,8 @@ class CustomerModelTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        cls.vendor = Vendor.objects.create(name="test", address=address, user=cls.user)
 
     @classmethod
     def tearDownClass(cls):
@@ -423,7 +425,7 @@ class CustomerModelTestCase(TestCase):
         address = Address.objects.create(
             line_1="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany"
         )
-        customer = Customer.objects.create(first_name="John", last_name="Doe", email=long_email, address=address)
+        customer = Customer.objects.create(first_name="John", last_name="Doe", email=long_email, address=address, vendor=self.vendor)
         with self.assertRaises(ValidationError):
             customer.full_clean()
 
