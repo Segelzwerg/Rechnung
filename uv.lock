@@ -495,7 +495,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "coverage", specifier = ">=7.12" },
+    { name = "coverage", specifier = ">=7.13" },
     { name = "hypothesis", specifier = ">=6.148" },
     { name = "pylint", specifier = ">=3.3" },
     { name = "pylint-django", specifier = ">=2.6" },

@@ -31,12 +31,12 @@ dev = [
     "pytest-django>=4.11",
     "pylint>=3.3",
     "pylint-django>=2.6",
-    "coverage>=7.12",
+    "coverage>=7.13",
     "hypothesis>=6.148",
     "ruff>=0.14",
 ]
 docs = [
-    "sphinx>=8.2.0",
+    "sphinx>=8.2", # 9.0 is blocked by sphinx-rtd-theme 3.0
     "sphinx-rtd-theme>=3.0",
 ]
 
