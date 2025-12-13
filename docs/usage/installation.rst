@@ -60,7 +60,7 @@ Env Var                   Value
 SECRET_KEY                Security string. Must not be shared.
 ALLOWED_HOSTS             List of you hostname you want to access the application. E.g. `"['0.0.0.0']"`.
 DATABASE_URL              Database URL.
-CSRF_TRUSTED_ORIGINS      (Optional, Default: `http://*,https://*`) Used for endpoint names under which the server can be target. This is required for POST requests.
+CSRF_TRUSTED_ORIGINS      (Optional, Default: `http://*,https://*`) Used for endpoint names under which the server can be targeted. This is required for POST requests.
 ========================= =====
 
 Finally, we require a database.
