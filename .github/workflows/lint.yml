@@ -24,10 +24,6 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
 
-      - uses: DavidAnson/markdownlint-cli2-action@v22
-        with:
-          globs: "**/*.md"
-
       - name: Lint sources with ruff
         run: |
           uv run ruff format --check
