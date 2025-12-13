@@ -16,7 +16,8 @@ dependencies = [
     "reportlab>=4.4",
     "schwifty>= 2025.9",
     "gunicorn>=23.0",
-    "psycopg[binary]>=3.3"
+    "psycopg[binary]>=3.3",
+    "environs[django]>=14.5",
 ]
 
 [project.urls]
@@ -41,13 +42,14 @@ docs = [
 ]
 
 [tool.ruff]
-extend-exclude = ["docs", "**/migrations", "**/test*.py", "**/*settings.py", "manage.py"]
+extend-exclude = ["docs", "**/migrations", "manage.py"]
 line-length = 120
 
 [tool.ruff.format]
 skip-magic-trailing-comma = true
 
 [tool.ruff.lint]
+exclude = ["**/test*.py"]
 select = ["ALL"]
 ignore = [
     "ANN", # flake8-annotations
@@ -70,4 +72,4 @@ split-on-trailing-comma = false
 [tool.pylint]
 max-line-length = 120
 load-plugins = "pylint_django"
-ignore-paths = ["docs", ".*/migrations", ".*/test.*.py", ".*/.*settings.py", "manage.py"]
+ignore-paths = ["docs", ".*/migrations", ".*/test.*.py", "manage.py"]
