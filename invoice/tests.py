@@ -1124,8 +1124,8 @@ class InvoiceListViewTestCase(TestCase):
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
         cls.url = reverse('invoice-list')
-        cls.address = Address.objects.create()
-        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
+        cls.address = Address.objects.create(line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany")
+        cls.vendor = Vendor.objects.create(name="V1", address=cls.address, user=cls.user)
 
     @classmethod
     def tearDownClass(cls):
@@ -1133,10 +1133,10 @@ class InvoiceListViewTestCase(TestCase):
         Address.objects.all().delete()
 
     def test_only_users_invoices(self):
-        second_address = Address.objects.create()
+        second_address = Address.objects.create(line_1="Standardweg 2", postcode="54321", city="Standarddorf", country="Germany")
         customer = Customer.objects.create(vendor=self.vendor, address=self.address)
         second_user = User.objects.create_user(username="test2", password="password")
-        second_vendor = Vendor.objects.create(user=second_user, address=second_address)
+        second_vendor = Vendor.objects.create(name="V2", user=second_user, address=second_address)
         self.client.force_login(self.user)
         invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(),
                                          customer=customer)
@@ -1153,7 +1153,7 @@ class InvoiceUpdateViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        cls.address = Address.objects.create()
+        cls.address = Address.objects.create(line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany")
         cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
         cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
 
@@ -1207,7 +1207,7 @@ class InvoicePaidViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        cls.address = Address.objects.create()
+        cls.address = Address.objects.create(line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany")
         cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
         cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
 
@@ -1261,7 +1261,7 @@ class InvoiceDeleteViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        cls.address = Address.objects.create()
+        cls.address = Address.objects.create(line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany")
         cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
         cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
 
@@ -1317,7 +1317,7 @@ class InvoiceItemCreateViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        cls.address = Address.objects.create()
+        cls.address = Address.objects.create(line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany")
         cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
         cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
 
@@ -1383,7 +1383,7 @@ class InvoiceItemUpdateViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        cls.address = Address.objects.create()
+        cls.address = Address.objects.create(line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany")
         cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
         cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
 
