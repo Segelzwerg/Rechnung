@@ -1,21 +1,21 @@
 """Defines the views of the invoice app."""
+
 import io
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import FileResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http import FileResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse, reverse_lazy
 from django.utils.http import urlencode
 from django.utils.translation import gettext as _
-from django.views.generic import CreateView, UpdateView, DeleteView, ListView
-from django.views.generic import TemplateView
+from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView
 
 from invoice import pdf_generator
-from invoice.forms import InvoiceItemForm, AddressForm, BankAccountForm, CustomerForm, VendorForm, InvoiceForm
-from invoice.models import Vendor, Customer, Invoice, InvoiceItem
+from invoice.forms import AddressForm, BankAccountForm, CustomerForm, InvoiceForm, InvoiceItemForm, VendorForm
+from invoice.models import Customer, Invoice, InvoiceItem, Vendor
 
 
 class OwnMixin(UserPassesTestMixin):
@@ -25,7 +25,7 @@ class OwnMixin(UserPassesTestMixin):
         """Check if the user is the owner of the object via a vendor field."""
         return self.request.user == self.get_object().vendor.user
 
-    def handle_no_permission(self, login_redirect='start', permission_redirect='start'):
+    def handle_no_permission(self, login_redirect="start", permission_redirect="start"):
         """
         Redirects to login if the user is not authenticated. Otherwise, redirect to the the permission page.
         :param login_redirect: Name of the target view after logging in as an owner.
@@ -35,9 +35,9 @@ class OwnMixin(UserPassesTestMixin):
         if self.request.user.is_authenticated:
             messages.warning(self.request, self.permission_denied_message)
             return HttpResponseRedirect(reverse(permission_redirect))
-        next_url = reverse(login_redirect, args=[self.kwargs['pk']])
-        base_url = reverse('login')
-        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
+        next_url = reverse(login_redirect, args=[self.kwargs["pk"]])
+        base_url = reverse("login")
+        url = "{}?{}".format(base_url, urlencode({"next": next_url}))  # pylint: disable=consider-using-f-string
         return HttpResponseRedirect(url)
 
 
@@ -48,7 +48,7 @@ class OwnVendorMixin(UserPassesTestMixin):
         """Check if the user is the owner of the object via vendor's user."""
         return self.request.user == self.get_object().user
 
-    def handle_no_permission(self, login_redirect='start', permission_redirect='start'):
+    def handle_no_permission(self, login_redirect="start", permission_redirect="start"):
         """
         Redirects to login if the user is not authenticated. Otherwise, redirect to the the permission page.
         :param login_redirect: Name of the target view after logging in as an owner.
@@ -58,9 +58,9 @@ class OwnVendorMixin(UserPassesTestMixin):
         if self.request.user.is_authenticated:
             messages.warning(self.request, self.permission_denied_message)
             return HttpResponseRedirect(reverse(permission_redirect))
-        next_url = reverse(login_redirect, args=[self.kwargs['pk']])
-        base_url = reverse('login')
-        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
+        next_url = reverse(login_redirect, args=[self.kwargs["pk"]])
+        base_url = reverse("login")
+        url = "{}?{}".format(base_url, urlencode({"next": next_url}))  # pylint: disable=consider-using-f-string
         return HttpResponseRedirect(url)
 
 
@@ -69,11 +69,11 @@ class OwnItemMixin(UserPassesTestMixin):
 
     def test_func(self):
         """Check if the user is the owner of the customer."""
-        invoice_id = self.kwargs['invoice_id']
+        invoice_id = self.kwargs["invoice_id"]
         invoice = get_object_or_404(Invoice, pk=invoice_id)
         return self.request.user == invoice.vendor.user
 
-    def handle_no_permission(self, login_args=None, permission_redirect='start', login_redirect='start'):
+    def handle_no_permission(self, login_args=None, permission_redirect="start", login_redirect="start"):
         """
         Redirects to login if the user is not authenticated. Otherwise, redirect to the the permission page.
         :param login_args: Arguments to login redirect.
@@ -85,31 +85,33 @@ class OwnItemMixin(UserPassesTestMixin):
             messages.warning(self.request, self.permission_denied_message)
             return HttpResponseRedirect(reverse(permission_redirect))
         next_url = reverse(login_redirect, args=login_args)
-        base_url = reverse('login')
-        url = '{}?{}'.format(base_url, urlencode({'next': next_url}))  # pylint: disable=consider-using-f-string
+        base_url = reverse("login")
+        url = "{}?{}".format(base_url, urlencode({"next": next_url}))  # pylint: disable=consider-using-f-string
         return HttpResponseRedirect(url)
 
 
 class StartView(TemplateView):
     """The start page."""
-    template_name = 'invoice/start.html'
+
+    template_name = "invoice/start.html"
 
 
 class CustomerCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Create a new customer."""
-    template_name = 'invoice/customer_form.html'
+
+    template_name = "invoice/customer_form.html"
     model = Customer
     form_class = CustomerForm
-    success_url = reverse_lazy('customer-list')
-    success_message = _('Customer was created successfully.')
+    success_url = reverse_lazy("customer-list")
+    success_message = _("Customer was created successfully.")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'].fields['vendor'].queryset = Vendor.objects.filter(user_id=self.request.user.id)
+        context["form"].fields["vendor"].queryset = Vendor.objects.filter(user_id=self.request.user.id)
         if self.request.POST:
-            context['address_form'] = AddressForm(self.request.POST)
+            context["address_form"] = AddressForm(self.request.POST)
         else:
-            context['address_form'] = AddressForm()
+            context["address_form"] = AddressForm()
         return context
 
     def form_valid(self, form):
@@ -125,23 +127,24 @@ class CustomerCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
 class CustomerUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
     """Update an existing customer."""
-    template_name = 'invoice/customer_form.html'
+
+    template_name = "invoice/customer_form.html"
     form_class = CustomerForm
     model = Customer
-    success_url = reverse_lazy('customer-list')
-    success_message = _('Customer was updated successfully.')
-    permission_denied_message = _('You are not allowed to edit this customer.')
+    success_url = reverse_lazy("customer-list")
+    success_message = _("Customer was updated successfully.")
+    permission_denied_message = _("You are not allowed to edit this customer.")
 
-    def handle_no_permission(self, login_redirect='customer-update', permission_redirect='customer-list'):
+    def handle_no_permission(self, login_redirect="customer-update", permission_redirect="customer-list"):
         return super().handle_no_permission(login_redirect, permission_redirect)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'].fields['vendor'].queryset = Vendor.objects.filter(user_id=self.request.user.id)
+        context["form"].fields["vendor"].queryset = Vendor.objects.filter(user_id=self.request.user.id)
         if self.request.POST:
-            context['address_form'] = AddressForm(self.request.POST)
+            context["address_form"] = AddressForm(self.request.POST)
         else:
-            context['address_form'] = AddressForm(instance=self.object.address)
+            context["address_form"] = AddressForm(instance=self.object.address)
         return context
 
     def form_valid(self, form):
@@ -155,16 +158,18 @@ class CustomerUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
 
 class CustomerDeleteView(OwnMixin, SuccessMessageMixin, DeleteView):
     """Delete an existing customer."""
-    model = Customer
-    success_url = reverse_lazy('customer-list')
-    success_message = _('Customer was deleted successfully.')
 
-    def handle_no_permission(self, login_redirect='customer-delete', permission_redirect='customer-list'):
+    model = Customer
+    success_url = reverse_lazy("customer-list")
+    success_message = _("Customer was deleted successfully.")
+
+    def handle_no_permission(self, login_redirect="customer-delete", permission_redirect="customer-list"):
         return super().handle_no_permission(login_redirect, permission_redirect)
 
 
 class CustomerListView(ListView):
     """List all customers."""
+
     model = Customer
 
     def get_queryset(self, **kwargs):
@@ -175,46 +180,49 @@ class CustomerListView(ListView):
 
 class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Create a new invoice."""
+
     form_class = InvoiceForm
     model = Invoice
-    success_message = _('Invoice was created successfully.')
+    success_message = _("Invoice was created successfully.")
 
     def get_success_url(self):
-        return reverse('invoice-update', kwargs={'pk': self.object.id})
+        return reverse("invoice-update", kwargs={"pk": self.object.id})
 
 
 class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
     """Update an existing invoice."""
+
     form_class = InvoiceForm
     model = Invoice
-    success_url = reverse_lazy('invoice-list')
-    success_message = _('Invoice was updated successfully.')
+    success_url = reverse_lazy("invoice-list")
+    success_message = _("Invoice was updated successfully.")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:
-            context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+            context["invoice_item_form"] = InvoiceItemForm(self.request.POST)
         else:
-            context['invoice_item_form'] = InvoiceItemForm()
+            context["invoice_item_form"] = InvoiceItemForm()
         return context
 
-    def handle_no_permission(self, login_redirect='invoice-update', permission_redirect='invoice-list'):
+    def handle_no_permission(self, login_redirect="invoice-update", permission_redirect="invoice-list"):
         return super().handle_no_permission(login_redirect, permission_redirect)
 
 
 class InvoicePaidView(OwnMixin, SuccessMessageMixin, UpdateView):
     """Mark an invoice as paid"""
-    model = Invoice
-    fields = ['paid']
-    success_message = _('Invoice was marked as paid successfully.')
-    template_name = 'invoice/invoice_paid.html'
 
-    def handle_no_permission(self, login_redirect='invoice-paid', permission_redirect='invoice-list'):
+    model = Invoice
+    fields = ["paid"]
+    success_message = _("Invoice was marked as paid successfully.")
+    template_name = "invoice/invoice_paid.html"
+
+    def handle_no_permission(self, login_redirect="invoice-paid", permission_redirect="invoice-list"):
         return super().handle_no_permission(login_redirect, permission_redirect)
 
     def get_success_url(self):
         """Redirect to the invoice detail page."""
-        return reverse('invoice-update', kwargs={'pk': self.kwargs['pk']})
+        return reverse("invoice-update", kwargs={"pk": self.kwargs["pk"]})
 
     def post(self, request, *args, **kwargs):
         """Mark an invoice as paid."""
@@ -226,16 +234,18 @@ class InvoicePaidView(OwnMixin, SuccessMessageMixin, UpdateView):
 
 class InvoiceDeleteView(OwnMixin, SuccessMessageMixin, DeleteView):
     """Delete an existing invoice."""
-    model = Invoice
-    success_url = reverse_lazy('invoice-list')
-    success_message = _('Invoice was deleted successfully.')
 
-    def handle_no_permission(self, login_redirect='invoice-delete', permission_redirect='invoice-list'):
+    model = Invoice
+    success_url = reverse_lazy("invoice-list")
+    success_message = _("Invoice was deleted successfully.")
+
+    def handle_no_permission(self, login_redirect="invoice-delete", permission_redirect="invoice-list"):
         return super().handle_no_permission(login_redirect, permission_redirect)
 
 
 class InvoiceListView(LoginRequiredMixin, ListView):  # pylint: disable=too-many-ancestors
     """List all invoices."""
+
     model = Invoice
 
     def get_queryset(self, **kwargs):
@@ -258,34 +268,37 @@ def pdf_invoice(request, invoice_id) -> HttpResponseForbidden | FileResponse:
 
 class InvoiceItemCreateView(OwnItemMixin, SuccessMessageMixin, CreateView):
     """Create a new invoice item."""
-    template_name = 'invoice/invoice_form.html'
+
+    template_name = "invoice/invoice_form.html"
     form_class = InvoiceItemForm
     model = InvoiceItem
-    success_message = _('Invoice item was created successfully.')
+    success_message = _("Invoice item was created successfully.")
 
-    def handle_no_permission(self, login_args=None, permission_redirect='invoice-list',
-                             login_redirect='invoice-item-add'):
+    def handle_no_permission(
+        self, login_args=None, permission_redirect="invoice-list", login_redirect="invoice-item-add"
+    ):
         if login_args is None:
-            login_args = [self.kwargs['invoice_id']]
-        return super().handle_no_permission(login_redirect=login_redirect, login_args=login_args,
-                                            permission_redirect=permission_redirect, )
+            login_args = [self.kwargs["invoice_id"]]
+        return super().handle_no_permission(
+            login_redirect=login_redirect, login_args=login_args, permission_redirect=permission_redirect
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        invoice = get_object_or_404(Invoice, pk=self.kwargs['invoice_id'])
-        context['invoice'] = invoice
-        context['form'] = InvoiceForm(instance=invoice)
+        invoice = get_object_or_404(Invoice, pk=self.kwargs["invoice_id"])
+        context["invoice"] = invoice
+        context["form"] = InvoiceForm(instance=invoice)
         if self.request.POST:
-            context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+            context["invoice_item_form"] = InvoiceItemForm(self.request.POST)
         else:
-            context['invoice_item_form'] = InvoiceItemForm()
+            context["invoice_item_form"] = InvoiceItemForm()
         return context
 
     def get_success_url(self):
-        return reverse('invoice-update', kwargs={'pk': self.kwargs['invoice_id']})
+        return reverse("invoice-update", kwargs={"pk": self.kwargs["invoice_id"]})
 
     def form_valid(self, form):
-        invoice = get_object_or_404(Invoice, pk=self.kwargs['invoice_id'])
+        invoice = get_object_or_404(Invoice, pk=self.kwargs["invoice_id"])
         invoice_item = form.save(commit=False)
         invoice_item.invoice = invoice
         invoice_item.save()
@@ -294,78 +307,85 @@ class InvoiceItemCreateView(OwnItemMixin, SuccessMessageMixin, CreateView):
 
 class InvoiceItemUpdateView(OwnItemMixin, SuccessMessageMixin, UpdateView):
     """Update an existing invoice item."""
-    template_name = 'invoice/invoice_form.html'
+
+    template_name = "invoice/invoice_form.html"
     form_class = InvoiceItemForm
     model = InvoiceItem
-    pk_url_kwarg = 'invoice_item_id'
-    success_message = _('Invoice item was updated successfully.')
+    pk_url_kwarg = "invoice_item_id"
+    success_message = _("Invoice item was updated successfully.")
 
-    def handle_no_permission(self, login_args=None, permission_redirect='invoice-list',
-                             login_redirect='invoice-item-update'):
+    def handle_no_permission(
+        self, login_args=None, permission_redirect="invoice-list", login_redirect="invoice-item-update"
+    ):
         if login_args is None:
-            login_args = [self.kwargs['invoice_id'], self.kwargs['invoice_item_id']]
-        return super().handle_no_permission(login_redirect=login_redirect, login_args=login_args,
-                                            permission_redirect=permission_redirect, )
+            login_args = [self.kwargs["invoice_id"], self.kwargs["invoice_item_id"]]
+        return super().handle_no_permission(
+            login_redirect=login_redirect, login_args=login_args, permission_redirect=permission_redirect
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         invoice_item = self.get_object()
-        context['invoice'] = invoice_item.invoice
-        context['form'] = InvoiceForm(instance=invoice_item.invoice)
+        context["invoice"] = invoice_item.invoice
+        context["form"] = InvoiceForm(instance=invoice_item.invoice)
         if self.request.POST:
-            context['invoice_item_form'] = InvoiceItemForm(self.request.POST, instance=invoice_item)
+            context["invoice_item_form"] = InvoiceItemForm(self.request.POST, instance=invoice_item)
         else:
-            context['invoice_item_form'] = InvoiceItemForm(instance=invoice_item)
+            context["invoice_item_form"] = InvoiceItemForm(instance=invoice_item)
         return context
 
     def get_success_url(self):
-        return reverse('invoice-update', kwargs={'pk': self.kwargs['invoice_id']})
+        return reverse("invoice-update", kwargs={"pk": self.kwargs["invoice_id"]})
 
 
 class InvoiceItemDeleteView(OwnItemMixin, SuccessMessageMixin, DeleteView):
     """Delete an existing invoice item."""
-    model = InvoiceItem
-    pk_url_kwarg = 'invoice_item_id'
-    success_message = _('Invoice item was deleted successfully.')
 
-    def handle_no_permission(self, login_args=None, permission_redirect='invoice-list',
-                             login_redirect='invoice-item-delete'):
+    model = InvoiceItem
+    pk_url_kwarg = "invoice_item_id"
+    success_message = _("Invoice item was deleted successfully.")
+
+    def handle_no_permission(
+        self, login_args=None, permission_redirect="invoice-list", login_redirect="invoice-item-delete"
+    ):
         if login_args is None:
-            login_args = [self.kwargs['invoice_id'], self.kwargs['invoice_item_id']]
-        return super().handle_no_permission(login_redirect=login_redirect, login_args=login_args,
-                                            permission_redirect=permission_redirect, )
+            login_args = [self.kwargs["invoice_id"], self.kwargs["invoice_item_id"]]
+        return super().handle_no_permission(
+            login_redirect=login_redirect, login_args=login_args, permission_redirect=permission_redirect
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        invoice = get_object_or_404(Invoice, pk=self.kwargs['invoice_id'])
-        context['invoice'] = invoice
-        context['form'] = InvoiceForm(instance=invoice)
+        invoice = get_object_or_404(Invoice, pk=self.kwargs["invoice_id"])
+        context["invoice"] = invoice
+        context["form"] = InvoiceForm(instance=invoice)
         if self.request.POST:
-            context['invoice_item_form'] = InvoiceItemForm(self.request.POST)
+            context["invoice_item_form"] = InvoiceItemForm(self.request.POST)
         else:
-            context['invoice_item_form'] = InvoiceItemForm()
+            context["invoice_item_form"] = InvoiceItemForm()
         return context
 
     def get_success_url(self):
-        return reverse('invoice-update', kwargs={'pk': self.kwargs['invoice_id']})
+        return reverse("invoice-update", kwargs={"pk": self.kwargs["invoice_id"]})
 
 
 class VendorCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Create a new vendor. Including a bank account and a new address."""
-    template_name = 'invoice/vendor_form.html'
+
+    template_name = "invoice/vendor_form.html"
     form_class = VendorForm
     model = Vendor
-    success_url = reverse_lazy('vendor-list')
-    success_message = _('Vendor was created successfully.')
+    success_url = reverse_lazy("vendor-list")
+    success_message = _("Vendor was created successfully.")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:
-            context['address_form'] = AddressForm(self.request.POST)
-            context['bank_form'] = BankAccountForm(self.request.POST)
+            context["address_form"] = AddressForm(self.request.POST)
+            context["bank_form"] = BankAccountForm(self.request.POST)
         else:
-            context['address_form'] = AddressForm()
-            context['bank_form'] = BankAccountForm()
+            context["address_form"] = AddressForm()
+            context["bank_form"] = BankAccountForm()
         return context
 
     def form_valid(self, form):
@@ -387,23 +407,24 @@ class VendorCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
 class VendorUpdateView(OwnVendorMixin, SuccessMessageMixin, UpdateView):
     """Update an existing vendor. Including the bank account and address."""
-    template_name = 'invoice/vendor_form.html'
+
+    template_name = "invoice/vendor_form.html"
     form_class = VendorForm
     model = Vendor
-    success_url = reverse_lazy('vendor-list')
-    success_message = _('Vendor was updated successfully.')
+    success_url = reverse_lazy("vendor-list")
+    success_message = _("Vendor was updated successfully.")
 
-    def handle_no_permission(self, login_redirect='vendor-update', permission_redirect='vendor-list'):
+    def handle_no_permission(self, login_redirect="vendor-update", permission_redirect="vendor-list"):
         return super().handle_no_permission(login_redirect=login_redirect, permission_redirect=permission_redirect)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:
-            context['address_form'] = AddressForm(self.request.POST)
-            context['bank_form'] = BankAccountForm(self.request.POST)
+            context["address_form"] = AddressForm(self.request.POST)
+            context["bank_form"] = BankAccountForm(self.request.POST)
         else:
-            context['address_form'] = AddressForm(instance=self.object.address)
-            context['bank_form'] = BankAccountForm(instance=self.object.bank_account)
+            context["address_form"] = AddressForm(instance=self.object.address)
+            context["bank_form"] = BankAccountForm(instance=self.object.bank_account)
         return context
 
     def form_valid(self, form):
@@ -421,16 +442,18 @@ class VendorUpdateView(OwnVendorMixin, SuccessMessageMixin, UpdateView):
 
 class VendorDeleteView(OwnVendorMixin, SuccessMessageMixin, DeleteView):
     """Delete an existing vendor."""
-    model = Vendor
-    success_url = reverse_lazy('vendor-list')
-    success_message = _('Vendor was deleted successfully.')
 
-    def handle_no_permission(self, login_redirect='vendor-delete', permission_redirect='vendor-list'):
+    model = Vendor
+    success_url = reverse_lazy("vendor-list")
+    success_message = _("Vendor was deleted successfully.")
+
+    def handle_no_permission(self, login_redirect="vendor-delete", permission_redirect="vendor-list"):
         return super().handle_no_permission(login_redirect=login_redirect, permission_redirect=permission_redirect)
 
 
 class VendorListView(ListView):
     """List all vendors."""
+
     model = Vendor
 
     def get_queryset(self, **kwargs):

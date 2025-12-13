@@ -18,11 +18,21 @@ _ENCODINGS = {
 }
 
 
-def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str, beneficiary_bic: Optional[str] = None,
-                    eur_amount: Optional[int | float | str | Decimal] = None,
-                    version: str = "001", encoding: str = "utf-8", instant: bool = False, purpose: str = "",
-                    structured_remittance_info: str = "", remittance_info: str = "", originator_info: str = "",
-                    always_add_bic: bool = True, use_crlf: bool = False) -> str:
+def gen_epc_qr_data(
+    beneficiary_name: str,
+    beneficiary_iban: str,
+    beneficiary_bic: Optional[str] = None,
+    eur_amount: Optional[int | float | str | Decimal] = None,
+    version: str = "001",
+    encoding: str = "utf-8",
+    instant: bool = False,
+    purpose: str = "",
+    structured_remittance_info: str = "",
+    remittance_info: str = "",
+    originator_info: str = "",
+    always_add_bic: bool = True,
+    use_crlf: bool = False,
+) -> str:
     # pylint: disable=too-many-locals,too-many-arguments,too-many-positional-arguments,too-many-branches,line-too-long
     """Generate EPC QR code data (`Official`_, `Wikipedia`_) as a string.
 
@@ -107,17 +117,19 @@ def gen_epc_qr_data(beneficiary_name: str, beneficiary_iban: str, beneficiary_bi
     originator_info = clean_text(originator_info, max_length=70)
 
     line_separator = "\r\n" if use_crlf else "\n"
-    return line_separator.join([
-        "BCD",
-        version,
-        encoding_key,
-        identification,
-        bic,
-        name,
-        iban,
-        eur_amount_str,
-        purpose,
-        structured_remittance_info,
-        remittance_info,
-        originator_info
-    ])
+    return line_separator.join(
+        [
+            "BCD",
+            version,
+            encoding_key,
+            identification,
+            bic,
+            name,
+            iban,
+            eur_amount_str,
+            purpose,
+            structured_remittance_info,
+            remittance_info,
+            originator_info,
+        ]
+    )
