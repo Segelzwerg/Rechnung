@@ -44,7 +44,7 @@ docs = [
 ]
 
 [tool.bandit]
-exclude_dirs = ["*/migrations", "*/tests.py", "*/*settings.py"]
+exclude_dirs = ["**/migrations", "**/test*.py", "**/*settings.py"]
 
 [tool.pylint]
 max-line-length = 120

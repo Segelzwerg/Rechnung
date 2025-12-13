@@ -43,4 +43,5 @@ jobs:
         with:
           targets: |
             rechnung
-          options: "-r -c pyproject.toml -x rechnung/test_settings.py"
+            invoice
+          options: "-r -c pyproject.toml"
