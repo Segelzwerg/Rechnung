@@ -43,7 +43,7 @@ docs = [
 ]
 
 [tool.ruff]
-extend-exclude = ["docs", "**/migrations", "manage.py"]
+extend-exclude = ["docs", ".venv", "staticfiles", "**/migrations", "manage.py"]
 line-length = 120
 
 [tool.ruff.format]
@@ -74,5 +74,7 @@ split-on-trailing-comma = false
 
 [tool.pylint]
 max-line-length = 120
-load-plugins = "pylint_django"
-ignore-paths = ["docs", ".*/migrations", ".*/test.*.py", "manage.py"]
+load-plugins = ["pylint_django"]
+ignore-paths = ["docs", ".venv", "staticfiles", ".*/migrations", ".*/test.*.py", "manage.py"]
+django-settings-module = "rechnung.settings"
+disable = "W0511" # fix-me
