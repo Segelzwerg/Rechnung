@@ -112,6 +112,8 @@ TIME_ZONE = env.str("TIME_ZONE", default="UTC")
 STATIC_URL = "static/"
 STATIC_ROOT = "staticfiles"
 
+LOGIN_REDIRECT_URL = "start"
+
 # Settings for django-bootstrap5
 BOOTSTRAP5 = {
     "error_css_class": "django_bootstrap5-error",
