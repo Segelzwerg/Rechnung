@@ -11,7 +11,7 @@ from warnings import deprecated
 # Source: https://docs.djangoproject.com/en/5.1/topics/auth/customizing/#extending-the-existing-user-model
 # pylint: disable=imported-auth-user
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import (
     CASCADE,
@@ -30,6 +30,8 @@ from django.db.models import (
 )
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import pgettext_lazy
 from schwifty import BIC, IBAN
@@ -128,6 +130,17 @@ class Customer(Model):
         return f"{self.first_name} {self.last_name}"
 
 
+@receiver(post_delete, sender=Customer)
+def post_delete_customer(sender, instance, *args, **kwargs):  # noqa: ARG001
+    """Delete customer one-to-one fields when customer is deleted."""
+    try:
+        x = instance.address
+        if x:
+            x.delete()
+    except (KeyError, ObjectDoesNotExist):
+        pass
+
+
 class Vendor(Model):
     """Defines profiles for the invoicer."""
 
@@ -151,6 +164,23 @@ class Vendor(Model):
         if self.company_name:
             return self.company_name
         return self.name
+
+
+@receiver(post_delete, sender=Vendor)
+def post_delete_vendor(sender, instance, *args, **kwargs):  # noqa: ARG001
+    """Delete vendor one-to-one fields when vendor is deleted."""
+    try:
+        x = instance.address
+        if x:
+            x.delete()
+    except (KeyError, ObjectDoesNotExist):
+        pass
+    try:
+        x = instance.bank_account
+        if x:
+            x.delete()
+    except (KeyError, ObjectDoesNotExist):
+        pass
 
 
 class Invoice(Model):
