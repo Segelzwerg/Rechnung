@@ -8,7 +8,7 @@ production.
 Development
 ===========
 
-We are using poetry as dependency management tool. After you have setup your environment, run ``poetry install`` in
+We are using uv as dependency management tool. After you have setup your environment, run ``uv sync`` in
 the root directory of the project.
 
 Docker Compose
@@ -50,26 +50,17 @@ You have to set some environment variables. See the table below for more.
 .. code :: yaml
 
     environment:
-      - SECRET_KEY=$SECRET_KEY
-      - ALLOWED_HOSTS=$ALLOWED_HOSTS
-      - DB_NAME=$DB_NAME
-      - DB_USER=$DB_USER
-      - DB_PASSWORD=$DB_PASSWORD
-      - DB_HOST=$DB_HOST
-      - DB_PORT=$DB_PORT
-      - DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
+      SECRET_KEY: $SECRET_KEY
+      ALLOWED_HOSTS: $ALLOWED_HOSTS
+      DATABASE_URL: "postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME"
 
 ========================= =====
 Env Var                   Value
 ========================= =====
-DJANGO_SETTINGS_MODULE    The path to the django settings file you want to use. This should be ``rechnung.prod_settings`` if you don't require customizations.
-ALLOWED_HOSTS             List of you hostname you want to access the application. E.g. `"['0.0.0.0']"`.
 SECRET_KEY                Security string. Must not be shared.
-DB_NAME                   Any name of the database.
-DB_USER                   Name of the admin.
-DB_PASSWORD               Password of the admin.
-DB_HOST                   Hostname of the database. It must be the same as docker compose service.
-DB_PORT                   Port of the database.
+ALLOWED_HOSTS             List of you hostname you want to access the application. E.g. `"['0.0.0.0']"`.
+DATABASE_URL              Database URL.
+CSRF_TRUSTED_ORIGINS      (Optional, Default: `http://*,https://*`) Used for endpoint names under which the server can be targeted. This is required for POST requests.
 ========================= =====
 
 Finally, we require a database.
@@ -77,14 +68,15 @@ Finally, we require a database.
 .. code :: yaml
 
   postgres:
-    image: postgres:17
+    image: postgres:18
     volumes:
-      #- <external_path>:/var/lib/postgresql/data/ # Enable if you want to use an external drive
-      - /var/lib/postgresql/data/
+      #- <external_path>:/var/lib/postgresql/ # Enable if you want to use an external drive
+      - /var/lib/postgresql/
     environment:
-      - POSTGRES_USER=$DB_USER
-      - POSTGRES_PASSWORD=$DB_PASSWORD
-      - POSTGRES_DB=$DB_NAME
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      # POSTGRES_PASSWORD_FILE: ... # For "docker secret"-like files
+      POSTGRES_DB: $DB_NAME
 
 Start Docker Compose
 --------------------

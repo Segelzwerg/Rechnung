@@ -1,14 +1,24 @@
 [project]
 name = "rechnung"
-version = "0.3.1"
+version = "0.3.5"
 description = ""
 authors = [
     { name = "Segelzwerg", email = "25705862+Segelzwerg@users.noreply.github.com" },
     { name = "iTitus", email = "iTitus@users.noreply.github.com" }
 ]
 readme = "README.md"
-requires-python = ">=3.12,<4.0"
-dynamic = ["dependencies"]
+license = "GPL-3.0-only"
+license-files = ["LICEN[CS]E*"]
+requires-python = ">=3.14"
+dependencies = [
+    "django>=6.0",
+    "django-bootstrap5>=25.3",
+    "reportlab>=4.4",
+    "schwifty>= 2025.9",
+    "gunicorn>=23.0",
+    "psycopg[binary]>=3.3",
+    "environs[django]>=14.5",
+]
 
 [project.urls]
 homepage = "https://github.com/Segelzwerg/Rechnung"
@@ -16,40 +26,55 @@ source = "https://github.com/Segelzwerg/Rechnung"
 documentation = "https://rechnung-django.readthedocs.io"
 issues = "https://github.com/Segelzwerg/Rechnung/issues"
 
-[tool.poetry.dependencies]
-django = "^5.2"
-django-bootstrap5 = "^25.1"
-reportlab = "^4.3"
-schwifty = "^2025.1"
-gunicorn = "^23.0"
-psycopg = { extras = ["binary"], version = "^3.2" }
+[dependency-groups]
+dev = [
+    "pytest>=9.0",
+    "pytest-django>=4.11",
+    "pylint>=3.3", # 4.0 is blocked by pylint-django 2.6
+    "pylint-django>=2.6",
+    "coverage>=7.13",
+    "hypothesis>=6.148",
+    "ruff>=0.14",
+    "django-debug-toolbar>=6.1",
+]
+docs = [
+    "sphinx>=8.2", # 9.0 is blocked by sphinx-rtd-theme 3.0
+    "sphinx-rtd-theme>=3.0",
+]
 
-[tool.poetry.group.dev.dependencies]
-pylint = "^3.3"
-bandit = "^1.8"
-flake8 = "^7.2"
-coverage = "^7.8"
-pylint-django = "^2.6"
-hypothesis = "^6.130"
+[tool.ruff]
+extend-exclude = ["docs", ".venv", "staticfiles", "**/migrations", "manage.py"]
+line-length = 120
 
-[tool.poetry.group.docs.dependencies]
-sphinx = "^8.2"
-sphinx-rtd-theme = "^3.0"
+[tool.ruff.format]
+skip-magic-trailing-comma = true
 
-[tool.poetry.requires-plugins]
-poetry-plugin-export = ">=1.9"
+[tool.ruff.lint]
+exclude = ["**/test*.py"]
+select = ["ALL"]
+ignore = [
+    "ANN", # flake8-annotations
+    "EM", # flake8-errmsg
+    "FIX", # flake8-fix-me
+    "TD", # flake8-todos
+    "TRY003", # raise-vanilla-args
+    "RUF012", # mutable-class-default
+    "COM812", # missing-trailing-comma
+    "D102", # undocumented-public-method
+    "D104", # undocumented-public-package
+    "D105", # undocumented-magic-method
+    "D106", # undocumented-public-nested-class
+]
 
-[tool.poetry]
-requires-poetry = ">=2.0"
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
 
-[build-system]
-requires = ["poetry-core>=2.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.bandit]
-exclude_dirs = ["*/migrations", "*/tests.py", "*/*settings.py"]
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
 
 [tool.pylint]
 max-line-length = 120
-load-plugins = "pylint_django"
-ignore-paths = [".*/migrations", ".*/.*settings.py", ".*/tests.py"]
+load-plugins = ["pylint_django"]
+ignore-paths = ["docs", ".venv", "staticfiles", ".*/migrations", ".*/test.*.py", "manage.py"]
+django-settings-module = "rechnung.settings"
+disable = "W0511" # fix-me

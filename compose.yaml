@@ -7,21 +7,17 @@ services:
     depends_on:
       - postgres
     environment:
-      - SECRET_KEY=$SECRET_KEY
-      - ALLOWED_HOSTS=$ALLOWED_HOSTS
-      - DB_NAME=$DB_NAME
-      - DB_USER=$DB_USER
-      - DB_PASSWORD=$DB_PASSWORD
-      - DB_HOST=$DB_HOST
-      - DB_PORT=$DB_PORT
-      - DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
+      SECRET_KEY: $SECRET_KEY
+      ALLOWED_HOSTS: $ALLOWED_HOSTS
+      DATABASE_URL: "postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME"
     restart: always
   postgres:
-    image: postgres:17
+    image: postgres:18
     volumes:
-      #- <external_path>:/var/lib/postgresql/data/ # Enable if you want to use an external drive
-      - /var/lib/postgresql/data/
+      #- <external_path>:/var/lib/postgresql/ # Enable if you want to use an external drive
+      - /var/lib/postgresql
     environment:
-      - POSTGRES_USER=$DB_USER
-      - POSTGRES_PASSWORD=$DB_PASSWORD
-      - POSTGRES_DB=$DB_NAME
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      # POSTGRES_PASSWORD_FILE: ... # For "docker secret"-like files
+      POSTGRES_DB: $DB_NAME

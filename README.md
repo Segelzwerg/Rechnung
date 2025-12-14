@@ -15,17 +15,13 @@ Check out our [documentation](https://rechnung-django.readthedocs.io/en/latest/)
 
 ## Docker Compose
 
-To start the server with the docker compose file. Use the following command:
+To start the server with the provided docker compose file use the following command:
 `docker compose up`
 However, you need to set up a few environment variables.
 
-| Env Var                | Value                                                                                                                              |
-|------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| DJANGO_SETTINGS_MODULE | The path to the django settings file you want to use. This should be `rechnung.prod_settings` if you don't require customizations. |
-| ALLOWED_HOSTS          | List of you hostname you want to access the application. E.g. `"['0.0.0.0']"`.                                                     |
-| SECRET_KEY             | Security string. Must not be shared.                                                                                               |
-| DB_NAME                | Any name of the database.                                                                                                          |
-| DB_USER                | Name of the admin.                                                                                                                 |
-| DB_PASSWORD            | Password of the admin.                                                                                                             |
-| DB_HOST                | Hostname of the database. It must be the same as docker compose service.                                                           |
-| DB_PORT                | Port of the database.                                                                                                              |
+| Env Var              | Value                                                                                                                                         |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| SECRET_KEY           | Security string. Must not be shared.                                                                                                          |
+| ALLOWED_HOSTS        | List of you hostname you want to access the application. E.g. `example.com,10.56.120.9`.                                                      |
+| DATABASE_URL         | Database URL.                                                                                                                                 |
+| CSRF_TRUSTED_ORIGINS | (Optional, Default: `http://*,https://*`) Used for endpoint names under which the server can be targeted. This is required for POST requests. |

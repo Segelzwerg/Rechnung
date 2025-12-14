@@ -1,7 +1,8 @@
 """Admin registration for invoice app."""
+
 from django.contrib import admin
 
-from invoice.models import Vendor, Address, Customer, BankAccount, Invoice, InvoiceItem
+from invoice.models import Address, BankAccount, Customer, Invoice, InvoiceItem, Vendor
 
 
 @admin.register(Address)

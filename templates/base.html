@@ -73,10 +73,15 @@
                     <span class="navbar-text">
                         {{ user.username }}
                     </span>
-                    <form id="logoutform" method="post" action="/accounts/logout/" class="d-flex">
+                    <form id="logoutform" method="post" action="{% url "logout" %}" class="d-flex">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-info">{% translate "Logout" %}</button>
                     </form>
+                </div>
+            {% else %}
+                <div class="d-flex">
+                    <a class="btn btn-info" href="{% url 'login' %}?next={{ request.path }}">{% translate "Login" %}</a>
+                    <a class="btn btn-info" href="{% url 'signup' %}">{% translate "Register" %}</a>
                 </div>
             {% endif %}
             <form action="{% url 'set_language' %}" method="post">{% csrf_token %}

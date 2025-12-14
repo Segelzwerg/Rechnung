@@ -1,0 +1,39 @@
+# Git
+**/.git/
+**/.gitignore
+**/.gitattributes
+**/.github/
+
+# IDEs
+**/.idea/
+**/.run/
+**/.vscode/
+
+# Python
+**/.pytest_cache/
+**/.ruff_cache/
+**/.venv/
+**/dist/
+**/sdist/
+**/tests/
+**/wheels/
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+**/.poetry/
+**/.hypothesis/
+**/.flake8
+
+# Project specific
+/docs/
+/staticfiles/
+/*.yaml
+/*.yml
+/*.md
+**/*.sqlite3
+**/*.env
+/Dockerfile
+/*.dockerignore
+
+# need README for Python build
+!/README.md
