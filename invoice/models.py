@@ -131,7 +131,7 @@ class Customer(Model):
 
 
 @receiver(post_delete, sender=Customer)
-def post_delete_customer(_sender, instance, *args, **kwargs):  # noqa: ARG001
+def post_delete_customer(sender, instance, *args, **kwargs):  # pylint: disable=unused-argument # noqa: ARG001
     """Delete customer one-to-one fields when customer is deleted."""
     try:
         x = instance.address
@@ -167,7 +167,7 @@ class Vendor(Model):
 
 
 @receiver(post_delete, sender=Vendor)
-def post_delete_vendor(_sender, instance, *args, **kwargs):  # noqa: ARG001
+def post_delete_vendor(sender, instance, *args, **kwargs):  # pylint: disable=unused-argument # noqa: ARG001
     """Delete vendor one-to-one fields when vendor is deleted."""
     try:
         x = instance.address
