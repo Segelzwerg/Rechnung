@@ -31,6 +31,7 @@
 /*.yml
 /*.md
 **/*.sqlite3
+**/*.env
 /Dockerfile
 /*.dockerignore
 

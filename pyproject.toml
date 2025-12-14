@@ -16,7 +16,8 @@ dependencies = [
     "reportlab>=4.4",
     "schwifty>= 2025.9",
     "gunicorn>=23.0",
-    "psycopg[binary]>=3.3"
+    "psycopg[binary]>=3.3",
+    "environs[django]>=14.5",
 ]
 
 [project.urls]
@@ -29,11 +30,12 @@ issues = "https://github.com/Segelzwerg/Rechnung/issues"
 dev = [
     "pytest>=9.0",
     "pytest-django>=4.11",
-    "pylint>=3.3",
+    "pylint>=3.3", # 4.0 is blocked by pylint-django 2.6
     "pylint-django>=2.6",
     "coverage>=7.13",
     "hypothesis>=6.148",
     "ruff>=0.14",
+    "django-debug-toolbar>=6.1",
 ]
 docs = [
     "sphinx>=8.2", # 9.0 is blocked by sphinx-rtd-theme 3.0
@@ -41,17 +43,20 @@ docs = [
 ]
 
 [tool.ruff]
-extend-exclude = ["docs", "**/migrations", "**/test*.py", "**/*settings.py", "manage.py"]
+extend-exclude = ["docs", ".venv", "staticfiles", "**/migrations", "manage.py"]
 line-length = 120
 
 [tool.ruff.format]
 skip-magic-trailing-comma = true
 
 [tool.ruff.lint]
+exclude = ["**/test*.py"]
 select = ["ALL"]
 ignore = [
     "ANN", # flake8-annotations
     "EM", # flake8-errmsg
+    "FIX", # flake8-fix-me
+    "TD", # flake8-todos
     "TRY003", # raise-vanilla-args
     "RUF012", # mutable-class-default
     "COM812", # missing-trailing-comma
@@ -69,5 +74,7 @@ split-on-trailing-comma = false
 
 [tool.pylint]
 max-line-length = 120
-load-plugins = "pylint_django"
-ignore-paths = ["docs", ".*/migrations", ".*/test.*.py", ".*/.*settings.py", "manage.py"]
+load-plugins = ["pylint_django"]
+ignore-paths = ["docs", ".venv", "staticfiles", ".*/migrations", ".*/test.*.py", "manage.py"]
+django-settings-module = "rechnung.settings"
+disable = "W0511" # fix-me

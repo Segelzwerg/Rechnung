@@ -33,4 +33,4 @@ jobs:
           uv run ruff check
 
       - name: Lint sources with pylint
-        run: uv run pylint --django-settings-module=rechnung.test_settings rechnung invoice
+        run: uv run pylint .
