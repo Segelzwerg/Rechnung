@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_bootstrap5",
     "invoice",
+    "accounts",
 ]
 
 MIDDLEWARE = [
@@ -110,6 +111,9 @@ TIME_ZONE = env.str("TIME_ZONE", default="UTC")
 # TODO: only works for in dev, see https://docs.djangoproject.com/en/6.0/howto/static-files/deployment/
 STATIC_URL = "static/"
 STATIC_ROOT = "staticfiles"
+
+LOGIN_REDIRECT_URL = "start"
+LOGOUT_REDIRECT_URL = "start"
 
 # Settings for django-bootstrap5
 BOOTSTRAP5 = {
