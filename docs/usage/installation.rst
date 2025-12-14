@@ -8,7 +8,7 @@ production.
 Development
 ===========
 
-We are using poetry as dependency management tool. After you have setup your environment, run ``poetry install`` in
+We are using uv as dependency management tool. After you have setup your environment, run ``uv sync`` in
 the root directory of the project.
 
 Docker Compose
@@ -77,10 +77,10 @@ Finally, we require a database.
 .. code :: yaml
 
   postgres:
-    image: postgres:17
+    image: postgres:18
     volumes:
-      #- <external_path>:/var/lib/postgresql/data/ # Enable if you want to use an external drive
-      - /var/lib/postgresql/data/
+      #- <external_path>:/var/lib/postgresql/ # Enable if you want to use an external drive
+      - /var/lib/postgresql/
     environment:
       - POSTGRES_USER=$DB_USER
       - POSTGRES_PASSWORD=$DB_PASSWORD

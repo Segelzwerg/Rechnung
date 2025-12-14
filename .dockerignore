@@ -1,19 +1,38 @@
-/.github/
-/.hypothesis/
-/.poetry/
-/.pytest_cache/
-/.run/
-/.venv/
-/venv/
-/dist/
+# Git
+**/.git/
+**/.gitignore
+**/.gitattributes
+**/.github/
+
+# IDEs
+**/.idea/
+**/.run/
+**/.vscode/
+
+# Python
+**/.pytest_cache/
+**/.ruff_cache/
+**/.venv/
+**/dist/
+**/sdist/
+**/tests/
+**/wheels/
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+**/.poetry/
+**/.hypothesis/
+**/.flake8
+
+# Project specific
 /docs/
 /staticfiles/
-
 /*.yaml
-/*.sqlite3
-/.flake8
-/.gitattributes
-/.gitignore
-/CODE_OF_CONDUCT.md
+/*.yml
+/*.md
+**/*.sqlite3
 /Dockerfile
-/LICENSE
+/*.dockerignore
+
+# need README for Python build
+!/README.md

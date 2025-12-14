@@ -17,10 +17,10 @@ services:
       - DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
     restart: always
   postgres:
-    image: postgres:17
+    image: postgres:18
     volumes:
-      #- <external_path>:/var/lib/postgresql/data/ # Enable if you want to use an external drive
-      - /var/lib/postgresql/data/
+      #- <external_path>:/var/lib/postgresql/ # Enable if you want to use an external drive
+      - /var/lib/postgresql
     environment:
       - POSTGRES_USER=$DB_USER
       - POSTGRES_PASSWORD=$DB_PASSWORD
