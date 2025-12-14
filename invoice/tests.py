@@ -4,7 +4,7 @@ from math import inf, nan
 
 import schwifty
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.urls import reverse
 from django.utils.timezone import now
 from hypothesis import assume, example, given
@@ -99,13 +99,11 @@ class AddCustomerViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
+        cls.url = reverse("customer-add")
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
-
-    def setUp(self):
-        self.url = reverse("customer-add")
 
     def test_get(self):
         self.client.force_login(self.user)
@@ -183,15 +181,14 @@ class UpdateCustomerViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
-        cls.vendor = Vendor.objects.create(name="Test", company_name="Test", user=cls.user, address=address)
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
-        Vendor.objects.all().delete()
 
     def setUp(self):
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        self.vendor = Vendor.objects.create(name="Test", company_name="Test", user=self.user, address=address)
         self.customer = Customer.objects.create(
             first_name="John",
             last_name="Doe",
@@ -205,6 +202,7 @@ class UpdateCustomerViewTestCase(TestCase):
 
     def tearDown(self):
         Customer.objects.all().delete()
+        Vendor.objects.all().delete()
 
     def test_get(self):
         self.client.force_login(self.user)
@@ -316,13 +314,18 @@ class CustomerListViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
-        cls.vendor = Vendor.objects.create(name="Test", company_name="Test", user=cls.user, address=address)
         cls.url = reverse("customer-list")
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
+
+    def setUp(self):
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        self.vendor = Vendor.objects.create(name="Test", company_name="Test", user=self.user, address=address)
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
 
     def test_only_users_customers(self):
         second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
@@ -360,24 +363,22 @@ class CustomerDeleteViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
-        cls.vendor = Vendor.objects.create(name="Test", company_name="Test", user=cls.user, address=address)
 
     @classmethod
     def tearDownClass(cls):
-        Customer.objects.all().delete()
-        Vendor.objects.all().delete()
-        Address.objects.all().delete()
         User.objects.all().delete()
 
     def setUp(self):
-        address = Address.objects.create(line_1="Test2", postcode="12345", city="Test", country="Germany")
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        self.vendor = Vendor.objects.create(name="Test", company_name="Test", user=self.user, address=address)
+        address2 = Address.objects.create(line_1="Test2", postcode="12345", city="Test", country="Germany")
         self.customer = Customer.objects.create(
-            first_name="John", last_name="Doe", email="john@doe.com", vendor=self.vendor, address=address
+            first_name="John", last_name="Doe", email="john@doe.com", vendor=self.vendor, address=address2
         )
 
     def tearDown(self):
         Customer.objects.all().delete()
+        Vendor.objects.all().delete()
 
     def test_auth_required(self):
         url = reverse("customer-delete", args=[self.customer.id])
@@ -413,19 +414,26 @@ class CustomerModelTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
-        cls.vendor = Vendor.objects.create(name="test", address=address, user=cls.user)
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
+
+    def setUp(self):
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        self.vendor = Vendor.objects.create(name="test", address=address, user=self.user)
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
 
     def test_long_email(self):
         long_email = "a" * 240 + "@" + "b" * 20 + ".com"
         address = Address.objects.create(
             line_1="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany"
         )
-        customer = Customer.objects.create(first_name="John", last_name="Doe", email=long_email, address=address, vendor=self.vendor)
+        customer = Customer.objects.create(
+            first_name="John", last_name="Doe", email=long_email, address=address, vendor=self.vendor
+        )
         with self.assertRaises(ValidationError):
             customer.full_clean()
 
@@ -434,13 +442,11 @@ class AddVendorViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
+        cls.url = reverse("vendor-add")
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
-
-    def setUp(self):
-        self.url = reverse("vendor-add")
 
     def test_get(self):
         self.client.force_login(self.user)
@@ -539,7 +545,7 @@ class UpdateVendorViewTestCase(TestCase):
 
     def setUp(self):
         owner, iban, bic = build_bank_fields().example()
-        vendor = Vendor.objects.create(
+        self.vendor = Vendor.objects.create(
             name="John",
             company_name="Doe Company",
             address=Address.objects.create(
@@ -548,7 +554,7 @@ class UpdateVendorViewTestCase(TestCase):
             bank_account=BankAccount.objects.create(owner=owner, iban=iban, bic=bic),
             user=self.user,
         )
-        self.url = reverse("vendor-update", args=[vendor.id])
+        self.url = reverse("vendor-update", args=[self.vendor.id])
 
     def tearDown(self):
         Vendor.objects.all().delete()
@@ -649,13 +655,18 @@ class VendorListViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
-        cls.vendor = Vendor.objects.create(name="John", company_name="Doe Company", address=address, user=cls.user)
         cls.url = reverse("vendor-list")
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
+
+    def setUp(self):
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        self.vendor = Vendor.objects.create(name="John", company_name="Doe Company", address=address, user=self.user)
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
 
     def test_only_users_vendors(self):
         second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
@@ -676,13 +687,16 @@ class VendorDeleteViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        cls.address = Address.objects.create()
-        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
-        Address.objects.all().delete()
+
+    def setUp(self):
+        self.address = Address.objects.create()
+        self.vendor = Vendor.objects.create(name="Test", address=self.address, user=self.user)
+
+    def tearDown(self):
         Vendor.objects.all().delete()
 
     def test_auth_required(self):
@@ -1280,6 +1294,9 @@ class InvoicePDFViewTestCase(TestCase):
         customer = Customer.objects.create(address=address, vendor=vendor)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer, date=now())
 
+    def tearDown(self):
+        Vendor.objects.all().delete()
+
     def test_pdf(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse("invoice-pdf", kwargs={"invoice_id": self.invoice.pk}), follow=True)
@@ -1304,15 +1321,20 @@ class InvoiceListViewTestCase(TestCase):
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
         cls.url = reverse("invoice-list")
-        cls.address = Address.objects.create(
-            line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany"
-        )
-        cls.vendor = Vendor.objects.create(name="V1", address=cls.address, user=cls.user)
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
         Address.objects.all().delete()
+
+    def setUp(self):
+        self.address = Address.objects.create(
+            line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany"
+        )
+        self.vendor = Vendor.objects.create(name="V1", address=self.address, user=self.user)
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
 
     def test_only_users_invoices(self):
         second_address = Address.objects.create(
@@ -1335,20 +1357,21 @@ class InvoiceUpdateViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        cls.address = Address.objects.create(
-            line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany"
-        )
-        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
-        cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
-        Address.objects.all().delete()
-        Vendor.objects.all().delete()
 
     def setUp(self):
+        self.address = Address.objects.create(
+            line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany"
+        )
+        self.vendor = Vendor.objects.create(address=self.address, user=self.user)
+        self.customer = Customer.objects.create(vendor=self.vendor, address=self.address)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(), customer=self.customer)
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
 
     def test_auth_required(self):
         url = reverse("invoice-update", args=[self.invoice.id])
@@ -1390,20 +1413,21 @@ class InvoicePaidViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        cls.address = Address.objects.create(
-            line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany"
-        )
-        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
-        cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
-        Address.objects.all().delete()
-        Vendor.objects.all().delete()
 
     def setUp(self):
+        self.address = Address.objects.create(
+            line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany"
+        )
+        self.vendor = Vendor.objects.create(address=self.address, user=self.user)
+        self.customer = Customer.objects.create(vendor=self.vendor, address=self.address)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(), customer=self.customer)
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
 
     def test_auth_required(self):
         url = reverse("invoice-paid", args=[self.invoice.id])
@@ -1445,20 +1469,21 @@ class InvoiceDeleteViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        cls.address = Address.objects.create(
-            line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany"
-        )
-        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
-        cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
-        Address.objects.all().delete()
-        Vendor.objects.all().delete()
 
     def setUp(self):
+        self.address = Address.objects.create(
+            line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany"
+        )
+        self.vendor = Vendor.objects.create(address=self.address, user=self.user)
+        self.customer = Customer.objects.create(vendor=self.vendor, address=self.address)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(), customer=self.customer)
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
 
     def test_auth_required(self):
         url = reverse("invoice-delete", args=[self.invoice.id])
@@ -1502,20 +1527,21 @@ class InvoiceItemCreateViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        cls.address = Address.objects.create(
-            line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany"
-        )
-        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
-        cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
-        Address.objects.all().delete()
-        Vendor.objects.all().delete()
 
     def setUp(self):
+        self.address = Address.objects.create(
+            line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany"
+        )
+        self.vendor = Vendor.objects.create(address=self.address, user=self.user)
+        self.customer = Customer.objects.create(vendor=self.vendor, address=self.address)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(), customer=self.customer)
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
 
     def test_post(self):
         self.client.force_login(self.user)
@@ -1575,19 +1601,17 @@ class InvoiceItemUpdateViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.user = User.objects.create_user(username="test", password="password")
-        cls.address = Address.objects.create(
-            line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany"
-        )
-        cls.vendor = Vendor.objects.create(address=cls.address, user=cls.user)
-        cls.customer = Customer.objects.create(vendor=cls.vendor, address=cls.address)
 
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
-        Address.objects.all().delete()
-        Vendor.objects.all().delete()
 
     def setUp(self):
+        self.address = Address.objects.create(
+            line_1="Musterstrasse 1", postcode="12345", city="Musterstadt", country="Germany"
+        )
+        self.vendor = Vendor.objects.create(address=self.address, user=self.user)
+        self.customer = Customer.objects.create(vendor=self.vendor, address=self.address)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, date=now(), customer=self.customer)
         self.item = InvoiceItem.objects.create(
             name="Work", description="Hard", quantity=1, unit="Hour", price=1000, tax=0.19, invoice=self.invoice
@@ -1596,6 +1620,7 @@ class InvoiceItemUpdateViewTestCase(TestCase):
     def tearDown(self):
         InvoiceItem.objects.all().delete()
         Invoice.objects.all().delete()
+        Vendor.objects.all().delete()
 
     def test_post(self):
         self.client.force_login(self.user)
@@ -1676,3 +1701,48 @@ class AddInvoiceTestCase(TestCase):
         url = reverse("invoice-add")
         response = self.client.post(f"{url}", follow=True)
         self.assertRedirects(response, f"/accounts/login/?next={url}")
+
+
+class VendorCascadeTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
+    def setUp(self):
+        self.address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        self.bank_account = BankAccount.objects.create(owner="Test", iban=schwifty.IBAN.random())
+        self.vendor = Vendor.objects.create(
+            name="Test", company_name="Test", address=self.address, bank_account=self.bank_account, user=self.user
+        )
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
+        Address.objects.all().delete()
+        BankAccount.objects.all().delete()
+
+    def test_exist(self):
+        self.assertIsNotNone(Vendor.objects.get(id=self.vendor.id))
+        self.assertIsNotNone(Address.objects.get(id=self.address.id))
+        self.assertIsNotNone(BankAccount.objects.get(id=self.bank_account.id))
+
+    def test_cascade_delete_vendor(self):
+        self.vendor.delete()
+        self.assertRaises(ObjectDoesNotExist, lambda: Vendor.objects.get(id=self.vendor.id))
+        self.assertRaises(ObjectDoesNotExist, lambda: Address.objects.get(id=self.address.id))
+        self.assertRaises(ObjectDoesNotExist, lambda: BankAccount.objects.get(id=self.bank_account.id))
+
+    def test_cascade_delete_address(self):
+        self.address.delete()
+        self.assertRaises(ObjectDoesNotExist, lambda: Vendor.objects.get(id=self.vendor.id))
+        self.assertRaises(ObjectDoesNotExist, lambda: Address.objects.get(id=self.address.id))
+        self.assertRaises(ObjectDoesNotExist, lambda: BankAccount.objects.get(id=self.bank_account.id))
+
+    def test_cascade_delete_bank_account(self):
+        self.bank_account.delete()
+        self.assertRaises(ObjectDoesNotExist, lambda: Vendor.objects.get(id=self.vendor.id))
+        self.assertRaises(ObjectDoesNotExist, lambda: Address.objects.get(id=self.address.id))
+        self.assertRaises(ObjectDoesNotExist, lambda: BankAccount.objects.get(id=self.bank_account.id))
