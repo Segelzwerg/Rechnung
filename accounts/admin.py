@@ -1,1 +1,1 @@
-# Register your models here.
+"""Admin registration for accounts app."""

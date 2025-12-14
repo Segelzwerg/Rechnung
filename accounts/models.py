@@ -1,1 +1,1 @@
-# Create your models here.
+"""Models for accounts app."""
