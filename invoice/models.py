@@ -234,14 +234,14 @@ class Invoice(Model):
         return f"Invoice({self.invoice_number},{self.vendor},{self.customer})"
 
     def save(self, *args, **kwargs):
-        """Save invoice unless it is marked final. Then an FinalError is raised."""
+        """Save invoice unless it is marked final. Then a FinalError is raised."""
         if self.final and self.pk is not None:
             initial = Invoice.objects.get(pk=self.pk)
             if initial.final:
-                raise FinalError()
+                raise FinalError
 
         if self.final and not self.compliant:
-            warnings.warn("Invoice is not compliant", IncompliantWarning)
+            warnings.warn("Invoice is not compliant", IncompliantWarning, stacklevel=2)
         super().save(*args, **kwargs)
 
     @property
@@ -317,22 +317,11 @@ class Invoice(Model):
     @property
     def compliant(self) -> bool:
         """Get if the invoice is compliant."""
-        if len(self.items) == 0:
+        if not self.items:
             return False
         if not self.delivery_date:
             return False
-        if not self.vendor.tax_id:
-            return False
-        return True
-
-    @property
-    def compliant(self) -> bool:
-        """Get if the invoice is compliant."""
-        if len(self.items) == 0:
-            return False
-        if not self.delivery_date:
-            return False
-        if not self.vendor.tax_id:
+        if not self.vendor.tax_id:  # noqa: SIM103
             return False
         return True
 

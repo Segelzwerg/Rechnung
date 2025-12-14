@@ -203,22 +203,12 @@ class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
     success_message = _("Invoice was updated successfully.")
 
     def form_valid(self, form):
-        """Raises a warning message if set final and is not compliant."""
+        """Raise a warning message if set final and is not compliant."""
         with catch_warnings(record=True) as warning:
             super().form_valid(form)
-            if len([_ for _ in warning if issubclass(_.category, IncompliantWarning)]) > 0:
+            if any(issubclass(w.category, IncompliantWarning) for w in warning):
                 messages.warning(self.request, "The invoice is not compliant.")
-                next_url = reverse('invoice-update', args=[self.kwargs['pk']])
-                return HttpResponseRedirect(next_url)
-        return HttpResponseRedirect(self.get_success_url())
-
-    def form_valid(self, form):
-        """Raises a warning message if set final and is not compliant."""
-        with catch_warnings(record=True) as warning:
-            super().form_valid(form)
-            if len([_ for _ in warning if issubclass(_.category, IncompliantWarning)]) > 0:
-                messages.warning(self.request, "The invoice is not compliant.")
-                next_url = reverse('invoice-update', args=[self.kwargs['pk']])
+                next_url = reverse("invoice-update", args=[self.kwargs["pk"]])
                 return HttpResponseRedirect(next_url)
         return HttpResponseRedirect(self.get_success_url())
 

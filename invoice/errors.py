@@ -6,4 +6,4 @@ class FinalError(Exception):
 
 
 class IncompliantWarning(Warning):
-    """IS raised if the invoice is legally not compliant."""
+    """Is raised if the invoice is legally not compliant."""
