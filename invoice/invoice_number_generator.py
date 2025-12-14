@@ -1,4 +1,5 @@
 """Generates invoice numbers based on custom syntax."""
+
 from abc import ABC
 from itertools import chain
 from typing import List, Type
@@ -42,22 +43,23 @@ class InvoiceNumberFormat:
 
     @staticmethod
     def _convert_from_string(element: str) -> Type[FormatElement] | str:
-        if element == 'year':
+        if element == "year":
             return Year
-        if element == 'counter':
+        if element == "counter":
             return Counter
         return element
 
     def get_elements(self) -> List[Type[FormatElement] | str]:
         """Gets all parsable elements of the invoice format."""
-        element_strings = self._format.split('>')
-        element_strings = list(chain.from_iterable([_.split('<') for _ in element_strings if _]))
+        element_strings = self._format.split(">")
+        element_strings = list(chain.from_iterable([_.split("<") for _ in element_strings if _]))
         element_strings = [_ for _ in element_strings if _]
         return [self._convert_from_string(_) for _ in element_strings]
 
 
 class InvoiceNumberGenerator:
     """Builds the number for invoices."""
+
     format: InvoiceNumberFormat
 
     def __init__(self, number_format: InvoiceNumberFormat):
@@ -74,4 +76,4 @@ class InvoiceNumberGenerator:
     def get_invoice_number(self, invoice: Invoice) -> str:
         """Generates the invoice number."""
         format_elements = self._format.get_elements()
-        return ''.join(self._compile_element(element, invoice) for element in format_elements)
+        return "".join(self._compile_element(element, invoice) for element in format_elements)

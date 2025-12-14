@@ -13,21 +13,8 @@ from warnings import deprecated
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models import (
-    CASCADE,
-    BooleanField,
-    CharField,
-    DateField,
-    EmailField,
-    F,
-    ForeignKey,
-    IntegerField,
-    Model,
-    OneToOneField,
-    Q,
-    TextChoices,
-    UniqueConstraint,
-)
+from django.db.models import (BooleanField, CASCADE, CharField, DateField, EmailField, F, ForeignKey, IntegerField,
+                              Model, OneToOneField, Q, TextChoices, UniqueConstraint)
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
 from django.db.models.signals import post_delete
@@ -152,7 +139,7 @@ class Vendor(Model):
         BankAccount, verbose_name=_("bank account"), on_delete=CASCADE, null=True, blank=True
     )
     user = ForeignKey(User, on_delete=CASCADE)
-    invoice_counter = IntegerField(_('invoice counter'), default=0)
+    invoice_counter = IntegerField(_("invoice counter"), default=0)
 
     class Meta:
         """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""
@@ -211,8 +198,9 @@ class Invoice(Model):
         HKD = "HKD", _("Hong Kong Dollar")
         CNY = "CNY", _("Chinese Yuan")
 
-    invoice_number = IntegerField(_("invoice number"), validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)],
-                                  null=True, blank=True)
+    invoice_number = IntegerField(
+        _("invoice number"), validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)], null=True, blank=True
+    )
     date = DateField(_("date"))
     vendor = ForeignKey(Vendor, verbose_name=_("vendor"), on_delete=CASCADE)
     customer = ForeignKey(Customer, verbose_name=_("customer"), on_delete=CASCADE)
