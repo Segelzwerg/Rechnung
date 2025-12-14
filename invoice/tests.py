@@ -1351,6 +1351,78 @@ class InvoiceModelTestCase(TestCase):
         self.assertEqual(invoice.compliant, False)
 
 
+    def test_is_compliant(self):
+        date = now()
+        due_date = date
+        vendor = Vendor.objects.first()
+        vendor.tax_id = "123"
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
+                                         customer=Customer.objects.first(), date=date, due_date=due_date,
+                                         delivery_date=due_date)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.19'))
+        self.assertEqual(invoice.compliant, True)
+
+    def test_incompliant_number_items(self):
+        date = now()
+        due_date = date
+        vendor = Vendor.objects.first()
+        vendor.tax_id = "123"
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
+                                         customer=Customer.objects.first(), date=date, due_date=due_date,
+                                         delivery_date=due_date)
+        self.assertEqual(invoice.compliant, False)
+
+    def test_incompliant_tax_id(self):
+        date = now()
+        due_date = date
+        vendor = Vendor.objects.first()
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
+                                         customer=Customer.objects.first(), date=date, due_date=due_date,
+                                         delivery_date=due_date)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.19'))
+        self.assertEqual(invoice.compliant, False)
+
+    def test_incompliant_delivery_date(self):
+        date = now()
+        due_date = date
+        vendor = Vendor.objects.first()
+        vendor.tax_id = "123"
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
+                                         customer=Customer.objects.first(), date=date, due_date=due_date)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.19'))
+        self.assertEqual(invoice.compliant, False)
+
+    def test_set_final_incompliant(self):
+        date = now()
+        due_date = date
+        vendor = Vendor.objects.first()
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
+                                         customer=Customer.objects.first(), date=date, due_date=due_date,
+                                         delivery_date=due_date)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.19'))
+        invoice.final = True
+        self.assertEqual(invoice.compliant, False)
+        with self.assertWarns(IncompliantWarning):
+            invoice.save()
+
+    def test_not_final_incompliant_no_warning(self):
+        date = now()
+        due_date = date
+        vendor = Vendor.objects.first()
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor,
+                                         customer=Customer.objects.first(), date=date, due_date=due_date,
+                                         delivery_date=due_date)
+        InvoiceItem.objects.create(invoice=invoice, name='', description='', quantity=1, price=Decimal('100'),
+                                   tax=Decimal('0.19'))
+        invoice.final = False
+        invoice.save()
+        self.assertEqual(invoice.compliant, False)
+
+
 class InvoicePDFViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
