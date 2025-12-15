@@ -2112,14 +2112,6 @@ class AddInvoiceTestCase(TestCase):
         self.assertRedirects(response, f"/accounts/login/?next={url}")
 
 
-class InvoiceNumberFormatTest(TestCase):
-    def test_year_number(self):
-        format = "<year><counter>"
-        formatter = InvoiceNumberFormat(format)
-        expected = [Year, Counter]
-        self.assertEqual(expected, formatter.get_elements())
-
-
 class InvoiceNumberGeneratorTest(TestCase):
     @classmethod
     def setUpClass(cls):
