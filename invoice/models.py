@@ -13,8 +13,21 @@ from warnings import deprecated
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models import (BooleanField, CASCADE, CharField, DateField, EmailField, F, ForeignKey, IntegerField,
-                              Model, OneToOneField, Q, TextChoices, UniqueConstraint)
+from django.db.models import (
+    CASCADE,
+    BooleanField,
+    CharField,
+    DateField,
+    EmailField,
+    F,
+    ForeignKey,
+    IntegerField,
+    Model,
+    OneToOneField,
+    Q,
+    TextChoices,
+    UniqueConstraint,
+)
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
 from django.db.models.signals import post_delete
@@ -103,6 +116,7 @@ class Customer(Model):
     email = EmailField(_("email"), max_length=256)
     address = OneToOneField(Address, verbose_name=_("address"), on_delete=CASCADE)
     vendor = ForeignKey("Vendor", verbose_name=_("vendor"), on_delete=CASCADE)
+    invoice_counter = IntegerField(_("invoice counter"), default=0)
 
     class Meta:
         verbose_name = _("customer")
@@ -115,6 +129,12 @@ class Customer(Model):
     def full_name(self):
         """Get the full name of the customer (first name + last name)."""
         return f"{self.first_name} {self.last_name}"
+
+    def get_next_invoice_counter(self) -> int:
+        """Get the next invoice number based on the counter and saves the new number as current counter."""
+        self.invoice_counter += 1
+        self.save()
+        return self.invoice_counter
 
 
 @receiver(post_delete, sender=Customer)
@@ -154,7 +174,7 @@ class Vendor(Model):
         return self.name
 
     def get_next_invoice_counter(self) -> int:
-        """Gets the next invoice number based on the counter and saves the new number as current counter."""
+        """Get the next invoice number based on the counter and saves the new number as current counter."""
         self.invoice_counter += 1
         self.save()
         return self.invoice_counter
