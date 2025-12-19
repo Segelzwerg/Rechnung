@@ -7,16 +7,20 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import FileResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.http import FileResponse, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
+from django.utils.dateparse import parse_date
 from django.utils.http import urlencode
+from django.utils.timezone import now
 from django.utils.translation import gettext as _
+from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView
 
 from invoice import pdf_generator
 from invoice.errors import IncompliantWarning
 from invoice.forms import AddressForm, BankAccountForm, CustomerForm, InvoiceForm, InvoiceItemForm, VendorForm
+from invoice.invoice_number_generator import InvoiceNumberFormat, InvoiceNumberGenerator
 from invoice.models import Customer, Invoice, InvoiceItem, Vendor
 
 
@@ -192,6 +196,34 @@ class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def get_success_url(self):
         return reverse("invoice-update", kwargs={"pk": self.object.id})
+
+
+class InvoiceGenerateNumberView(LoginRequiredMixin, View):
+    """
+    Generate an invoice number (AJAX).
+    Expects optional ?date=YYYY-MM-DD to match the form's date field.
+    """
+
+    def get(self, request, *args, **kwargs):
+        # You likely already have a way to get the Vendor for the logged-in user.
+        # Adjust this line if your project names it differently.
+        vendor = request.user.vendor
+
+        raw_date = request.GET.get("date")
+        invoice_date = parse_date(raw_date) if raw_date else None
+        if invoice_date is None:
+            invoice_date = now().date()
+
+        # Create an *unsaved* invoice instance for number generation
+        invoice = Invoice(date=invoice_date, vendor=vendor)
+
+        # Use vendor-specific format if you have one; otherwise fall back.
+        format_string = getattr(vendor, "invoice_number_format", "<year><counter>")
+        generator = InvoiceNumberGenerator(InvoiceNumberFormat(format_string))
+
+        invoice_number = generator.get_invoice_number(invoice)
+        return JsonResponse({"invoice_number": invoice_number})
+
 
 
 class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):

@@ -11,6 +11,7 @@ from hypothesis import assume, example, given
 from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
 from hypothesis.strategies import characters, composite, decimals, emails, lists, sampled_from, text
+from invoice.constants import YEAR_COUNTER_FORMAT
 
 from invoice.errors import FinalError, IncompliantWarning
 from invoice.invoice_number_generator import Counter, InvoiceNumberFormat, Year
@@ -2131,15 +2132,13 @@ class InvoiceNumberGeneratorTest(TestCase):
         Vendor.objects.all().delete()
 
     def test_year_number(self):
-        format = "<year><counter>"
-        formatter = InvoiceNumberFormat(format)
+        formatter = InvoiceNumberFormat(YEAR_COUNTER_FORMAT)
         date = now()
         invoice = Invoice.objects.create(date=date, customer=self.customer, vendor=self.vendor)
         self.assertEqual(formatter.get_invoice_number(invoice), f"{date.year}1")
 
     def test_year_number_increase(self):
-        format = "<year><counter>"
-        formatter = InvoiceNumberFormat(format)
+        formatter = InvoiceNumberFormat(YEAR_COUNTER_FORMAT)
         date = now()
         first_invoice = Invoice.objects.create(date=date, customer=self.customer, vendor=self.vendor)
         second_invoice = Invoice.objects.create(date=date, customer=self.customer, vendor=self.vendor)
@@ -2147,8 +2146,8 @@ class InvoiceNumberGeneratorTest(TestCase):
         self.assertEqual(formatter.get_invoice_number(second_invoice), f"{date.year}2")
 
     def test_year_number_with_separator(self):
-        format = "<year>-<counter>"
-        formatter = InvoiceNumberFormat(format)
+        in_format = "<year>-<counter>"
+        formatter = InvoiceNumberFormat(in_format)
         date = now()
         invoice = Invoice.objects.create(date=date, customer=self.customer, vendor=self.vendor)
         self.assertEqual(formatter.get_invoice_number(invoice), f"{date.year}-1")

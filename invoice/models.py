@@ -6,6 +6,7 @@ from collections import Counter
 from decimal import Decimal
 from functools import reduce
 from math import isinf, isnan
+from typing import Literal
 from warnings import deprecated
 
 # This is the recommended way as per django documentation.
@@ -38,6 +39,8 @@ from django.utils.translation import pgettext_lazy
 from schwifty import BIC, IBAN
 
 from invoice.errors import FinalError, IncompliantWarning
+
+YEAR_COUNTER_FORMAT = "<year><counter>"
 
 MAX_VALUE_DJANGO_SAVE = 2147483647
 
@@ -161,6 +164,7 @@ class Vendor(Model):
     )
     user = ForeignKey(User, on_delete=CASCADE)
     invoice_counter = IntegerField(_("invoice counter"), default=0)
+    invoice_number_format = CharField(_("invoice number format"), max_length=255, blank=True, default="")
 
     class Meta:
         """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""
@@ -179,6 +183,11 @@ class Vendor(Model):
         self.invoice_counter += 1
         self.save()
         return self.invoice_counter
+
+    def get_invoice_number_format(self) -> Literal[""] | None:
+        if self.invoice_number_format and not self.invoice_number_format != "":
+            return self.invoice_number_format
+        return None
 
 
 @receiver(post_delete, sender=Vendor)
@@ -250,7 +259,7 @@ class Invoice(Model):
         return f"Invoice({self.invoice_number},{self.vendor},{self.customer})"
 
     def save(self, *args, **kwargs):
-        """Save invoice unless it is marked final. Then a FinalError is raised."""
+        """Save an invoice unless it is marked final. Then a FinalError is raised."""
         if self.final and self.pk is not None:
             initial = Invoice.objects.get(pk=self.pk)
             if initial.final:
