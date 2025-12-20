@@ -11,10 +11,10 @@ from hypothesis import assume, example, given
 from hypothesis.extra.django import TestCase
 from hypothesis.provisional import domains
 from hypothesis.strategies import characters, composite, decimals, emails, lists, sampled_from, text
-from invoice.constants import YEAR_COUNTER_FORMAT
 
+from invoice.constants import YEAR_COUNTER_FORMAT
 from invoice.errors import FinalError, IncompliantWarning
-from invoice.invoice_number_generator import Counter, InvoiceNumberFormat, Year
+from invoice.invoice_number_generator import InvoiceNumberFormat
 from invoice.models import Address, BankAccount, Customer, Invoice, InvoiceItem, MAX_VALUE_DJANGO_SAVE, Vendor
 
 GERMAN_TAX_RATE = Decimal("0.19")
