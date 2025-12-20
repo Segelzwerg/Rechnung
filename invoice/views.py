@@ -1,5 +1,6 @@
 """Defines the views of the invoice app."""
 
+import datetime
 import io
 from warnings import catch_warnings
 
@@ -10,7 +11,6 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.http import FileResponse, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
-from django.utils.dateparse import parse_date
 from django.utils.http import urlencode
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
@@ -18,9 +18,10 @@ from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView
 
 from invoice import pdf_generator
+from invoice.constants import YEAR_COUNTER_FORMAT
 from invoice.errors import IncompliantWarning
 from invoice.forms import AddressForm, BankAccountForm, CustomerForm, InvoiceForm, InvoiceItemForm, VendorForm
-from invoice.invoice_number_generator import InvoiceNumberFormat, InvoiceNumberGenerator
+from invoice.invoice_number_generator import InvoiceNumberFormat
 from invoice.models import Customer, Invoice, InvoiceItem, Vendor
 
 
@@ -201,29 +202,34 @@ class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 class InvoiceGenerateNumberView(LoginRequiredMixin, View):
     """
     Generate an invoice number (AJAX).
+
     Expects optional ?date=YYYY-MM-DD to match the form's date field.
     """
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):  # noqa: ARG002
+        """GET handler."""
         # You likely already have a way to get the Vendor for the logged-in user.
         # Adjust this line if your project names it differently.
         vendor = request.user.vendor
 
         raw_date = request.GET.get("date")
-        invoice_date = parse_date(raw_date) if raw_date else None
-        if invoice_date is None:
+        try:
+            invoice_date = datetime.date.fromisoformat(raw_date)
+        except (ValueError, TypeError):
             invoice_date = now().date()
 
         # Create an *unsaved* invoice instance for number generation
+        # TODO: use actual invoice instead so we have access to other fields as well!
         invoice = Invoice(date=invoice_date, vendor=vendor)
 
         # Use vendor-specific format if you have one; otherwise fall back.
-        format_string = getattr(vendor, "invoice_number_format", "<year><counter>")
-        generator = InvoiceNumberGenerator(InvoiceNumberFormat(format_string))
+        format_string = vendor.invoice_number_format or YEAR_COUNTER_FORMAT
+        formatter = InvoiceNumberFormat(format_string)
 
-        invoice_number = generator.get_invoice_number(invoice)
+        # TODO: preview by default, as GET requests should not change state
+        # TODO: add POST route to actually increment the internal counters
+        invoice_number = formatter.preview_invoice_number(invoice)
         return JsonResponse({"invoice_number": invoice_number})
-
 
 
 class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):

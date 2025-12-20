@@ -31,10 +31,5 @@ urlpatterns = [
     path("vendor/add/", views.VendorCreateView.as_view(), name="vendor-add"),
     path("vendor/<int:pk>/", views.VendorUpdateView.as_view(), name="vendor-update"),
     path("vendor/<int:pk>/delete/", views.VendorDeleteView.as_view(), name="vendor-delete"),
-    path(
-        "invoice/generate-number/",
-        views.InvoiceGenerateNumberView.as_view(),
-        name="invoice-generate-number",
-    ),
-
+    path("invoice/generate-number/", views.InvoiceGenerateNumberView.as_view(), name="invoice-generate-number"),
 ]
