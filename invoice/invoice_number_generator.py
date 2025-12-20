@@ -125,6 +125,15 @@ class InvoiceNumberFormat:
         element_strings = [_ for _ in element_strings if _]
         return [self._convert_from_string(_) for _ in element_strings]
 
+
+class InvoiceNumberGenerator:
+    """Builds the number for invoices."""
+
+    format: InvoiceNumberFormat
+
+    def __init__(self, number_format: InvoiceNumberFormat):
+        self._format: InvoiceNumberFormat = number_format
+
     def get_invoice_number(self, invoice: Invoice) -> str:
         """Generate the invoice number."""
         return "".join(f.get(invoice) for f in self._format)
