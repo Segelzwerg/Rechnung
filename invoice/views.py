@@ -208,9 +208,12 @@ class InvoiceGenerateNumberView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):  # noqa: ARG002
         """GET handler."""
-        # You likely already have a way to get the Vendor for the logged-in user.
-        # Adjust this line if your project names it differently.
-        vendor = request.user.vendor
+        vendor_id = request.GET.get("vendor")
+        if vendor_id:
+            vendor = get_object_or_404(Vendor, pk=vendor_id, user=request.user)
+        else:
+            # Fallback to the first vendor of the user if no vendor is provided
+            vendor = get_object_or_404(Vendor, user=request.user)
 
         raw_date = request.GET.get("date")
         try:

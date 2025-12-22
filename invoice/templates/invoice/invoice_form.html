@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load django_bootstrap5 %}
+
 {% block content %}
     <div class="container">
         <div class="row justify-content-center">
@@ -41,6 +42,17 @@
                     </a>
                 {% endif %}
             </div>
+            <div class="col-sm-1">
+                <button
+                        type="button"
+                        class="btn btn-primary"
+                        id="InvoiceNumberToggler"
+                        data-generate-url="{% url 'invoice-generate-number' %}"
+                        {% if invoice %} disabled {% endif %}>
+                    {% translate "Generate Number" %}
+                </button>
+            </div>
+
             <div class="col-xl">
                 <fieldset
                         {% if invoice.final %}
@@ -125,7 +137,34 @@
                 document.getElementById('invoice-form').submit();
             }
         })
+
+        const generateButton = document.getElementById("InvoiceNumberToggler");
+        if (generateButton) {
+            generateButton.addEventListener("click", async function () {
+                const url = generateButton.dataset.generateUrl;
+                const dateValue = document.getElementById("id_date")?.value || "";
+                const vendorValue = document.getElementById("id_vendor")?.value || "";
+                const invoiceNumberInput = document.getElementById("id_invoice_number");
+
+                if (!invoiceNumberInput) {
+                    return;
+                }
+
+                const response = await fetch(`${url}?date=${encodeURIComponent(dateValue)}&vendor=${encodeURIComponent(vendorValue)}`, {
+                    headers: {"X-Requested-With": "XMLHttpRequest"},
+                    credentials: "same-origin",
+                });
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const data = await response.json();
+                invoiceNumberInput.value = data.invoice_number ?? "";
+            });
+        }
     </script>
+
     {% if invoice and invoice_item_form and not invoice.final %}
         <div class="modal fade" id="InvoiceItemModal" tabindex="-1"
              aria-labelledby="InvoiceItemModalLabel"
