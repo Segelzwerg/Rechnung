@@ -209,7 +209,7 @@ class InvoiceGenerateNumberView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):  # noqa: ARG002
         """GET handler."""
         vendor_id = request.GET.get("vendor")
-        if vendor_id:
+        if vendor_id and vendor_id != "":
             vendor = get_object_or_404(Vendor, pk=vendor_id, user=request.user)
         else:
             # Fallback to the first vendor of the user if no vendor is provided
