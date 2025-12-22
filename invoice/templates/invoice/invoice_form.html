@@ -48,7 +48,7 @@
                         class="btn btn-primary"
                         id="InvoiceNumberToggler"
                         data-generate-url="{% url 'invoice-generate-number' %}"
-                        {% if invoice %} disabled {% endif %}>
+                        {% if not invoice.vendor %} disabled {% endif %}>
                     {% translate "Generate Number" %}
                 </button>
             </div>
@@ -137,7 +137,12 @@
                 document.getElementById('invoice-form').submit();
             }
         })
-
+        const vendorSelect = document.getElementById("id_vendor");
+        if (vendorSelect) {
+            vendorSelect.addEventListener("change", function () {
+                generateButton.disabled = !vendorSelect.value;
+            });
+        }
         const generateButton = document.getElementById("InvoiceNumberToggler");
         if (generateButton) {
             generateButton.addEventListener("click", async function () {
