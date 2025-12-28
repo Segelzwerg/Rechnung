@@ -196,19 +196,16 @@ class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return reverse("invoice-update", kwargs={"pk": self.object.id})
 
     def form_valid(self, form):
-        invoice_number = form.cleaned_data.get("invoice_number")
-        if not invoice_number:
-            invoice = form.save(commit=False)
-            vendor_id = invoice.vendor_id
-            vendor = get_object_or_404(Vendor, pk=vendor_id) if vendor_id else get_object_or_404(Vendor)
+        invoice = form.save(commit=False)
+        vendor_id = invoice.vendor_id
+        vendor = get_object_or_404(Vendor, pk=vendor_id) if vendor_id else get_object_or_404(Vendor)
 
-            format_string = vendor.invoice_number_format or YEAR_COUNTER_FORMAT
-            formatter = InvoiceNumberFormat(format_string)
+        format_string = vendor.invoice_number_format or YEAR_COUNTER_FORMAT
+        formatter = InvoiceNumberFormat(format_string)
 
-            invoice.invoice_number = formatter.get_invoice_number(invoice)
-            invoice.save()
-            return HttpResponseRedirect(reverse("invoice-update", kwargs={"pk": invoice.id}))
-        return super().form_valid(form)
+        invoice.invoice_number = formatter.get_invoice_number(invoice)
+        invoice.save()
+        return HttpResponseRedirect(reverse("invoice-update", kwargs={"pk": invoice.id}))
 
 
 class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
