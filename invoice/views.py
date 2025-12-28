@@ -200,10 +200,7 @@ class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         if not invoice_number:
             invoice = form.save(commit=False)
             vendor_id = invoice.vendor_id
-            if vendor_id:
-                vendor = get_object_or_404(Vendor, pk=vendor_id)
-            else:
-                vendor = get_object_or_404(Vendor)
+            vendor = get_object_or_404(Vendor, pk=vendor_id) if vendor_id else get_object_or_404(Vendor)
 
             format_string = vendor.invoice_number_format or YEAR_COUNTER_FORMAT
             formatter = InvoiceNumberFormat(format_string)
