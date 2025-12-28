@@ -362,6 +362,7 @@ class CustomerListViewTestCase(TestCase):
         response = self.client.get(self.url)
         self.assertRedirects(response, f"/accounts/login/?next={self.url}")
 
+
 class CustomerDeleteViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -688,6 +689,7 @@ class VendorListViewTestCase(TestCase):
     def test_unauthorized_user_get(self):
         response = self.client.get(self.url)
         self.assertRedirects(response, f"/accounts/login/?next={self.url}")
+
 
 class VendorDeleteViewTestCase(TestCase):
     @classmethod
@@ -1769,6 +1771,7 @@ class InvoiceListViewTestCase(TestCase):
     def test_unauthorized_user_get(self):
         response = self.client.get(self.url)
         self.assertRedirects(response, f"/accounts/login/?next={self.url}")
+
 
 class InvoiceUpdateViewTestCase(TestCase):
     @classmethod
