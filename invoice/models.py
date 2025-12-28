@@ -14,21 +14,8 @@ from warnings import deprecated
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models import (
-    BooleanField,
-    CASCADE,
-    CharField,
-    DateField,
-    EmailField,
-    F,
-    ForeignKey,
-    IntegerField,
-    Model,
-    OneToOneField,
-    Q,
-    TextChoices,
-    UniqueConstraint,
-)
+from django.db.models import (BooleanField, CASCADE, CharField, DateField, EmailField, F, ForeignKey, IntegerField,
+                              Model, OneToOneField, Q, TextChoices, UniqueConstraint)
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
 from django.db.models.signals import post_delete
