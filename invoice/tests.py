@@ -360,6 +360,10 @@ class CustomerListViewTestCase(TestCase):
         self.assertEqual(customer_list[0], customer)
         self.assertNotIn(second_customer, customer_list)
 
+    def test_unauthorized_user_get(self):
+        response = self.client.get(self.url)
+        self.assertRedirects(response, f"/accounts/login/?next={self.url}")
+
 
 class CustomerDeleteViewTestCase(TestCase):
     @classmethod
@@ -683,6 +687,10 @@ class VendorListViewTestCase(TestCase):
         self.assertEqual(len(vendors), 1)
         self.assertEqual(vendors[0], self.vendor)
         self.assertNotIn(second_vendor, vendors)
+
+    def test_unauthorized_user_get(self):
+        response = self.client.get(self.url)
+        self.assertRedirects(response, f"/accounts/login/?next={self.url}")
 
 
 class VendorDeleteViewTestCase(TestCase):
@@ -1761,6 +1769,10 @@ class InvoiceListViewTestCase(TestCase):
         self.assertEqual(len(invoice_list), 1)
         self.assertEqual(invoice_list[0], invoice)
         self.assertNotIn(second_invoice, invoice_list)
+
+    def test_unauthorized_user_get(self):
+        response = self.client.get(self.url)
+        self.assertRedirects(response, f"/accounts/login/?next={self.url}")
 
 
 class InvoiceUpdateViewTestCase(TestCase):
