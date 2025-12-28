@@ -435,7 +435,6 @@ class InvoiceItem(Model):
     @property
     def tax_string(self) -> str:
         """Get the tax rate string."""
-        tax_percent = self.tax * 100
         s = f"{self.tax * 100:.2f}".rstrip("0").rstrip(".,")
         return f"{s}%"
 
