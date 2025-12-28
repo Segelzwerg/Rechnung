@@ -172,7 +172,7 @@ class CustomerDeleteView(OwnMixin, SuccessMessageMixin, DeleteView):
         return super().handle_no_permission(login_redirect, permission_redirect)
 
 
-class CustomerListView(ListView):
+class CustomerListView(LoginRequiredMixin, ListView):  # pylint: disable=too-many-ancestors
     """List all customers."""
 
     model = Customer
@@ -466,7 +466,7 @@ class VendorDeleteView(OwnVendorMixin, SuccessMessageMixin, DeleteView):
         return super().handle_no_permission(login_redirect=login_redirect, permission_redirect=permission_redirect)
 
 
-class VendorListView(ListView):
+class VendorListView(LoginRequiredMixin, ListView):  # pylint: disable=too-many-ancestors
     """List all vendors."""
 
     model = Vendor
