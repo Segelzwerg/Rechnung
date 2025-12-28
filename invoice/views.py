@@ -214,8 +214,6 @@ class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return super().form_valid(form)
 
 
-
-
 class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
     """Update an existing invoice."""
 
