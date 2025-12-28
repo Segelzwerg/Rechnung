@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-14 15:36+0000\n"
+"POT-Creation-Date: 2025-12-28 23:34+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: rechnung/settings.py:99
+#: rechnung/settings.py:102
 msgid "German"
 msgstr "Deutsch"
 
-#: rechnung/settings.py:99
+#: rechnung/settings.py:102
 msgid "English"
 msgstr "Englisch"
 
@@ -30,30 +30,38 @@ msgstr "Englisch"
 msgid "Rechnung"
 msgstr "Rechnung"
 
-#: templates/base.html:28
+#: templates/base.html:29
 msgid "Invoices"
 msgstr "Rechnungen"
 
-#: templates/base.html:32 templates/base.html:47 templates/base.html:62
+#: templates/base.html:33 templates/base.html:48 templates/base.html:63
 msgid "List"
 msgstr "Liste"
 
-#: templates/base.html:36 templates/base.html:51 templates/base.html:66
+#: templates/base.html:37 templates/base.html:52 templates/base.html:67
 msgid "Add"
 msgstr "Hinzufügen"
 
-#: templates/base.html:43
+#: templates/base.html:44
 msgid "Customers"
 msgstr "Kunden"
 
-#: templates/base.html:58
+#: templates/base.html:59
 msgid "Vendors"
 msgstr "Anbieter"
 
-#: templates/base.html:78
+#: templates/base.html:80
 msgid "Logout"
 msgstr "Ausloggen"
 
-#: templates/base.html:97
+#: templates/base.html:85
+msgid "Login"
+msgstr "Anmelden"
+
+#: templates/base.html:86
+msgid "Register"
+msgstr "Registrieren"
+
+#: templates/base.html:104
 msgid "Go"
 msgstr "Wechseln"

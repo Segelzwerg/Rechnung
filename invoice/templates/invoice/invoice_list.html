@@ -32,7 +32,13 @@
                 <td>{{ invoice.customer.first_name }} {{ invoice.customer.last_name }}</td>
                 <td class="text-end">{{ invoice.net_total_string }}</td>
                 <td class="text-end">{{ invoice.total_string }}</td>
-                <td>{{ invoice.paid }}</td>
+                <td>
+                    {% if invoice.paid %}
+                        {% translate "Yes" %}
+                    {% else %}
+                        {% translate "No" %}
+                    {% endif %}
+                </td>
                 <td>
                     <a href="{% url "invoice-update" invoice.id %}">{% translate "Update" %}</a> /
                     <a href="{% url "invoice-delete" invoice.id %}">{% translate "Delete" %}</a> /
