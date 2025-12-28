@@ -14,8 +14,21 @@ from warnings import deprecated
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models import (BooleanField, CASCADE, CharField, DateField, EmailField, F, ForeignKey, IntegerField,
-                              Model, OneToOneField, Q, TextChoices, UniqueConstraint)
+from django.db.models import (
+    CASCADE,
+    BooleanField,
+    CharField,
+    DateField,
+    EmailField,
+    F,
+    ForeignKey,
+    IntegerField,
+    Model,
+    OneToOneField,
+    Q,
+    TextChoices,
+    UniqueConstraint,
+)
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
 from django.db.models.signals import post_delete
@@ -207,7 +220,7 @@ class Invoice(Model):
         HKD = "HKD", _("Hong Kong Dollar")
         CNY = "CNY", _("Chinese Yuan")
 
-    invoice_number = CharField(_("invoice number"), max_length=255, blank=True, default=None, null=True)
+    invoice_number = CharField(_("invoice number"), max_length=255, blank=True, default=None, null=True)  # noqa: DJ001
     date = DateField(_("date"))
     vendor = ForeignKey(Vendor, verbose_name=_("vendor"), on_delete=CASCADE)
     customer = ForeignKey(Customer, verbose_name=_("customer"), on_delete=CASCADE)
