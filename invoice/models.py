@@ -220,7 +220,7 @@ class Invoice(Model):
         HKD = "HKD", _("Hong Kong Dollar")
         CNY = "CNY", _("Chinese Yuan")
 
-    invoice_number = CharField(_("invoice number"), max_length=255, blank=True, default=None, null=True)  # noqa: DJ001
+    invoice_number = CharField(_("invoice number"), max_length=255, default=None)
     date = DateField(_("date"))
     vendor = ForeignKey(Vendor, verbose_name=_("vendor"), on_delete=CASCADE)
     customer = ForeignKey(Customer, verbose_name=_("customer"), on_delete=CASCADE)
