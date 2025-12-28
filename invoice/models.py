@@ -436,9 +436,8 @@ class InvoiceItem(Model):
     def tax_string(self) -> str:
         """Get the tax rate string."""
         tax_percent = self.tax * 100
-        formatted_tax = number_format(tax_percent, decimal_pos=2, use_l10n=True)
-        formatted_tax = formatted_tax.rstrip("0").rstrip(",.")
-        return f"{formatted_tax}%"
+        s = f"{self.tax * 100:.2f}".rstrip("0").rstrip(".,")
+        return f"{s}%"
 
     @property
     def net_total_string(self) -> str:
