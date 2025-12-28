@@ -42,17 +42,6 @@
                     </a>
                 {% endif %}
             </div>
-            <div class="col-sm-1">
-                <button
-                        type="button"
-                        class="btn btn-primary"
-                        id="InvoiceNumberToggler"
-                        data-generate-url="{% url 'invoice-generate-number' %}"
-                        {% if not invoice.vendor %} disabled {% endif %}>
-                    {% translate "Generate Number" %}
-                </button>
-            </div>
-
             <div class="col-xl">
                 <fieldset
                         {% if invoice.final %}
@@ -136,38 +125,7 @@
             } else {
                 document.getElementById('invoice-form').submit();
             }
-        })
-        const vendorSelect = document.getElementById("id_vendor");
-        if (vendorSelect) {
-            vendorSelect.addEventListener("change", function () {
-                generateButton.disabled = !vendorSelect.value;
-            });
-        }
-        const generateButton = document.getElementById("InvoiceNumberToggler");
-        if (generateButton) {
-            generateButton.addEventListener("click", async function () {
-                const url = generateButton.dataset.generateUrl;
-                const dateValue = document.getElementById("id_date")?.value || "";
-                const vendorValue = document.getElementById("id_vendor")?.value || "";
-                const invoiceNumberInput = document.getElementById("id_invoice_number");
-
-                if (!invoiceNumberInput) {
-                    return;
-                }
-
-                const response = await fetch(`${url}?date=${encodeURIComponent(dateValue)}&vendor=${encodeURIComponent(vendorValue)}`, {
-                    headers: {"X-Requested-With": "XMLHttpRequest"},
-                    credentials: "same-origin",
-                });
-
-                if (!response.ok) {
-                    return;
-                }
-
-                const data = await response.json();
-                invoiceNumberInput.value = data.invoice_number ?? "";
-            });
-        }
+        });
     </script>
 
     {% if invoice and invoice_item_form and not invoice.final %}
