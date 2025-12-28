@@ -14,21 +14,8 @@ from warnings import deprecated
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models import (
-    CASCADE,
-    BooleanField,
-    CharField,
-    DateField,
-    EmailField,
-    F,
-    ForeignKey,
-    IntegerField,
-    Model,
-    OneToOneField,
-    Q,
-    TextChoices,
-    UniqueConstraint,
-)
+from django.db.models import (BooleanField, CASCADE, CharField, DateField, EmailField, F, ForeignKey, IntegerField,
+                              Model, OneToOneField, Q, TextChoices, UniqueConstraint)
 from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
 from django.db.models.signals import post_delete
@@ -220,7 +207,7 @@ class Invoice(Model):
         HKD = "HKD", _("Hong Kong Dollar")
         CNY = "CNY", _("Chinese Yuan")
 
-    invoice_number = CharField(_("invoice number"), max_length=255, blank=True, default="")
+    invoice_number = CharField(_("invoice number"), max_length=255, blank=True, default=None, null=True)
     date = DateField(_("date"))
     vendor = ForeignKey(Vendor, verbose_name=_("vendor"), on_delete=CASCADE)
     customer = ForeignKey(Customer, verbose_name=_("customer"), on_delete=CASCADE)
@@ -241,7 +228,8 @@ class Invoice(Model):
         verbose_name = _("invoice")
         verbose_name_plural = _("invoices")
         constraints = [
-            UniqueConstraint(fields=["vendor", "invoice_number"], name="unique_invoice_numbers_per_vendor"),
+            UniqueConstraint(fields=["vendor", "invoice_number"], name="unique_invoice_numbers_per_vendor",
+                             condition=Q(invoice_number__isnull=False)),
             CheckConstraint(condition=Q(due_date__gte=F("date")), name="due_date_gte_date"),
         ]
 
