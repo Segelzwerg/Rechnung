@@ -33,6 +33,7 @@ from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+from django.utils.formats import number_format
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import pgettext_lazy
 from schwifty import BIC, IBAN
@@ -299,20 +300,22 @@ class Invoice(Model):
     @property
     def net_total_string(self) -> str:
         """Get the net total string."""
-        return f"{self.net_total_rounded} {self.currency}"
+        formatted_total = number_format(self.net_total_rounded, decimal_pos=2, use_l10n=True)
+        return f"{formatted_total} {self.currency}"
 
     @property
     def tax_amount_strings(self) -> dict[str, str]:
         """Get the tax amount strings as dictionary with the rate as key and the amount string as value."""
         return {
-            rate: f"{amount.quantize(Decimal('0.01'))} {self.currency}"
+            rate: f"{number_format(amount.quantize(Decimal('0.01')), decimal_pos=2, use_l10n=True)} {self.currency}"
             for rate, amount in self.tax_amount_per_rate.items()
         }
 
     @property
     def total_string(self) -> str:
         """Get the total string."""
-        return f"{self.total_rounded} {self.currency}"
+        formatted_total = number_format(self.total_rounded, decimal_pos=2, use_l10n=True)
+        return f"{formatted_total} {self.currency}"
 
     @property
     def compliant(self) -> bool:
@@ -417,12 +420,14 @@ class InvoiceItem(Model):
     @property
     def price_string(self) -> str:
         """Get the price string."""
-        return f"{self.price:.2f} {self.invoice.currency}"
+        formatted_price = number_format(self.price, decimal_pos=2, use_l10n=True)
+        return f"{formatted_price} {self.invoice.currency}"
 
     @property
     def quantity_string(self) -> str:
         """Get the quantity string including the unit."""
-        quantity = f"{self.quantity:.4f}".rstrip("0").rstrip(".,")
+        quantity = number_format(self.quantity, decimal_pos=4, use_l10n=True)
+        quantity = quantity.rstrip("0").rstrip(",.")
         if self.unit:
             return f"{quantity} {self.unit}"
         return quantity
@@ -430,20 +435,25 @@ class InvoiceItem(Model):
     @property
     def tax_string(self) -> str:
         """Get the tax rate string."""
-        s = f"{self.tax * 100:.2f}".rstrip("0").rstrip(".,")
-        return f"{s}%"
+        tax_percent = self.tax * 100
+        formatted_tax = number_format(tax_percent, decimal_pos=2, use_l10n=True)
+        formatted_tax = formatted_tax.rstrip("0").rstrip(",.")
+        return f"{formatted_tax}%"
 
     @property
     def net_total_string(self) -> str:
         """Get the net total string."""
-        return f"{self.net_total_rounded} {self.invoice.currency}"
+        formatted_total = number_format(self.net_total_rounded, decimal_pos=2, use_l10n=True)
+        return f"{formatted_total} {self.invoice.currency}"
 
     @property
     def tax_amount_string(self) -> str:
         """Get the tax amount string."""
-        return f"{self.tax_amount_rounded} {self.invoice.currency}"
+        formatted_tax = number_format(self.tax_amount_rounded, decimal_pos=2, use_l10n=True)
+        return f"{formatted_tax} {self.invoice.currency}"
 
     @property
     def total_string(self) -> str:
         """Get the total string."""
-        return f"{self.total_rounded} {self.invoice.currency}"
+        formatted_total = number_format(self.total_rounded, decimal_pos=2, use_l10n=True)
+        return f"{formatted_total} {self.invoice.currency}"
