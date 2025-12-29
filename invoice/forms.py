@@ -19,6 +19,7 @@ class InvoiceForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        """Initialize the form."""
         user = kwargs.pop("user", None)  # Get the user passed from the view
         super().__init__(*args, **kwargs)
         if user:
@@ -43,6 +44,7 @@ class CustomerForm(ModelForm):
         fields = ["first_name", "last_name", "email", "vendor"]
 
     def __init__(self, *args, **kwargs):
+        """Initialize the form."""
         user = kwargs.pop("user", None)  # Get the user passed from the view
         super().__init__(*args, **kwargs)
         if user:
