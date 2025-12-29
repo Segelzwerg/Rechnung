@@ -30,13 +30,21 @@ sudo -u postgres psql -c "ALTER USER postgres WITH ENCRYPTED PASSWORD '${postgre
 CREATE ROLE rechnung_manager WITH LOGIN PASSWORD '${service_postgres_password}';
 CREATE DATABASE rechnung_db OWNER rechnung_manager;"
 sudo systemctl restart postgresql
-wget https://raw.githubusercontent.com/Segelzwerg/Rechnung/refs/heads/proxmox-script/proxmox/compose.yaml
 ip_addresses=$(ip -4 -o addr show | awk '/inet/ {print $4}'| cut -d/ -f1 | paste -s -d, /dev/stdin)
-export ALLOWED_HOSTS=${ip_addresses}
-export DB_USER=rechnung_manager
-export DB_PASSWORD=${service_postgres_password}
-export DB_HOST=localhost
-export DB_PORT=5432
-export DB_NAME=rechnung_db
-export SECRET_KEY=${secrect_key}
+
+
+# Create a .env file so docker compose can read it even with sudo
+cat <<EOF > .env
+ALLOWED_HOSTS=${ip_addresses}
+DB_USER=rechnung_manager
+DB_PASSWORD=${service_postgres_password}
+DB_HOST=host.docker.internal
+DB_PORT=5432
+DB_NAME=rechnung_db
+SECRET_KEY=${secrect_key}
+EOF
+
+wget https://raw.githubusercontent.com/Segelzwerg/Rechnung/refs/heads/proxmox-script/proxmox/compose.yaml
+
+# Run docker compose; it will automatically pick up the .env file in the same directory
 sudo docker compose up
