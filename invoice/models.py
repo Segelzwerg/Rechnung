@@ -33,6 +33,7 @@ from django.db.models.constraints import CheckConstraint
 from django.db.models.fields import DecimalField
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+from django.utils.formats import number_format
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import pgettext_lazy
 from schwifty import BIC, IBAN
@@ -89,7 +90,7 @@ class BankAccount(Model):
 
     owner = CharField(pgettext_lazy("account owner", "owner"), max_length=120, default="")
     iban = CharField(_("IBAN"), max_length=120, validators=[validate_iban])
-    bic = CharField(_("BIC"), max_length=120, validators=[validate_bic])
+    bic = CharField(_("BIC"), max_length=120, validators=[validate_bic], blank=True)
 
     class Meta:
         verbose_name = _("bank account")
@@ -117,6 +118,7 @@ class Customer(Model):
     email = EmailField(_("email"), max_length=256)
     address = OneToOneField(Address, verbose_name=_("address"), on_delete=CASCADE)
     vendor = ForeignKey("Vendor", verbose_name=_("vendor"), on_delete=CASCADE)
+    invoice_counter = IntegerField(_("invoice counter"), default=0)
 
     class Meta:
         verbose_name = _("customer")
@@ -129,6 +131,12 @@ class Customer(Model):
     def full_name(self):
         """Get the full name of the customer (first name + last name)."""
         return f"{self.first_name} {self.last_name}"
+
+    def get_next_invoice_counter(self) -> int:
+        """Get the next invoice number based on the counter and saves the new number as current counter."""
+        self.invoice_counter += 1
+        self.save()
+        return self.invoice_counter
 
 
 @receiver(post_delete, sender=Customer)
@@ -153,6 +161,8 @@ class Vendor(Model):
         BankAccount, verbose_name=_("bank account"), on_delete=CASCADE, null=True, blank=True
     )
     user = ForeignKey(User, on_delete=CASCADE)
+    invoice_counter = IntegerField(_("invoice counter"), default=0)
+    invoice_number_format = CharField(_("invoice number format"), max_length=255, blank=True, default="")
 
     class Meta:
         """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""
@@ -165,6 +175,12 @@ class Vendor(Model):
         if self.company_name:
             return self.company_name
         return self.name
+
+    def get_next_invoice_counter(self) -> int:
+        """Get the next invoice number based on the counter and saves the new number as current counter."""
+        self.invoice_counter += 1
+        self.save()
+        return self.invoice_counter
 
 
 @receiver(post_delete, sender=Vendor)
@@ -205,7 +221,7 @@ class Invoice(Model):
         HKD = "HKD", _("Hong Kong Dollar")
         CNY = "CNY", _("Chinese Yuan")
 
-    invoice_number = IntegerField(_("invoice number"), validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
+    invoice_number = CharField(_("invoice number"), max_length=255)
     date = DateField(_("date"))
     vendor = ForeignKey(Vendor, verbose_name=_("vendor"), on_delete=CASCADE)
     customer = ForeignKey(Customer, verbose_name=_("customer"), on_delete=CASCADE)
@@ -234,7 +250,7 @@ class Invoice(Model):
         return f"Invoice({self.invoice_number},{self.vendor},{self.customer})"
 
     def save(self, *args, **kwargs):
-        """Save invoice unless it is marked final. Then a FinalError is raised."""
+        """Save an invoice unless it is marked final. Then a FinalError is raised."""
         if self.final and self.pk is not None:
             initial = Invoice.objects.get(pk=self.pk)
             if initial.final:
@@ -299,20 +315,22 @@ class Invoice(Model):
     @property
     def net_total_string(self) -> str:
         """Get the net total string."""
-        return f"{self.net_total_rounded} {self.currency}"
+        formatted_total = number_format(self.net_total_rounded, decimal_pos=2, use_l10n=True)
+        return f"{formatted_total} {self.currency}"
 
     @property
     def tax_amount_strings(self) -> dict[str, str]:
         """Get the tax amount strings as dictionary with the rate as key and the amount string as value."""
         return {
-            rate: f"{amount.quantize(Decimal('0.01'))} {self.currency}"
+            rate: f"{number_format(amount.quantize(Decimal('0.01')), decimal_pos=2, use_l10n=True)} {self.currency}"
             for rate, amount in self.tax_amount_per_rate.items()
         }
 
     @property
     def total_string(self) -> str:
         """Get the total string."""
-        return f"{self.total_rounded} {self.currency}"
+        formatted_total = number_format(self.total_rounded, decimal_pos=2, use_l10n=True)
+        return f"{formatted_total} {self.currency}"
 
     @property
     def compliant(self) -> bool:
@@ -417,12 +435,14 @@ class InvoiceItem(Model):
     @property
     def price_string(self) -> str:
         """Get the price string."""
-        return f"{self.price:.2f} {self.invoice.currency}"
+        formatted_price = number_format(self.price, decimal_pos=2, use_l10n=True)
+        return f"{formatted_price} {self.invoice.currency}"
 
     @property
     def quantity_string(self) -> str:
         """Get the quantity string including the unit."""
-        quantity = f"{self.quantity:.4f}".rstrip("0").rstrip(".,")
+        quantity = number_format(self.quantity, decimal_pos=4, use_l10n=True)
+        quantity = quantity.rstrip("0").rstrip(",.")
         if self.unit:
             return f"{quantity} {self.unit}"
         return quantity
@@ -436,14 +456,17 @@ class InvoiceItem(Model):
     @property
     def net_total_string(self) -> str:
         """Get the net total string."""
-        return f"{self.net_total_rounded} {self.invoice.currency}"
+        formatted_total = number_format(self.net_total_rounded, decimal_pos=2, use_l10n=True)
+        return f"{formatted_total} {self.invoice.currency}"
 
     @property
     def tax_amount_string(self) -> str:
         """Get the tax amount string."""
-        return f"{self.tax_amount_rounded} {self.invoice.currency}"
+        formatted_tax = number_format(self.tax_amount_rounded, decimal_pos=2, use_l10n=True)
+        return f"{formatted_tax} {self.invoice.currency}"
 
     @property
     def total_string(self) -> str:
         """Get the total string."""
-        return f"{self.total_rounded} {self.invoice.currency}"
+        formatted_total = number_format(self.total_rounded, decimal_pos=2, use_l10n=True)
+        return f"{formatted_total} {self.invoice.currency}"
