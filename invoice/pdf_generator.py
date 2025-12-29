@@ -1,4 +1,5 @@
 """PDF generation utilities."""
+from decimal import Decimal
 
 import reportlab.lib.pagesizes
 from django.utils.translation import gettext, pgettext
@@ -144,7 +145,7 @@ def gen_invoice_pdf(invoice, filename_or_io):  # noqa: C901, PLR0915
     if lines:
         render_lines_left_right(x_left, bottom_y, lines)
 
-    if invoice.vendor.bank_account and invoice.currency == Invoice.Currency.EUR:
+    if invoice.vendor.bank_account and invoice.currency == Invoice.Currency.EUR and invoice.total > Decimal(0):
         encoding = "utf-8"
         data = epc_qr.gen_epc_qr_data(
             str(invoice.vendor),
