@@ -18,6 +18,9 @@ EOF
 sudo apt update
 sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin postgresql -y
 sudo systemctl start docker
+sudo groupadd docker
+sudo usermod -aG docker $USER
+sudo systemctl restart docker
 sudo systemctl start postgresql
 sudo systemctl enable postgresql
 read -p "Password for postgres super admin user: " postgres_password
@@ -36,4 +39,4 @@ export DB_HOST=localhost
 export DB_PORT=5432
 export DB_NAME=rechnung_db
 export SECRET_KEY=${secrect_key}
-sudo docker compose up
+docker compose up
