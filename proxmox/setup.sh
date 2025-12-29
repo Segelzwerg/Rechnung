@@ -23,12 +23,9 @@ sudo systemctl enable postgresql
 read -p "Password for postgres super admin user: " postgres_password
 read -p "Password for postgres service account: " service_postgres_password
 read -p "Secret Key for the application: " secrect_key
-sudo -u postgres psql
-ALTER USER postgres WITH ENCRYPTED PASSWORD '${postgres_password}';
-CREATE USER rechnung_manager ENCRYPTED PASSWORD '${service_postgres_password}';
+sudo -u postgres psql -c "ALTER USER postgres WITH ENCRYPTED PASSWORD '${postgres_password}';CREATE USER rechnung_manager ENCRYPTED PASSWORD '${service_postgres_password}';
 CREATE ROLE rechnung_manager WITH LOGIN PASSWORD '${service_postgres_password}';
-CREATE DATABASE rechnung_db OWNER rechnung_manager;
-\q
+CREATE DATABASE rechnung_db OWNER rechnung_manager;"
 sudo systemctl restart postgresql
 wget https://github.com/Segelzwerg/Rechnung/tree/main/proxmox/compose.yaml
 ip_addresses=$(ip -4 -o addr show | awk '/inet/ {print $4}'| cut -d/ -f1 | paste -s -d, /dev/stdin)
