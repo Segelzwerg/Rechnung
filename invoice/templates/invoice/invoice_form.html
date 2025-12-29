@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load django_bootstrap5 %}
+
 {% block content %}
     <div class="container">
         <div class="row justify-content-center">
@@ -41,7 +42,13 @@
                     </a>
                 {% endif %}
             </div>
+
             <div class="col-xl">
+                {% if invoice %}
+                    {% if invoice.invoice_number %}
+                        <h3>{% translate "Invoice Number" %}: {{ invoice.invoice_number }}</h3>
+                    {% endif %}
+                {% endif %}
                 <fieldset
                         {% if invoice.final %}
                             disabled
@@ -124,8 +131,9 @@
             } else {
                 document.getElementById('invoice-form').submit();
             }
-        })
+        });
     </script>
+
     {% if invoice and invoice_item_form and not invoice.final %}
         <div class="modal fade" id="InvoiceItemModal" tabindex="-1"
              aria-labelledby="InvoiceItemModalLabel"

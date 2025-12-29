@@ -115,18 +115,21 @@ def gen_epc_qr_data(  # noqa: C901, PLR0912, PLR0913
 
     line_separator = "\r\n" if use_crlf else "\n"
     return line_separator.join(
-        [
-            "BCD",
-            version,
-            encoding_key,
-            identification,
-            bic,
-            name,
-            iban,
-            eur_amount_str,
-            purpose,
-            structured_remittance_info,
-            remittance_info,
-            originator_info,
-        ]
+        map(
+            str,
+            [
+                "BCD",
+                version,
+                encoding_key,
+                identification,
+                bic,
+                name,
+                iban,
+                eur_amount_str,
+                purpose,
+                structured_remittance_info,
+                remittance_info,
+                originator_info,
+            ],
+        )
     )

@@ -15,8 +15,10 @@ from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView
 
 from invoice import pdf_generator
+from invoice.constants import YEAR_COUNTER_FORMAT
 from invoice.errors import IncompliantWarning
 from invoice.forms import AddressForm, BankAccountForm, CustomerForm, InvoiceForm, InvoiceItemForm, VendorForm
+from invoice.invoice_number_generator import InvoiceNumberFormat
 from invoice.models import Customer, Invoice, InvoiceItem, Vendor
 
 
@@ -192,6 +194,18 @@ class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def get_success_url(self):
         return reverse("invoice-update", kwargs={"pk": self.object.id})
+
+    def form_valid(self, form):
+        # this does not save to the db, but instead just creates the Invoice object
+        invoice = form.save(commit=False)
+
+        # override invoice_number
+        format_string = invoice.vendor.invoice_number_format or YEAR_COUNTER_FORMAT
+        formatter = InvoiceNumberFormat(format_string)
+        invoice.invoice_number = formatter.get_invoice_number(invoice)
+
+        # actually save to db via super (see ModelFormMixin#form_valid)
+        return super().form_valid(form)
 
 
 class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
