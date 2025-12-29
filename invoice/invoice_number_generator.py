@@ -160,7 +160,7 @@ class InvoiceNumberFormat:
             else:
                 raise ValueError(f"unknown counter type {counter_type_arg}")
 
-            zero_padding_arg = args[1] if args and len(args) >= 2 else None  # noqa: PLR2004, magic constant for length 2
+            zero_padding_arg = args[1] if args and len(args) >= 2 else None  # noqa: PLR2004, constant for arg length
             try:
                 zero_padding = int(zero_padding_arg)
             except (TypeError, ValueError):
