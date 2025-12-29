@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load django_bootstrap5 %}
+{% load static %}
 
 {% block content %}
     <a class="btn btn-primary" role="button" href="{% url "invoice-add" %}">{% translate "Add invoice" %}</a>
@@ -40,10 +41,18 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{% url "invoice-update" invoice.id %}">{% translate "Update" %}</a> /
-                    <a href="{% url "invoice-delete" invoice.id %}">{% translate "Delete" %}</a> /
-                    <a href="{% url "invoice-pdf" invoice.id %}">{% translate "PDF" %}</a> /
-                    <a href="{% url "invoice-paid" invoice.id %}">Mark paid</a>
+                    <a href="{% url "invoice-update" invoice.id %}">
+                        <img src="{% static 'invoice/pencil-1.svg' %}" alt="{% translate 'Update' %}" width="24"
+                             height="24"></a>
+                    <a href="{% url "invoice-delete" invoice.id %}">
+                        <img src="{% static 'invoice/trash-3.svg' %}" alt="{% translate 'Delete' %}" width="24"
+                             height="24"></a>
+                    <a href="{% url "invoice-pdf" invoice.id %}">
+                        <img src="{% static 'invoice/file-multiple.svg' %}" alt="{% translate 'PDF' %}" width="24"
+                             height="24"></a>
+                    <a href="{% url "invoice-paid" invoice.id %}">
+                        <img src="{% static 'invoice/cash-app.svg' %}" alt="{% translate 'Mark paid' %}" width="24"
+                             height="24"></a>
                 </td>
             </tr>
         {% endfor %}
