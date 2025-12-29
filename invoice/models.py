@@ -90,7 +90,7 @@ class BankAccount(Model):
 
     owner = CharField(pgettext_lazy("account owner", "owner"), max_length=120, default="")
     iban = CharField(_("IBAN"), max_length=120, validators=[validate_iban])
-    bic = CharField(_("BIC"), max_length=120, validators=[validate_bic])
+    bic = CharField(_("BIC"), max_length=120, validators=[validate_bic], blank=True)
 
     class Meta:
         verbose_name = _("bank account")
@@ -118,6 +118,7 @@ class Customer(Model):
     email = EmailField(_("email"), max_length=256)
     address = OneToOneField(Address, verbose_name=_("address"), on_delete=CASCADE)
     vendor = ForeignKey("Vendor", verbose_name=_("vendor"), on_delete=CASCADE)
+    invoice_counter = IntegerField(_("invoice counter"), default=0)
 
     class Meta:
         verbose_name = _("customer")
@@ -130,6 +131,12 @@ class Customer(Model):
     def full_name(self):
         """Get the full name of the customer (first name + last name)."""
         return f"{self.first_name} {self.last_name}"
+
+    def get_next_invoice_counter(self) -> int:
+        """Get the next invoice number based on the counter and saves the new number as current counter."""
+        self.invoice_counter += 1
+        self.save()
+        return self.invoice_counter
 
 
 @receiver(post_delete, sender=Customer)
@@ -154,6 +161,8 @@ class Vendor(Model):
         BankAccount, verbose_name=_("bank account"), on_delete=CASCADE, null=True, blank=True
     )
     user = ForeignKey(User, on_delete=CASCADE)
+    invoice_counter = IntegerField(_("invoice counter"), default=0)
+    invoice_number_format = CharField(_("invoice number format"), max_length=255, blank=True, default="")
 
     class Meta:
         """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""
@@ -166,6 +175,12 @@ class Vendor(Model):
         if self.company_name:
             return self.company_name
         return self.name
+
+    def get_next_invoice_counter(self) -> int:
+        """Get the next invoice number based on the counter and saves the new number as current counter."""
+        self.invoice_counter += 1
+        self.save()
+        return self.invoice_counter
 
 
 @receiver(post_delete, sender=Vendor)
@@ -206,7 +221,7 @@ class Invoice(Model):
         HKD = "HKD", _("Hong Kong Dollar")
         CNY = "CNY", _("Chinese Yuan")
 
-    invoice_number = IntegerField(_("invoice number"), validators=[MaxValueValidator(MAX_VALUE_DJANGO_SAVE)])
+    invoice_number = CharField(_("invoice number"), max_length=255)
     date = DateField(_("date"))
     vendor = ForeignKey(Vendor, verbose_name=_("vendor"), on_delete=CASCADE)
     customer = ForeignKey(Customer, verbose_name=_("customer"), on_delete=CASCADE)
@@ -235,7 +250,7 @@ class Invoice(Model):
         return f"Invoice({self.invoice_number},{self.vendor},{self.customer})"
 
     def save(self, *args, **kwargs):
-        """Save invoice unless it is marked final. Then a FinalError is raised."""
+        """Save an invoice unless it is marked final. Then a FinalError is raised."""
         if self.final and self.pk is not None:
             initial = Invoice.objects.get(pk=self.pk)
             if initial.final:
