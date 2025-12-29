@@ -1,3 +1,3 @@
 """This module contains constants."""
 
-YEAR_COUNTER_FORMAT = "<year><counter>"
+YEAR_COUNTER_FORMAT = "<year>-<counter>"
