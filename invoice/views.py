@@ -112,6 +112,11 @@ class CustomerCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     success_url = reverse_lazy("customer-list")
     success_message = _("Customer was created successfully.")
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["form"].fields["vendor"].queryset = Vendor.objects.filter(user_id=self.request.user.id)
@@ -207,6 +212,11 @@ class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         # actually save to db via super (see ModelFormMixin#form_valid)
         return super().form_valid(form)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
 
 class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
     """Update an existing invoice."""
@@ -225,6 +235,11 @@ class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
                 next_url = reverse("invoice-update", args=[self.kwargs["pk"]])
                 return HttpResponseRedirect(next_url)
         return HttpResponseRedirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

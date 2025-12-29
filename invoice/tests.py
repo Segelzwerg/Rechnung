@@ -103,6 +103,23 @@ class AddCustomerViewTestCase(TestCase):
         cls.user = User.objects.create_user(username="test", password="password")
         cls.url = reverse("customer-add")
 
+    def setUp(self):
+        v_address = Address.objects.create(
+            line_1="Vendorstraße 1", postcode="12345", city="Vendorstadt", country="Germany"
+        )
+        v_bank = BankAccount.objects.create(owner="TestVendor", iban="DE02500105170137075030")
+        self.vendor = Vendor.objects.create(
+            name="TestName",
+            company_name="TestVendor",
+            address=v_address,
+            tax_id="DE TAX",
+            bank_account=v_bank,
+            user=self.user,
+        )
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
+
     @classmethod
     def tearDownClass(cls):
         User.objects.all().delete()
@@ -177,6 +194,26 @@ class AddCustomerViewTestCase(TestCase):
         url = reverse("customer-add")
         response = self.client.post(f"{url}", follow=True)
         self.assertRedirects(response, f"/accounts/login/?next={url}")
+
+    def test_vendor_drop_down_not_from_other_user(self):
+        other_user = User.objects.create_user(username="other", password="password")
+        other_v_address = Address.objects.create(
+            line_1="Vendorstraße 2", postcode="12345", city="Vendorstadt", country="Germany"
+        )
+        other_bank = BankAccount.objects.create(owner="TestVendor2", iban="DE02500105170137075030")
+        _ = Vendor.objects.create(
+            name="OtherVendor",
+            company_name="TestVendor",
+            address=other_v_address,
+            tax_id="DE TAX",
+            bank_account=other_bank,
+            user=other_user,
+        )
+
+        self.client.force_login(self.user)
+        url = reverse("customer-add")
+        response = self.client.get(url)
+        self.assertEqual(1, len(response.context_data["form"].fields["vendor"].choices.queryset))
 
 
 class UpdateCustomerViewTestCase(TestCase):
@@ -310,6 +347,26 @@ class UpdateCustomerViewTestCase(TestCase):
         first_name = "John"
         response = self.client.post(url, data={"first_name": first_name}, follow=True)
         self.assertRedirects(response, "/customers/")
+
+    def test_vendor_drop_down_not_from_other_user(self):
+        other_user = User.objects.create_user(username="other", password="password")
+        other_v_address = Address.objects.create(
+            line_1="Vendorstraße 2", postcode="12345", city="Vendorstadt", country="Germany"
+        )
+        other_bank = BankAccount.objects.create(owner="TestVendor2", iban="DE02500105170137075030")
+        _ = Vendor.objects.create(
+            name="OtherVendor",
+            company_name="TestVendor",
+            address=other_v_address,
+            tax_id="DE TAX",
+            bank_account=other_bank,
+            user=other_user,
+        )
+
+        self.client.force_login(self.user)
+        url = reverse("customer-update", args=[self.customer.id])
+        response = self.client.get(url)
+        self.assertEqual(1, len(response.context_data["form"].fields["vendor"].choices.queryset))
 
 
 class CustomerListViewTestCase(TestCase):
@@ -1741,6 +1798,32 @@ class InvoiceCreateViewTestCase(TestCase):
         self.assertEqual(Invoice.objects.all().count(), 1)
         self.assertEqual(Invoice.objects.first().invoice_number, "2025-001")
 
+    def test_vendor_drop_down_not_from_other_user(self):
+        other_user = User.objects.create_user(username="other", password="password")
+        other_v_address = Address.objects.create(
+            line_1="Vendorstraße 2", postcode="12345", city="Vendorstadt", country="Germany"
+        )
+        other_c_address = Address.objects.create(
+            line_1="Customerstraße 2", postcode="12346", city="Customerdorf", country="Germany"
+        )
+        other_bank = BankAccount.objects.create(owner="TestVendor2", iban="DE02500105170137075030")
+        other_vendor = Vendor.objects.create(
+            name="OtherVendor",
+            company_name="TestVendor",
+            address=other_v_address,
+            tax_id="DE TAX",
+            bank_account=other_bank,
+            user=other_user,
+        )
+        _ = Customer.objects.create(
+            first_name="OtherCustomer", last_name="TestCustomerLast", address=other_c_address, vendor=other_vendor
+        )
+        self.client.force_login(self.user)
+        url = reverse("invoice-add")
+        response = self.client.get(url)
+        self.assertEqual(1, len(response.context_data["form"].fields["vendor"].choices.queryset))
+        self.assertEqual(1, len(response.context_data["form"].fields["customer"].choices.queryset))
+
 
 class InvoicePDFViewTestCase(TestCase):
     @classmethod
@@ -1874,6 +1957,48 @@ class InvoiceUpdateViewTestCase(TestCase):
         url = reverse("invoice-update", args=[invoice.id])
         response = self.client.post(url, data={"invoice_number": 2000}, follow=True)
         self.assertRedirects(response, "/invoices/")
+
+    def test_not_own_invoice_post(self):
+        self.client.force_login(self.user)
+        second_user = User.objects.create_user(username="test2", password="<PASSWORD>")
+
+        address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor_address = Address.objects.create(line_1="Test", postcode="12345", city="Test", country="Germany")
+        vendor = Vendor.objects.create(name="Test22", company_name="Test22", user=second_user, address=vendor_address)
+        customer = Customer.objects.create(
+            first_name="John", last_name="Doe", email="John@doe.com", address=address, vendor=vendor
+        )
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, date=now(), customer=customer)
+
+        url = reverse("invoice-update", args=[invoice.id])
+        response = self.client.post(url, data={"invoice_number": 2000}, follow=True)
+        self.assertRedirects(response, "/invoices/")
+
+    def test_vendor_drop_down_not_from_other_user(self):
+        other_user = User.objects.create_user(username="other", password="password")
+        other_v_address = Address.objects.create(
+            line_1="Vendorstraße 2", postcode="12345", city="Vendorstadt", country="Germany"
+        )
+        other_c_address = Address.objects.create(
+            line_1="Customerstraße 2", postcode="12346", city="Customerdorf", country="Germany"
+        )
+        other_bank = BankAccount.objects.create(owner="TestVendor2", iban="DE02500105170137075030")
+        other_vendor = Vendor.objects.create(
+            name="OtherVendor",
+            company_name="TestVendor",
+            address=other_v_address,
+            tax_id="DE TAX",
+            bank_account=other_bank,
+            user=other_user,
+        )
+        _ = Customer.objects.create(
+            first_name="OtherCustomer", last_name="TestCustomerLast", address=other_c_address, vendor=other_vendor
+        )
+        self.client.force_login(self.user)
+        url = reverse("invoice-update", args=[self.invoice.id])
+        response = self.client.get(url)
+        self.assertEqual(1, len(response.context_data["form"].fields["vendor"].choices.queryset))
+        self.assertEqual(1, len(response.context_data["form"].fields["customer"].choices.queryset))
 
 
 class InvoicePaidViewTestCase(TestCase):
