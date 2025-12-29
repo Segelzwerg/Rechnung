@@ -18,6 +18,14 @@ class InvoiceForm(ModelForm):
             "delivery_date": DateInput(attrs={"type": "date-local"}),
         }
 
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)  # Get the user passed from the view
+        super().__init__(*args, **kwargs)
+        if user:
+            # Filter the vendors and customers by the current user
+            self.fields["vendor"].queryset = Vendor.objects.filter(user=user)
+            self.fields["customer"].queryset = Customer.objects.filter(vendor__user=user)
+
 
 class InvoiceItemForm(ModelForm):
     """Form for invoice items."""
@@ -33,6 +41,13 @@ class CustomerForm(ModelForm):
     class Meta:
         model = Customer
         fields = ["first_name", "last_name", "email", "vendor"]
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)  # Get the user passed from the view
+        super().__init__(*args, **kwargs)
+        if user:
+            # Filter the vendors and customers by the current user
+            self.fields["vendor"].queryset = Vendor.objects.filter(user=user)
 
 
 class AddressForm(ModelForm):
