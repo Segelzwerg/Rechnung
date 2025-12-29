@@ -7,6 +7,8 @@ from abc import ABC, abstractmethod
 from itertools import chain
 from typing import TYPE_CHECKING
 
+from invoice.constants import DEFAULT_INVOICE_NUMBER_COUNTER, DEFAULT_INVOICE_NUMBER_ZERO_PADDING
+
 if TYPE_CHECKING:
     from invoice.models import Invoice
 
@@ -28,10 +30,34 @@ class Year(FormatElement):
 
     def get(self, invoice: Invoice) -> str:
         """Get the year of the invoice."""
-        return str(invoice.date.year)
+        return str(invoice.date.year).zfill(4)
 
     def preview(self, invoice: Invoice) -> str:
         """Preview the year of the invoice."""
+        return self.get(invoice)
+
+
+class Month(FormatElement):
+    """Invoice month format."""
+
+    def get(self, invoice: Invoice) -> str:
+        """Get the month of the invoice."""
+        return str(invoice.date.month).zfill(2)
+
+    def preview(self, invoice: Invoice) -> str:
+        """Preview the month of the invoice."""
+        return self.get(invoice)
+
+
+class Day(FormatElement):
+    """Invoice day format."""
+
+    def get(self, invoice: Invoice) -> str:
+        """Get the day of the invoice."""
+        return str(invoice.date.day).zfill(2)
+
+    def preview(self, invoice: Invoice) -> str:
+        """Preview the day of the invoice."""
         return self.get(invoice)
 
 
@@ -48,29 +74,52 @@ class Customer(FormatElement):
         return self.get(invoice)
 
 
+class Vendor(FormatElement):
+    """Invoice vendor format."""
+
+    def get(self, invoice: Invoice) -> str:
+        """Get the vendor id of the invoice."""
+        # TODO: get a short, readable vendor id
+        return str(invoice.vendor.id)
+
+    def preview(self, invoice: Invoice) -> str:
+        """Preview the vendor id of the invoice."""
+        return self.get(invoice)
+
+
 class Counter(FormatElement):
     """Invoice counter format."""
 
-    def __init__(self, counter_type: str, index: int):
+    def __init__(self, counter_type: str, index: int, zero_padding: int):
         """Create an invoice counter format given its index in the format string."""
         self.counter_type = counter_type
         self.index = index
+        self.zero_padding = zero_padding
+
+    def _format_counter(self, counter: int) -> str:
+        if counter <= 0:
+            raise ValueError(f"{self.counter_type} counter {counter} must be positive")
+        return str(counter).zfill(self.zero_padding)
 
     def get(self, invoice: Invoice) -> str:
         """Get the counter of the invoice."""
         if self.counter_type == "vendor":
-            return str(invoice.vendor.get_next_invoice_counter())
-        if self.counter_type == "customer":
-            return str(invoice.customer.get_next_invoice_counter())
-        raise NotImplementedError
+            counter = invoice.vendor.get_next_invoice_counter()
+        elif self.counter_type == "customer":
+            counter = invoice.customer.get_next_invoice_counter()
+        else:
+            raise NotImplementedError
+        return self._format_counter(counter)
 
     def preview(self, invoice: Invoice) -> str:
         """Preview the invoice counter."""
         if self.counter_type == "vendor":
-            return str(invoice.vendor.invoice_counter + 1 + self.index)
-        if self.counter_type == "customer":
-            return str(invoice.customer.invoice_counter + 1 + self.index)
-        raise NotImplementedError
+            counter_base = invoice.vendor.invoice_counter
+        elif self.counter_type == "customer":
+            counter_base = invoice.customer.invoice_counter
+        else:
+            raise NotImplementedError
+        return self._format_counter(counter_base + 1 + self.index)
 
 
 class Literal(FormatElement):
@@ -98,24 +147,28 @@ class InvoiceNumberFormat:
         self._format: list[FormatElement] = self._compile(format_string)
 
     def _convert_from_string(self, element: str) -> FormatElement:
-        element_type, *args = element.split(":", maxsplit=1)
-        arg = args[0] if args else None
+        element_type, *args = element.split(":")
 
-        if element_type == "year":
-            return Year()
+        simple_elements = {"year": Year, "month": Month, "day": Day, "customer": Customer, "vendor": Vendor}
+        if element_type in simple_elements:
+            return simple_elements[element_type]()
+
         if element_type == "counter":
-            if not arg or arg == "vendor":
-                counter_type = "vendor"
-            elif arg == "customer":
-                counter_type = "customer"
+            counter_type_arg = args[0] if args else DEFAULT_INVOICE_NUMBER_COUNTER
+            if counter_type_arg in {"vendor", "customer"}:
+                counter_type = counter_type_arg
             else:
-                raise ValueError(f"unknown counter type {arg}")
+                raise ValueError(f"unknown counter type {counter_type_arg}")
+
+            zero_padding_arg = args[1] if args and len(args) >= 2 else None  # noqa: PLR2004, magic constant for length 2
+            try:
+                zero_padding = int(zero_padding_arg)
+            except (TypeError, ValueError):
+                zero_padding = DEFAULT_INVOICE_NUMBER_ZERO_PADDING
 
             counter_index = self._counter_indices.get(counter_type, 0)
             self._counter_indices[counter_type] = counter_index + 1
-            return Counter(counter_type, counter_index)
-        if element == "customer":
-            return Customer()
+            return Counter(counter_type, counter_index, zero_padding)
         return Literal(element)
 
     def _compile(self, format_string: str) -> list[FormatElement]:
