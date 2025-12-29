@@ -1095,8 +1095,8 @@ class InvoiceModelTestCase(TestCase):
             invoice.net_total,
             first_item.net_total + second_item.net_total,
             msg=f"First Net Total:{first_item.net_total}"
-            f"Second Net Total:{second_item.net_total}"
-            f"Invoice Net Total:{invoice.net_total}",
+                f"Second Net Total:{second_item.net_total}"
+                f"Invoice Net Total:{invoice.net_total}",
         )
 
     @given(build_invoice_item(), build_invoice_item())
@@ -1695,6 +1695,36 @@ class InvoiceModelTestCase(TestCase):
         invoice.final = False
         invoice.save()
         self.assertEqual(invoice.compliant, False)
+
+
+class InvoiceCreateViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
+    def setUp(self):
+        self.address = Address.objects.create()
+        self.vendor = Vendor.objects.create(address=self.address, user=self.user)
+        self.customer = Customer.objects.create(address=self.address, vendor=self.vendor)
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
+
+    def test_invoice_number_assigned(self):
+        self.client.force_login(self.user)
+        url = reverse("invoice-add")
+        response = self.client.post(
+            url,
+            data={"date": "2025-12-12", "vendor": self.vendor.id, "customer": self.customer.id, "currency": "EUR"},
+            follow=True,
+        )
+        self.assertRedirects(response, f"/invoice/1/")
+        self.assertEqual(Invoice.objects.all().count(), 1)
+        self.assertEqual(Invoice.objects.first().invoice_number, "20251")
 
 
 class InvoicePDFViewTestCase(TestCase):
