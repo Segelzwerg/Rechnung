@@ -10,6 +10,7 @@ class RegistrationTest(TestCase):
     def test_registration_form_valid_data(self):
         """Test that the registration form is valid with correct data."""
         form_data = {
+            "username": "johndoe",
             "first_name": "John",
             "last_name": "Doe",
             "email": "john@example.com",
@@ -23,6 +24,7 @@ class RegistrationTest(TestCase):
         """Test that a user can register via the registration view."""
         url = reverse("signup")
         data = {
+            "username": "janesmith",
             "first_name": "Jane",
             "last_name": "Smith",
             "email": "jane@example.com",
@@ -43,6 +45,7 @@ class RegistrationTest(TestCase):
     def test_registration_passwords_dont_match(self):
         """Test that registration fails if passwords do not match."""
         form_data = {
+            "username": "johndoe",
             "first_name": "John",
             "last_name": "Doe",
             "email": "john@example.com",

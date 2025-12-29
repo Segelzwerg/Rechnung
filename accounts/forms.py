@@ -14,7 +14,6 @@ class RegistrationForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, label=_("First name"))
     last_name = forms.CharField(max_length=30, label=_("Last name"))
 
-    # include Meta class
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "email", "password1", "password2"]
+        fields = ["username", "first_name", "last_name", "email", "password1", "password2"]
