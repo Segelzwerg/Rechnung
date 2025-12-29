@@ -1,4 +1,5 @@
 """PDF generation utilities."""
+
 from decimal import Decimal
 
 import reportlab.lib.pagesizes
