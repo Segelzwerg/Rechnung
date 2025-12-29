@@ -59,7 +59,7 @@ DB_NAME=rechnung_db
 SECRET_KEY=${secrect_key}
 EOF
 
-wget https://raw.githubusercontent.com/Segelzwerg/Rechnung/refs/heads/proxmox-script/proxmox/compose.yaml
+wget https://raw.githubusercontent.com/Segelzwerg/Rechnung/main/proxmox-script/proxmox/compose.yaml
 
 # Run docker compose; it will automatically pick up the .env file in the same directory
 sudo docker compose up
