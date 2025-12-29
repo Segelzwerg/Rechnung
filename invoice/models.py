@@ -89,7 +89,7 @@ class BankAccount(Model):
 
     owner = CharField(pgettext_lazy("account owner", "owner"), max_length=120, default="")
     iban = CharField(_("IBAN"), max_length=120, validators=[validate_iban])
-    bic = CharField(_("BIC"), max_length=120, validators=[validate_bic])
+    bic = CharField(_("BIC"), max_length=120, validators=[validate_bic], blank=True)
 
     class Meta:
         verbose_name = _("bank account")
@@ -241,11 +241,7 @@ class Invoice(Model):
         verbose_name = _("invoice")
         verbose_name_plural = _("invoices")
         constraints = [
-            UniqueConstraint(
-                fields=["vendor", "invoice_number"],
-                name="unique_invoice_numbers_per_vendor",
-                condition=Q(invoice_number__isnull=False),
-            ),
+            UniqueConstraint(fields=["vendor", "invoice_number"], name="unique_invoice_numbers_per_vendor"),
             CheckConstraint(condition=Q(due_date__gte=F("date")), name="due_date_gte_date"),
         ]
 

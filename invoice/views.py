@@ -200,8 +200,7 @@ class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         invoice = form.save(commit=False)
 
         # override invoice_number
-        vendor = get_object_or_404(Vendor, pk=invoice.vendor_id)
-        format_string = vendor.invoice_number_format or YEAR_COUNTER_FORMAT
+        format_string = invoice.vendor.invoice_number_format or YEAR_COUNTER_FORMAT
         formatter = InvoiceNumberFormat(format_string)
         invoice.invoice_number = formatter.get_invoice_number(invoice)
 

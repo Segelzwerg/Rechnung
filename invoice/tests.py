@@ -1707,9 +1707,24 @@ class InvoiceCreateViewTestCase(TestCase):
         User.objects.all().delete()
 
     def setUp(self):
-        self.address = Address.objects.create()
-        self.vendor = Vendor.objects.create(address=self.address, user=self.user)
-        self.customer = Customer.objects.create(address=self.address, vendor=self.vendor)
+        v_address = Address.objects.create(
+            line_1="Vendorstraße 1", postcode="12345", city="Vendorstadt", country="Germany"
+        )
+        c_address = Address.objects.create(
+            line_1="Customerstraße 1", postcode="12346", city="Customerdorf", country="Germany"
+        )
+        v_bank = BankAccount.objects.create(owner="TestVendor", iban="DE02500105170137075030")
+        self.vendor = Vendor.objects.create(
+            name="TestName",
+            company_name="TestVendor",
+            address=v_address,
+            tax_id="DE TAX",
+            bank_account=v_bank,
+            user=self.user,
+        )
+        self.customer = Customer.objects.create(
+            first_name="TestCustomerFirst", last_name="TestCustomerLast", address=c_address, vendor=self.vendor
+        )
 
     def tearDown(self):
         Vendor.objects.all().delete()
