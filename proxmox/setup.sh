@@ -26,9 +26,24 @@ sudo systemctl enable postgresql
 read -p "Password for postgres super admin user: " postgres_password
 read -p "Password for postgres service account: " service_postgres_password
 read -p "Secret Key for the application: " secrect_key
-sudo -u postgres psql -c "ALTER USER postgres WITH ENCRYPTED PASSWORD '${postgres_password}';CREATE USER rechnung_manager ENCRYPTED PASSWORD '${service_postgres_password}';
-CREATE ROLE rechnung_manager WITH LOGIN PASSWORD '${service_postgres_password}';
-CREATE DATABASE rechnung_db OWNER rechnung_manager;"
+
+# Use single quotes for the SQL command to avoid shell expansion issues with passwords
+sudo -u postgres psql -c "ALTER USER postgres WITH ENCRYPTED PASSWORD '${postgres_password}';"
+sudo -u postgres psql -c "DROP USER IF EXISTS rechnung_manager;"
+sudo -u postgres psql -c "CREATE USER rechnung_manager WITH ENCRYPTED PASSWORD '${service_postgres_password}';"
+sudo -u postgres psql -c "ALTER ROLE rechnung_manager SET default_transaction_isolation TO 'read committed';"
+sudo -u postgres psql -c "DROP DATABASE IF EXISTS rechnung_db;"
+sudo -u postgres psql -c "CREATE DATABASE rechnung_db OWNER rechnung_manager;"
+
+# Update postgresql.conf to listen on all addresses
+PG_CONF=$(find /etc/postgresql -name postgresql.conf)
+sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" "$PG_CONF"
+
+# Update pg_hba.conf to allow connections from the docker network
+PG_HBA=$(find /etc/postgresql -name pg_hba.conf)
+# Use 'scram-sha-256' depending on your Postgres version, 'all' for the DB is safer for setup
+echo "host    rechnung_db    rechnung_manager    0.0.0.0/0    scram-sha-256" | sudo tee -a "$PG_HBA"
+
 sudo systemctl restart postgresql
 ip_addresses=$(ip -4 -o addr show | awk '/inet/ {print $4}'| cut -d/ -f1 | paste -s -d, /dev/stdin)
 
