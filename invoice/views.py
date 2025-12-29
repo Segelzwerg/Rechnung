@@ -196,16 +196,17 @@ class InvoiceCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return reverse("invoice-update", kwargs={"pk": self.object.id})
 
     def form_valid(self, form):
+        # this does not save to the db, but instead just creates the Invoice object
         invoice = form.save(commit=False)
-        vendor_id = invoice.vendor_id
-        vendor = get_object_or_404(Vendor, pk=vendor_id) if vendor_id else get_object_or_404(Vendor)
 
+        # override invoice_number
+        vendor = get_object_or_404(Vendor, pk=invoice.vendor_id)
         format_string = vendor.invoice_number_format or YEAR_COUNTER_FORMAT
         formatter = InvoiceNumberFormat(format_string)
-
         invoice.invoice_number = formatter.get_invoice_number(invoice)
-        invoice.save()
-        return HttpResponseRedirect(reverse("invoice-update", kwargs={"pk": invoice.id}))
+
+        # actually save to db via super (see ModelFormMixin#form_valid)
+        return super().form_valid(form)
 
 
 class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
