@@ -2,11 +2,11 @@
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User  # pylint: disable=imported-auth-user
 from django.utils.translation import gettext_lazy as _
 
 
-class RegistrationForm(UserCreationForm):
+class RegistrationForm(UserCreationForm):  # pylint: disable=too-many-ancestors
     """Form for user registration."""
 
     email = forms.EmailField(label=_("Email"))
