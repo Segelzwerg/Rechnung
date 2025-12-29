@@ -1,3 +1,4 @@
+import datetime
 from datetime import timedelta
 from decimal import Decimal
 from math import inf, nan
@@ -13,6 +14,7 @@ from hypothesis.provisional import domains
 from hypothesis.strategies import characters, composite, decimals, emails, lists, sampled_from, text
 
 from invoice.errors import FinalError, IncompliantWarning
+from invoice.invoice_number_generator import InvoiceNumberFormat
 from invoice.models import Address, BankAccount, Customer, Invoice, InvoiceItem, MAX_VALUE_DJANGO_SAVE, Vendor
 
 GERMAN_TAX_RATE = Decimal("0.19")
@@ -1695,6 +1697,51 @@ class InvoiceModelTestCase(TestCase):
         self.assertEqual(invoice.compliant, False)
 
 
+class InvoiceCreateViewTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
+    def setUp(self):
+        v_address = Address.objects.create(
+            line_1="Vendorstraße 1", postcode="12345", city="Vendorstadt", country="Germany"
+        )
+        c_address = Address.objects.create(
+            line_1="Customerstraße 1", postcode="12346", city="Customerdorf", country="Germany"
+        )
+        v_bank = BankAccount.objects.create(owner="TestVendor", iban="DE02500105170137075030")
+        self.vendor = Vendor.objects.create(
+            name="TestName",
+            company_name="TestVendor",
+            address=v_address,
+            tax_id="DE TAX",
+            bank_account=v_bank,
+            user=self.user,
+        )
+        self.customer = Customer.objects.create(
+            first_name="TestCustomerFirst", last_name="TestCustomerLast", address=c_address, vendor=self.vendor
+        )
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
+
+    def test_invoice_number_assigned(self):
+        self.client.force_login(self.user)
+        url = reverse("invoice-add")
+        response = self.client.post(
+            url,
+            data={"date": "2025-12-12", "vendor": self.vendor.id, "customer": self.customer.id, "currency": "EUR"},
+            follow=True,
+        )
+        self.assertRedirects(response, f"/invoice/1/")
+        self.assertEqual(Invoice.objects.all().count(), 1)
+        self.assertEqual(Invoice.objects.first().invoice_number, "2025-001")
+
+
 class InvoicePDFViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -2121,6 +2168,95 @@ class AddInvoiceTestCase(TestCase):
         url = reverse("invoice-add")
         response = self.client.post(f"{url}", follow=True)
         self.assertRedirects(response, f"/accounts/login/?next={url}")
+
+
+class InvoiceNumberGeneratorTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(username="test", password="password")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()
+
+    def setUp(self):
+        self.vendor = Vendor.objects.create(name="V1", address=Address.objects.create(), user=self.user)
+        self.customer = Customer.objects.create(
+            first_name="F1", last_name="L1", email="a1@b.com", address=Address.objects.create(), vendor=self.vendor
+        )
+
+    def tearDown(self):
+        Vendor.objects.all().delete()
+
+    def test_year_number(self):
+        formatter = InvoiceNumberFormat("<year><counter>")
+        date = now()
+        invoice = Invoice(date=date, customer=self.customer, vendor=self.vendor)
+        self.assertEqual(formatter.get_invoice_number(invoice), f"{date.year}001")
+
+    def test_year_number_increase(self):
+        formatter = InvoiceNumberFormat("<year><counter>")
+        date = now()
+        first_invoice = Invoice(date=date, customer=self.customer, vendor=self.vendor)
+        second_invoice = Invoice(date=date, customer=self.customer, vendor=self.vendor)
+        self.assertEqual(formatter.get_invoice_number(first_invoice), f"{date.year}001")
+        self.assertEqual(formatter.get_invoice_number(second_invoice), f"{date.year}002")
+
+    def test_year_number_with_separator(self):
+        formatter = InvoiceNumberFormat("<year>-<counter>")
+        date = now()
+        invoice = Invoice(date=date, customer=self.customer, vendor=self.vendor)
+        self.assertEqual(formatter.get_invoice_number(invoice), f"{date.year}-001")
+
+    def test_date_number(self):
+        formatter = InvoiceNumberFormat("<year>-<month>-<day>-<counter>")
+        date = datetime.date(year=2025, month=12, day=7)
+        invoice = Invoice(date=date, customer=self.customer, vendor=self.vendor)
+        self.assertEqual(formatter.get_invoice_number(invoice), f"2025-12-07-001")
+
+    def test_counter_vendor(self):
+        formatter = InvoiceNumberFormat("<counter:vendor>")
+        date = now()
+        invoice = Invoice(date=date, customer=self.customer, vendor=self.vendor)
+        self.assertEqual(formatter.get_invoice_number(invoice), f"001")
+
+    def test_counter_pad(self):
+        formatter = InvoiceNumberFormat("<counter:vendor:2>")
+        date = now()
+        invoice = Invoice(date=date, customer=self.customer, vendor=self.vendor)
+        self.assertEqual(formatter.get_invoice_number(invoice), f"01")
+
+    def test_counter_preview(self):
+        formatter = InvoiceNumberFormat("<counter:vendor:1>")
+        invoice = Invoice(date=now(), customer=self.customer, vendor=self.vendor)
+        self.assertEqual(self.vendor.invoice_counter, 0)
+        self.assertEqual(formatter.preview_invoice_number(invoice), "1")
+        self.assertEqual(formatter.preview_invoice_number(invoice), "1")
+        self.assertEqual(self.vendor.invoice_counter, 0)
+
+    def test_double_counter(self):
+        formatter = InvoiceNumberFormat("<counter:vendor:1>-<counter:vendor:1>")
+        invoice = Invoice(date=now(), customer=self.customer, vendor=self.vendor)
+        self.assertEqual(formatter.preview_invoice_number(invoice), "1-2")
+        self.assertEqual(formatter.preview_invoice_number(invoice), "1-2")
+        self.assertEqual(formatter.get_invoice_number(invoice), "1-2")
+        self.assertEqual(formatter.get_invoice_number(invoice), "3-4")
+
+    def test_customer_counter(self):
+        formatter = InvoiceNumberFormat("<counter:customer:1>")
+        customer2 = Customer.objects.create(
+            first_name="F2", last_name="L2", email="a2@b.com", address=Address.objects.create(), vendor=self.vendor
+        )
+        invoice = Invoice(date=now(), customer=self.customer, vendor=self.vendor)
+        invoice2 = Invoice(date=now(), customer=customer2, vendor=self.vendor)
+        self.assertEqual(formatter.preview_invoice_number(invoice), "1")
+        self.assertEqual(formatter.preview_invoice_number(invoice), "1")
+        self.assertEqual(formatter.preview_invoice_number(invoice2), "1")
+        self.assertEqual(formatter.preview_invoice_number(invoice2), "1")
+        self.assertEqual(formatter.get_invoice_number(invoice), "1")
+        self.assertEqual(formatter.get_invoice_number(invoice), "2")
+        self.assertEqual(formatter.get_invoice_number(invoice2), "1")
+        self.assertEqual(formatter.get_invoice_number(invoice2), "2")
 
 
 class VendorCascadeTestCase(TestCase):
