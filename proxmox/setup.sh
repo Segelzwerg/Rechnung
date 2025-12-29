@@ -39,4 +39,4 @@ export DB_HOST=localhost
 export DB_PORT=5432
 export DB_NAME=rechnung_db
 export SECRET_KEY=${secrect_key}
-docker compose up
+sudo docker compose up
