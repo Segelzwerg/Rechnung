@@ -109,7 +109,6 @@ TIME_ZONE = env.str("TIME_ZONE", default="UTC")
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-# TODO: only works for in dev, see https://docs.djangoproject.com/en/6.0/howto/static-files/deployment/
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
