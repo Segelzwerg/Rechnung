@@ -1,0 +1,14 @@
+services:
+  rechnung:
+    image: ghcr.io/segelzwerg/segelzwerg/rechnung:latest
+    ports:
+      - "12321:8000"
+    environment:
+      SECRET_KEY: $SECRET_KEY
+      ALLOWED_HOSTS: $ALLOWED_HOSTS
+      DATABASE_URL: "postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME"
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
