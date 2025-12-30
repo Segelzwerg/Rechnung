@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-14 16:12+0000\n"
+"POT-Creation-Date: 2025-12-28 23:34+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,283 +18,283 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: invoice/models.py:26
+#: invoice/models.py:48
 msgid "first address line"
 msgstr "Erste Adresszeile"
 
-#: invoice/models.py:27
+#: invoice/models.py:49
 msgid "second address line"
 msgstr "Zweite Adresszeile"
 
-#: invoice/models.py:28
+#: invoice/models.py:50
 msgid "third address line"
 msgstr "Dritte Adresszeile"
 
-#: invoice/models.py:29
+#: invoice/models.py:51
 msgid "postcode"
 msgstr "Postleitzahl"
 
-#: invoice/models.py:30
+#: invoice/models.py:52
 msgid "city"
 msgstr "Ort"
 
-#: invoice/models.py:31
+#: invoice/models.py:53
 msgid "state"
 msgstr "Bundesland"
 
-#: invoice/models.py:32
+#: invoice/models.py:54
 msgid "country"
 msgstr "Land"
 
-#: invoice/models.py:35 invoice/models.py:91 invoice/models.py:110
+#: invoice/models.py:57 invoice/models.py:118 invoice/models.py:150
 msgid "address"
 msgstr "Adresse"
 
-#: invoice/models.py:36
+#: invoice/models.py:58
 msgid "addresses"
 msgstr "Adressen"
 
-#: invoice/models.py:54
+#: invoice/models.py:76
 msgid "Invalid IBAN."
 msgstr "Ungültige IBAN"
 
-#: invoice/models.py:62
+#: invoice/models.py:84
 msgid "Invalid BIC."
 msgstr "Ungültige BIC"
 
-#: invoice/models.py:67
+#: invoice/models.py:90
 msgctxt "account owner"
 msgid "owner"
 msgstr "Kontoinhaber"
 
-#: invoice/models.py:68 invoice/pdf_generator.py:36
+#: invoice/models.py:91 invoice/pdf_generator.py:35
 msgid "IBAN"
 msgstr "IBAN"
 
-#: invoice/models.py:69 invoice/pdf_generator.py:37
+#: invoice/models.py:92 invoice/pdf_generator.py:36
 msgid "BIC"
 msgstr "BIC"
 
-#: invoice/models.py:82 invoice/models.py:112
+#: invoice/models.py:95 invoice/models.py:153
 msgid "bank account"
 msgstr "Bankkonto"
 
-#: invoice/models.py:83
+#: invoice/models.py:96
 msgid "bank accounts"
 msgstr "Bankkonten"
 
-#: invoice/models.py:88
+#: invoice/models.py:115
 msgid "first name"
 msgstr "Vorname"
 
-#: invoice/models.py:89
+#: invoice/models.py:116
 msgid "last name"
 msgstr "Nachname"
 
-#: invoice/models.py:90
+#: invoice/models.py:117
 msgid "email"
 msgstr "E-Mail"
 
-#: invoice/models.py:94 invoice/models.py:151
-msgid "customer"
-msgstr "Kunde"
-
-#: invoice/models.py:95
-msgid "customers"
-msgstr "Kunden"
-
-#: invoice/models.py:108
-msgid "name"
-msgstr "Name"
-
-#: invoice/models.py:109
-msgid "company name"
-msgstr "Firmenname"
-
-#: invoice/models.py:111
-msgid "tax ID"
-msgstr "Steuer ID"
-
-#: invoice/models.py:117 invoice/models.py:150
+#: invoice/models.py:119 invoice/models.py:160 invoice/models.py:210
 msgid "vendor"
 msgstr "Anbieter"
 
-#: invoice/models.py:118
+#: invoice/models.py:122 invoice/models.py:211
+msgid "customer"
+msgstr "Kunde"
+
+#: invoice/models.py:123
+msgid "customers"
+msgstr "Kunden"
+
+#: invoice/models.py:148
+msgid "name"
+msgstr "Name"
+
+#: invoice/models.py:149
+msgid "company name"
+msgstr "Firmenname"
+
+#: invoice/models.py:151
+msgid "tax ID"
+msgstr "Steuer ID"
+
+#: invoice/models.py:161
 msgid "vendors"
 msgstr "Anbieter"
 
-#: invoice/models.py:134
+#: invoice/models.py:194
 msgid "Euro"
 msgstr "Euro"
 
-#: invoice/models.py:135
+#: invoice/models.py:195
 msgid "US Dollar"
 msgstr "US-Dollar"
 
-#: invoice/models.py:136
+#: invoice/models.py:196
 msgid "Japanese Yen"
 msgstr "Yen"
 
-#: invoice/models.py:137
+#: invoice/models.py:197
 msgid "Pound Sterling"
 msgstr "Pfund Sterling"
 
-#: invoice/models.py:138
+#: invoice/models.py:198
 msgid "Swiss Franc"
 msgstr "Schweizer Franken"
 
-#: invoice/models.py:139
+#: invoice/models.py:199
 msgid "Canadian Dollar"
 msgstr "Kanadischer Dollar"
 
-#: invoice/models.py:140
+#: invoice/models.py:200
 msgid "Australian Dollar"
 msgstr "Australischer Dollar"
 
-#: invoice/models.py:141
+#: invoice/models.py:201
 msgid "New Zealand Dollar"
 msgstr "Neuseeländischer Dollar"
 
-#: invoice/models.py:142
+#: invoice/models.py:202
 msgid "Swedish Krona"
 msgstr "Schwedische Krone"
 
-#: invoice/models.py:143
+#: invoice/models.py:203
 msgid "Danish Krone"
 msgstr "Dänische Krone"
 
-#: invoice/models.py:144
+#: invoice/models.py:204
 msgid "Norwegian Krone"
 msgstr "Norwegische Krone"
 
-#: invoice/models.py:145
+#: invoice/models.py:205
 msgid "Hong Kong Dollar"
 msgstr "Hongkong Dollar"
 
-#: invoice/models.py:146
+#: invoice/models.py:206
 msgid "Chinese Yuan"
 msgstr "Renminbi"
 
-#: invoice/models.py:148
+#: invoice/models.py:208
 msgid "invoice number"
 msgstr "Rechnungsnummer"
 
-#: invoice/models.py:149
+#: invoice/models.py:209
 msgid "date"
 msgstr "Datum"
 
-#: invoice/models.py:152
+#: invoice/models.py:212
 msgid "currency"
 msgstr "Währung"
 
-#: invoice/models.py:154
+#: invoice/models.py:213
 msgid "due date"
 msgstr "Fälligkeitsdatum"
 
-#: invoice/models.py:155
+#: invoice/models.py:214
 msgid "delivery date"
 msgstr "Lieferdatum"
 
-#: invoice/models.py:156
+#: invoice/models.py:215
 msgid "paid"
 msgstr "bezahlt"
 
-#: invoice/models.py:157
+#: invoice/models.py:216
 msgid "final"
 msgstr "finalisiert"
 
-#: invoice/models.py:164 invoice/models.py:266
+#: invoice/models.py:226 invoice/models.py:369
 msgid "invoice"
 msgstr "Rechnung"
 
-#: invoice/models.py:165
+#: invoice/models.py:227
 msgid "invoices"
 msgstr "Rechnungen"
 
-#: invoice/models.py:186 invoice/templates/invoice/invoice_form.html:59
+#: invoice/models.py:257 invoice/templates/invoice/invoice_form.html:68
 #: invoice/templates/invoice/vendor_list.html:10
 msgid "Name"
 msgstr "Name"
 
-#: invoice/models.py:186 invoice/templates/invoice/invoice_form.html:60
+#: invoice/models.py:257 invoice/templates/invoice/invoice_form.html:69
 msgid "Description"
 msgstr "Beschreibung"
 
-#: invoice/models.py:186 invoice/templates/invoice/invoice_form.html:61
+#: invoice/models.py:257 invoice/templates/invoice/invoice_form.html:70
 msgid "Quantity"
 msgstr "Menge"
 
-#: invoice/models.py:186 invoice/templates/invoice/invoice_form.html:62
+#: invoice/models.py:257 invoice/templates/invoice/invoice_form.html:71
 msgid "Price"
 msgstr "Preis"
 
-#: invoice/models.py:186 invoice/templates/invoice/invoice_form.html:63
+#: invoice/models.py:257 invoice/templates/invoice/invoice_form.html:72
 msgid "Tax"
 msgstr "Steuer"
 
-#: invoice/models.py:186 invoice/pdf_generator.py:32
-#: invoice/templates/invoice/invoice_form.html:86
+#: invoice/models.py:257 invoice/pdf_generator.py:31
+#: invoice/templates/invoice/invoice_form.html:95
 #: invoice/templates/invoice/invoice_list.html:15
 msgid "Net Total"
 msgstr "Nettosumme"
 
-#: invoice/models.py:186 invoice/pdf_generator.py:34
-#: invoice/templates/invoice/invoice_form.html:64
-#: invoice/templates/invoice/invoice_form.html:90
+#: invoice/models.py:257 invoice/pdf_generator.py:33
+#: invoice/templates/invoice/invoice_form.html:73
+#: invoice/templates/invoice/invoice_form.html:99
 #: invoice/templates/invoice/invoice_list.html:16
 msgid "Total"
 msgstr "Summe"
 
-#: invoice/models.py:254
+#: invoice/models.py:348
 msgid "invoice item"
 msgstr "Rechnungsposten"
 
-#: invoice/models.py:255
+#: invoice/models.py:349
 msgid "description"
 msgstr "Beschreibung"
 
-#: invoice/models.py:256
+#: invoice/models.py:351
 msgid "quantity"
 msgstr "Menge"
 
-#: invoice/models.py:259
+#: invoice/models.py:356
 msgid "unit"
 msgstr "Einheit"
 
-#: invoice/models.py:260
+#: invoice/models.py:358
 msgid "price"
 msgstr "Preis"
 
-#: invoice/models.py:263
+#: invoice/models.py:364
 msgid "tax rate"
 msgstr "Steuersatz"
 
-#: invoice/pdf_generator.py:27
+#: invoice/pdf_generator.py:26
 msgid "Invoice"
 msgstr "Rechnung"
 
-#: invoice/pdf_generator.py:28
+#: invoice/pdf_generator.py:27
 msgctxt "invoice number"
 msgid "Number"
 msgstr "Rechnungsnummer"
 
-#: invoice/pdf_generator.py:29 invoice/templates/invoice/invoice_list.html:11
+#: invoice/pdf_generator.py:28 invoice/templates/invoice/invoice_list.html:11
 msgid "Date"
 msgstr "Datum"
 
-#: invoice/pdf_generator.py:30
+#: invoice/pdf_generator.py:29
 msgid "Delivery Date"
 msgstr "Lieferdatum"
 
-#: invoice/pdf_generator.py:31 invoice/templates/invoice/invoice_list.html:12
+#: invoice/pdf_generator.py:30 invoice/templates/invoice/invoice_list.html:12
 msgid "Due Date"
 msgstr "Fälligkeitsdatum"
 
-#: invoice/pdf_generator.py:33
+#: invoice/pdf_generator.py:32
 msgid "VAT"
 msgstr "MwST"
 
-#: invoice/pdf_generator.py:35 invoice/templates/invoice/vendor_list.html:12
+#: invoice/pdf_generator.py:34 invoice/templates/invoice/vendor_list.html:12
 msgid "Tax ID"
 msgstr "Steuer ID"
 
@@ -330,59 +330,59 @@ msgid "Address"
 msgstr "Adresse"
 
 #: invoice/templates/invoice/customer_list.html:14
-#: invoice/templates/invoice/invoice_form.html:65
+#: invoice/templates/invoice/invoice_form.html:74
 #: invoice/templates/invoice/invoice_list.html:18
 #: invoice/templates/invoice/vendor_list.html:13
 msgid "Actions"
 msgstr "Aktionen"
 
 #: invoice/templates/invoice/customer_list.html:25
-#: invoice/templates/invoice/invoice_form.html:134
-#: invoice/templates/invoice/invoice_list.html:37
+#: invoice/templates/invoice/invoice_form.html:157
+#: invoice/templates/invoice/invoice_list.html:43
 #: invoice/templates/invoice/vendor_list.html:23
 msgid "Update"
 msgstr "Ändern"
 
 #: invoice/templates/invoice/customer_list.html:26
-#: invoice/templates/invoice/invoice_list.html:38
+#: invoice/templates/invoice/invoice_list.html:44
 #: invoice/templates/invoice/vendor_list.html:24
 msgid "Delete"
 msgstr "Löschen"
 
-#: invoice/templates/invoice/invoice_form.html:24
+#: invoice/templates/invoice/invoice_form.html:33
 msgid "Update Invoice"
 msgstr "Rechnung ändern"
 
-#: invoice/templates/invoice/invoice_form.html:26
+#: invoice/templates/invoice/invoice_form.html:35
 msgid "Create Invoice"
 msgstr "Rechnung erstellen"
 
-#: invoice/templates/invoice/invoice_form.html:43
+#: invoice/templates/invoice/invoice_form.html:52
 msgid "Create an item for this invoice."
 msgstr "Erstelle eine Posten für die Rechnung"
 
-#: invoice/templates/invoice/invoice_form.html:45
+#: invoice/templates/invoice/invoice_form.html:54
 msgid "Create an invoice first."
 msgstr "Erstelle erst eine Rechnung"
 
-#: invoice/templates/invoice/invoice_form.html:51
-#: invoice/templates/invoice/invoice_form.html:117
+#: invoice/templates/invoice/invoice_form.html:60
+#: invoice/templates/invoice/invoice_form.html:140
 msgid "Add invoice item"
 msgstr "Rechnungsposten hinzufügen"
 
-#: invoice/templates/invoice/invoice_form.html:100
+#: invoice/templates/invoice/invoice_form.html:109
 msgid "Show PDF"
 msgstr "Zeige PDF"
 
-#: invoice/templates/invoice/invoice_form.html:115
+#: invoice/templates/invoice/invoice_form.html:138
 msgid "Update invoice item"
 msgstr "Rechnungsposten ändern"
 
-#: invoice/templates/invoice/invoice_form.html:136
+#: invoice/templates/invoice/invoice_form.html:159
 msgid "Reset"
 msgstr "Zurücksetzen"
 
-#: invoice/templates/invoice/invoice_form.html:137
+#: invoice/templates/invoice/invoice_form.html:160
 msgid "Create"
 msgstr "Erstelle"
 
@@ -406,7 +406,15 @@ msgstr "Kunde"
 msgid "Paid"
 msgstr "Bezahlt"
 
+#: invoice/templates/invoice/invoice_list.html:37
+msgid "Yes"
+msgstr "Ja"
+
 #: invoice/templates/invoice/invoice_list.html:39
+msgid "No"
+msgstr "Nein"
+
+#: invoice/templates/invoice/invoice_list.html:45
 msgid "PDF"
 msgstr "PDF"
 
@@ -426,54 +434,58 @@ msgstr "Anbieter erstellen"
 msgid "Company Name"
 msgstr "Firmenname"
 
-#: invoice/views.py:28
+#: invoice/views.py:111
 msgid "Customer was created successfully."
 msgstr "Kunde wurde erfolgreich erstellt"
 
-#: invoice/views.py:55
+#: invoice/views.py:140
 msgid "Customer was updated successfully."
 msgstr "Kunde wurde erfolgreich geändert"
 
-#: invoice/views.py:78
+#: invoice/views.py:141
+msgid "You are not allowed to edit this customer."
+msgstr "Du hast nicht die Berechtigungen diesen Kunden zu bearbeiten."
+
+#: invoice/views.py:169
 msgid "Customer was deleted successfully."
 msgstr "Kunde wurde erfolgreich gelöscht"
 
-#: invoice/views.py:90
+#: invoice/views.py:191
 msgid "Invoice was created successfully."
 msgstr "Rechnung wurde erfolgreich erstellt"
 
-#: invoice/views.py:101
+#: invoice/views.py:203
 msgid "Invoice was updated successfully."
 msgstr "Rechnung wurde erfolgreich geändert"
 
-#: invoice/views.py:116
+#: invoice/views.py:232
 msgid "Invoice was marked as paid successfully."
 msgstr "Rechnung wurde erfolgreich als bezahlt markiert"
 
-#: invoice/views.py:135
+#: invoice/views.py:255
 msgid "Invoice was deleted successfully."
 msgstr "Rechnung wurde erfolgreich gelöscht"
 
-#: invoice/views.py:157
+#: invoice/views.py:290
 msgid "Invoice item was created successfully."
 msgstr "Rechnungsposten wurde erfolgreich erstellt"
 
-#: invoice/views.py:187
+#: invoice/views.py:330
 msgid "Invoice item was updated successfully."
 msgstr "Rechnungsposten wurde erfolgreich geändert"
 
-#: invoice/views.py:208
+#: invoice/views.py:361
 msgid "Invoice item was deleted successfully."
 msgstr "Rechnungsposten wurde erfolgreich gelöscht"
 
-#: invoice/views.py:231
+#: invoice/views.py:394
 msgid "Vendor was created successfully."
 msgstr "Anbieter wurde erfolgreich erstellt"
 
-#: invoice/views.py:265
+#: invoice/views.py:430
 msgid "Vendor was updated successfully."
 msgstr "Anbieter wurde erfolgreich geändert"
 
-#: invoice/views.py:294
+#: invoice/views.py:463
 msgid "Vendor was deleted successfully."
 msgstr "Anbieter wurde erfolgreich gelöscht"
