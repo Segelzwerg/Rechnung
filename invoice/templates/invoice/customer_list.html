@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load i18n %}
 {% load django_bootstrap5 %}
 
@@ -22,8 +23,14 @@
                 <td>{{ customer.email }}</td>
                 <td>{{ customer.address }}</td>
                 <td>
-                    <a href="{% url "customer-update" customer.id %}">{% translate "Update" %}</a> /
-                    <a href="{% url "customer-delete" customer.id %}">{% translate "Delete" %}</a>
+                    <a href="{% url "customer-update" customer.id %}">
+                        <img src="{% static 'invoice/pencil-1.svg' %}" alt="{% translate 'Update' %}" width="24"
+                             height="24">
+                    </a>
+                    <a href="{% url "customer-delete" customer.id %}">
+                        <img src="{% static 'invoice/trash-3.svg' %}" alt="{% translate 'Delete' %}" width="24"
+                             height="24">
+                    </a>
                 </td>
             </tr>
         {% endfor %}
