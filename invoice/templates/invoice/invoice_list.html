@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load django_bootstrap5 %}
-
+{% block title %}<title>Rechnung - {% translate "Invoice List" %}</title>{% endblock %}
 {% block content %}
     <a class="btn btn-primary" role="button" href="{% url "invoice-add" %}">{% translate "Add invoice" %}</a>
     <table class="table">
