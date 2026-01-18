@@ -36,6 +36,7 @@ from django.dispatch import receiver
 from django.utils.formats import number_format
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import pgettext_lazy
+from django_countries.fields import CountryField
 from schwifty import BIC, IBAN
 
 from invoice.errors import FinalError, IncompliantWarning
@@ -52,7 +53,7 @@ class Address(Model):
     postcode = CharField(_("postcode"), max_length=10)
     city = CharField(_("city"), max_length=120)
     state = CharField(_("state"), max_length=200, blank=True, default="")
-    country = CharField(_("country"), max_length=120)
+    country = CountryField()
 
     class Meta:
         verbose_name = _("address")
