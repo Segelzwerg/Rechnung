@@ -1,4 +1,5 @@
 """Forms of the invoice app."""
+
 from django.forms import ModelForm
 from django.forms.widgets import DateInput
 
@@ -57,6 +58,7 @@ class AddressForm(ModelForm):
     class Meta:
         model = Address
         fields = ["line_1", "line_2", "line_3", "postcode", "city", "state", "country"]
+
 
 class BankAccountForm(ModelForm):
     """Form for bank account."""
