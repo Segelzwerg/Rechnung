@@ -116,5 +116,14 @@
     {% endblock content %}
 </div>
 
+<script>
+    setTimeout(function () {
+        let messages = document.querySelectorAll('.alert');
+        messages.forEach(function (message) {
+            let alert = new bootstrap.Alert(message);
+            alert.close();
+        });
+    }, 5000);
+</script>
 </body>
 </html>
