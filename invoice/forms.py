@@ -1,6 +1,5 @@
 """Forms of the invoice app."""
-import pycountry
-from django.forms import ChoiceField, ModelForm
+from django.forms import ModelForm
 from django.forms.widgets import DateInput
 
 from invoice.models import Address, BankAccount, Customer, Invoice, InvoiceItem, Vendor
@@ -58,8 +57,6 @@ class AddressForm(ModelForm):
     class Meta:
         model = Address
         fields = ["line_1", "line_2", "line_3", "postcode", "city", "state", "country"]
-
-    country = ChoiceField(choices=[(country.alpha_2, country.name) for country in pycountry.countries])
 
 class BankAccountForm(ModelForm):
     """Form for bank account."""
