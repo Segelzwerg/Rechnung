@@ -546,6 +546,7 @@ dependencies = [
     { name = "environs", extra = ["django"] },
     { name = "gunicorn" },
     { name = "psycopg", extra = ["binary"] },
+    { name = "pycountry" },
     { name = "reportlab" },
     { name = "schwifty" },
     { name = "whitenoise" },
@@ -574,9 +575,10 @@ requires-dist = [
     { name = "environs", extras = ["django"], specifier = ">=14.5" },
     { name = "gunicorn", specifier = ">=23.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3" },
+    { name = "pycountry", specifier = ">=24.6.1" },
     { name = "reportlab", specifier = ">=4.4" },
     { name = "schwifty", specifier = ">=2025.9" },
-    { name = "whitenoise", specifier = ">=6.11.0" },
+    { name = "whitenoise", specifier = ">=6.11" },
 ]
 
 [package.metadata.requires-dev]
