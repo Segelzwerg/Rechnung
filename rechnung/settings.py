@@ -9,11 +9,12 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import gettext
 import os
 import sys
 from pathlib import Path
 
+import pycountry
 from django.utils.translation import gettext_lazy as _
 from environs import FileAwareEnv
 
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_bootstrap5",
+    "django_countries",
     "invoice",
     "accounts",
 ]
@@ -103,6 +105,7 @@ USE_I18N = True
 LANGUAGE_CODE = "en-us"
 LANGUAGES = [("de", _("German")), ("en", _("English"))]
 LOCALE_PATHS = [BASE_DIR / "locale"]
+gettext.translation('iso3166-1', pycountry.LOCALES_DIR, languages=['de']).install()
 
 USE_TZ = True
 TIME_ZONE = env.str("TIME_ZONE", default="UTC")
