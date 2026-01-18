@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load i18n %}
 {% load django_bootstrap5 %}
 
@@ -38,7 +39,7 @@
                 </form>
                 {% if invoice %}
                     <a class="btn btn-primary" role="button" href="{% url "invoice-delete" invoice.id %}">
-                        Delete Invoice
+                        {% translate "Delete Invoice" %}
                     </a>
                 {% endif %}
             </div>
@@ -91,8 +92,13 @@
                                 <td class="text-end">{{ item.tax_string }}</td>
                                 <td class="text-end">{{ item.total_string }}</td>
                                 <td>
-                                    <a href="{% url "invoice-item-update" invoice.id item.id %}">Update</a> /
-                                    <a href="{% url "invoice-item-delete" invoice.id item.id %}">Delete</a>
+                                    <a href="{% url "invoice-item-update" invoice.id item.id %}">
+                                        <img src="{% static 'invoice/pencil-1.svg' %}" alt="{% translate 'Update' %}"
+                                             width="24" height="24">
+                                    </a>
+                                    <a href="{% url "invoice-item-delete" invoice.id item.id %}">
+                                        <img src="{% static 'invoice/trash-3.svg' %}" alt="{% translate 'Delete' %}"
+                                             width="24" height="24"></a>
                                 </td>
                             </tr>
                         {% endfor %}
