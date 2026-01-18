@@ -81,3 +81,21 @@ Finally, we require a database.
 Start Docker Compose
 --------------------
 After you created the above file, you can start the app with ``docker compose up``.
+
+Proxmox
+========
+Setup a Ubuntu VM e.g. with by running
+
+.. code :: shell
+
+    bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/vm/ubuntu2504-vm.sh)"
+
+on the pve shell.
+
+Login to VM after creation and run:
+
+.. code :: shell
+
+    bash -c "$(curl -fsSL https://raw.githubusercontent.com/Segelzwerg/Rechnung/main/proxmox/setup.sh)"
+
+Follow the instructions and enter the required secrets & passwords.
