@@ -58,7 +58,7 @@ def build_address_fields(draw):
         text(alphabet=characters(codec="utf-8", categories=["Lu", "Ll", "Nd", "Zs", "Pd"]), min_size=1, max_size=10)
     )
     state = draw(text(alphabet=characters(codec="utf-8", categories=["Lu", "Ll", "Nd", "Zs", "Pd"])))
-    country = draw(text(alphabet=characters(codec="utf-8", categories=["Lu", "Ll", "Nd", "Zs", "Pd"]), min_size=1))
+    country = "DE"
 
     assume(address_line_1.strip() == address_line_1)
     assume(address_line_2.strip() == address_line_2)
@@ -131,7 +131,7 @@ class AddCustomerViewTestCase(TestCase):
         self.assertTemplateUsed(response, "invoice/customer_form.html")
 
     @given(build_customer_fields(), build_address_fields())
-    @example(("John", "Doe", "john@doe.com"), ("Musterstraße 1", "", "", "Musterstadt", "12345", "", "Germany"))
+    @example(("John", "Doe", "john@doe.com"), ("Musterstraße 1", "", "", "Musterstadt", "12345", "", "DE"))
     def test_add_customer(self, customer_fields, address_fields):
         self.client.force_login(self.user)
         first_name, last_name, email = customer_fields
@@ -520,7 +520,7 @@ class AddVendorViewTestCase(TestCase):
     @given(build_vendor_fields(), build_address_fields(), build_bank_fields())
     @example(
         ("John", "Doe Company", "DE123456"),
-        ("Musterstraße 1", "", "", "Musterstadt", "12345", "", "Germany"),
+        ("Musterstraße 1", "", "", "Musterstadt", "12345", "", "DE"),
         ("John Doe", "ES9620686250804690656114", "CAHMESMM"),
     )
     def test_add_vendor(self, vendor_fields, address_fields, bank_fields):
