@@ -105,7 +105,6 @@ USE_I18N = True
 LANGUAGE_CODE = "en-us"
 LANGUAGES = [("de", _("German")), ("en", _("English"))]
 LOCALE_PATHS = [BASE_DIR / "locale"]
-gettext.translation("iso3166-1", pycountry.LOCALES_DIR, languages=["de"]).install()
 
 USE_TZ = True
 TIME_ZONE = env.str("TIME_ZONE", default="UTC")
