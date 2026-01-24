@@ -1,6 +1,6 @@
 [project]
 name = "rechnung"
-version = "0.3.7"
+version = "0.3.8"
 description = ""
 authors = [
     { name = "Segelzwerg", email = "25705862+Segelzwerg@users.noreply.github.com" },
@@ -19,6 +19,7 @@ dependencies = [
     "psycopg[binary]>=3.3",
     "environs[django]>=14.5",
     "whitenoise>=6.11",
+    "django-countries>=8.2.0",
 ]
 
 [project.urls]
