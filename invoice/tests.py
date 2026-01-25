@@ -1836,9 +1836,9 @@ class InvoicePDFViewTestCase(TestCase):
 
     def setUp(self):
         address = Address.objects.create()
-        vendor = Vendor.objects.create(address=address, user=self.user)
-        customer = Customer.objects.create(address=address, vendor=vendor)
-        self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer, date=now())
+        self.vendor = Vendor.objects.create(address=address, user=self.user)
+        customer = Customer.objects.create(address=address, vendor=self.vendor)
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, customer=customer, date=now())
 
     def tearDown(self):
         Vendor.objects.all().delete()
@@ -1876,6 +1876,14 @@ class InvoicePDFViewTestCase(TestCase):
         invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer, date=now())
         self.client.force_login(self.user)
         response = self.client.get(reverse("invoice-pdf", kwargs={"invoice_id": invoice.pk}), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Type"), "application/pdf")
+        self.assertEqual(response.status_code, 200)
+
+    def test_without_logo(self):
+        self.client.force_login(self.user)
+        self.vendor.logo = None
+        response = self.client.get(reverse("invoice-pdf", kwargs={"invoice_id": self.invoice.pk}), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get("Content-Type"), "application/pdf")
         self.assertEqual(response.status_code, 200)
