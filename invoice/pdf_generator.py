@@ -57,7 +57,7 @@ def gen_invoice_pdf(invoice, filename_or_io):  # noqa: C901, PLR0915
                     address.line_2,
                     address.line_3,
                     f"{address.postcode} {address.city}",
-                    address.country,
+                address.country.name,
                 ]
                 if line
             ]
