@@ -90,6 +90,9 @@ def gen_invoice_pdf(invoice, filename_or_io):  # noqa: C901, PLR0915
         x_left, y_top, invoice.vendor.address, prefix_lines=[invoice.vendor.name, invoice.vendor.company_name]
     )
 
+    # Center Logo
+    pdf_object.drawImage(invoice.vendor.logo.path, 100, y_top - 100, width=100, height=100)
+
     # Customer address
     render_address(A4_WIDTH - 200, y_top, invoice.customer.address, prefix_lines=[invoice.customer.full_name])
 
