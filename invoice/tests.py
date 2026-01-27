@@ -2,10 +2,14 @@ import datetime
 from datetime import timedelta
 from decimal import Decimal
 from math import inf, nan
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import schwifty
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.files.base import ContentFile
+from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import now
 from hypothesis import assume, example, given
@@ -1887,6 +1891,20 @@ class InvoicePDFViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get("Content-Type"), "application/pdf")
         self.assertEqual(response.status_code, 200)
+
+    def test_with_logo(self):
+        """image credit: https://www.flaticon.com/free-icons/terror"""
+        self.client.force_login(self.user)
+        pumpkin_path = Path(__file__).resolve().parents[1] / "test_files" / "pumpkin.png"
+        pumpkin_bytes = pumpkin_path.read_bytes()
+
+        with TemporaryDirectory() as tmp_media_root, override_settings(MEDIA_ROOT=tmp_media_root):
+            self.vendor.logo.save("pumpkin.png", ContentFile(pumpkin_bytes), save=True)
+        response = self.client.get(reverse("invoice-pdf", kwargs={"invoice_id": self.invoice.pk}), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Type"), "application/pdf")
+        self.assertEqual(response.status_code, 200)
+
 
 
 class InvoiceListViewTestCase(TestCase):
