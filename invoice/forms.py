@@ -73,4 +73,4 @@ class VendorForm(ModelForm):
 
     class Meta:
         model = Vendor
-        fields = ["name", "company_name", "tax_id"]
+        fields = ["name", "company_name", "tax_id", "logo"]

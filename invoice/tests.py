@@ -2,10 +2,15 @@ import datetime
 from datetime import timedelta
 from decimal import Decimal
 from math import inf, nan
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import schwifty
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import now
 from hypothesis import assume, example, given
@@ -95,6 +100,14 @@ def build_invoice_item(draw):
     assume(description.strip() == description)
     assume(unit.strip() == unit)
     return InvoiceItem(name=name, description=description, quantity=quantity, unit=unit, price=price, tax=tax)
+
+
+def clear_logos_in_media():
+    logo_path = Path(__file__).resolve().parents[1] / "media" / "logos"
+    if logo_path.exists():
+        for file in logo_path.iterdir():
+            if file.is_file():
+                file.unlink()
 
 
 class AddCustomerViewTestCase(TestCase):
@@ -607,13 +620,12 @@ class UpdateVendorViewTestCase(TestCase):
         User.objects.all().delete()
 
     def setUp(self):
+        clear_logos_in_media()
         owner, iban, bic = build_bank_fields().example()
         self.vendor = Vendor.objects.create(
             name="John",
             company_name="Doe Company",
-            address=Address.objects.create(
-                line_1="Musterstraße 1", postcode="12345", city="Musterstadt", country="Germany"
-            ),
+            address=Address.objects.create(line_1="Musterstraße 1", postcode="12345", city="Musterstadt", country="DE"),
             bank_account=BankAccount.objects.create(owner=owner, iban=iban, bic=bic),
             user=self.user,
         )
@@ -621,6 +633,7 @@ class UpdateVendorViewTestCase(TestCase):
 
     def tearDown(self):
         Vendor.objects.all().delete()
+        clear_logos_in_media()
 
     def test_get(self):
         self.client.force_login(self.user)
@@ -662,6 +675,41 @@ class UpdateVendorViewTestCase(TestCase):
         self.assertEqual(vendor.company_name, company)
         self.assertEqual(vendor.address, address)
         self.assertEqual(vendor.bank_account, bank_account)
+
+    def test_update_vendor_logo(self):
+        self.client.force_login(self.user)
+        pumpkin_path = Path(__file__).resolve().parents[1] / "test_files" / "pumpkin.png"
+        pumpkin_bytes = pumpkin_path.read_bytes()
+        upload = SimpleUploadedFile("pumpkin.png", pumpkin_bytes, content_type="image/png")
+
+        with TemporaryDirectory() as tmp_media_root, override_settings(MEDIA_ROOT=tmp_media_root):
+            response = self.client.post(
+                self.url,
+                data={
+                    "name": self.vendor.name,
+                    "company_name": self.vendor.company_name,
+                    "tax_id": self.vendor.tax_id,
+                    "line_1": self.vendor.address.line_1,
+                    "line_2": self.vendor.address.line_2,
+                    "line_3": self.vendor.address.line_3,
+                    "city": self.vendor.address.city,
+                    "postcode": self.vendor.address.postcode,
+                    "state": self.vendor.address.state,
+                    "country": self.vendor.address.country,
+                    "owner": self.vendor.bank_account.owner,
+                    "iban": str(self.vendor.bank_account.iban),
+                    "bic": str(self.vendor.bank_account.bic),
+                    "logo": upload,
+                },
+                follow=True,
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertRedirects(response, "/vendors/")
+            vendor = Vendor.objects.get(id=self.vendor.id)
+            self.assertIsNotNone(vendor)
+            self.assertTrue(bool(vendor.logo), "Vendor logo should be set after upload")
+            self.assertTrue(vendor.logo.name.endswith("pumpkin.png"))
+            self.assertTrue(Path(vendor.logo.path).exists())
 
     def test_update_invalid_input_address(self):
         self.client.force_login(self.user)
@@ -1836,12 +1884,14 @@ class InvoicePDFViewTestCase(TestCase):
 
     def setUp(self):
         address = Address.objects.create()
-        vendor = Vendor.objects.create(address=address, user=self.user)
-        customer = Customer.objects.create(address=address, vendor=vendor)
-        self.invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer, date=now())
+        self.vendor = Vendor.objects.create(address=address, user=self.user)
+        customer = Customer.objects.create(address=address, vendor=self.vendor)
+        self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, customer=customer, date=now())
+        clear_logos_in_media()
 
     def tearDown(self):
         Vendor.objects.all().delete()
+        clear_logos_in_media()
 
     def test_pdf(self):
         self.client.force_login(self.user)
@@ -1876,6 +1926,27 @@ class InvoicePDFViewTestCase(TestCase):
         invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer, date=now())
         self.client.force_login(self.user)
         response = self.client.get(reverse("invoice-pdf", kwargs={"invoice_id": invoice.pk}), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Type"), "application/pdf")
+        self.assertEqual(response.status_code, 200)
+
+    def test_without_logo(self):
+        self.client.force_login(self.user)
+        self.vendor.logo = None
+        response = self.client.get(reverse("invoice-pdf", kwargs={"invoice_id": self.invoice.pk}), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Type"), "application/pdf")
+        self.assertEqual(response.status_code, 200)
+
+    def test_with_logo(self):
+        """image credit: https://www.flaticon.com/free-icons/terror"""
+        self.client.force_login(self.user)
+        pumpkin_path = Path(__file__).resolve().parents[1] / "test_files" / "pumpkin.png"
+        pumpkin_bytes = pumpkin_path.read_bytes()
+
+        with TemporaryDirectory() as tmp_media_root, override_settings(MEDIA_ROOT=tmp_media_root):
+            self.vendor.logo.save("pumpkin.png", ContentFile(pumpkin_bytes), save=True)
+        response = self.client.get(reverse("invoice-pdf", kwargs={"invoice_id": self.invoice.pk}), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get("Content-Type"), "application/pdf")
         self.assertEqual(response.status_code, 200)
