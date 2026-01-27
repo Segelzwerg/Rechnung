@@ -104,9 +104,10 @@ def build_invoice_item(draw):
 
 def clear_logos_in_media():
     logo_path = Path(__file__).resolve().parents[1] / "media" / "logos"
-    for file in logo_path.iterdir():
-        if file.is_file():
-            file.unlink()
+    if logo_path.exists():
+        for file in logo_path.iterdir():
+            if file.is_file():
+                file.unlink()
 
 
 class AddCustomerViewTestCase(TestCase):
