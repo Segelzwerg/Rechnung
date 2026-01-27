@@ -1,0 +1,38 @@
+on:
+  workflow_dispatch:
+    inputs:
+      level:
+        description: 'Version Level'
+        required: true
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+jobs:
+  build:
+    name: "Bump version"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Get version
+        id: get_version
+        run: |
+          echo "version=$(uvx --from=toml-cli toml get --toml-path=pyproject.toml project.version)" >> $GITHUB_OUTPUT
+      - name: Bump version and create Tag
+        run: |
+          VERSION=$(uv version --bump ${{ github.event.inputs.level }})
+          git add pyproject.toml
+          git commit -m "BUMP: to $VERSION"
+          git push
+          git tag -a "v$VERSION" -m "Release $VERSION"
