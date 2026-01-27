@@ -1888,9 +1888,11 @@ class InvoicePDFViewTestCase(TestCase):
         self.vendor = Vendor.objects.create(address=address, user=self.user)
         customer = Customer.objects.create(address=address, vendor=self.vendor)
         self.invoice = Invoice.objects.create(invoice_number=1, vendor=self.vendor, customer=customer, date=now())
+        clear_logos_in_media()
 
     def tearDown(self):
         Vendor.objects.all().delete()
+        clear_logos_in_media()
 
     def test_pdf(self):
         self.client.force_login(self.user)
