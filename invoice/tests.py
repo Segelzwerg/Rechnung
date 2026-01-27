@@ -624,9 +624,7 @@ class UpdateVendorViewTestCase(TestCase):
         self.vendor = Vendor.objects.create(
             name="John",
             company_name="Doe Company",
-            address=Address.objects.create(
-                line_1="Musterstraße 1", postcode="12345", city="Musterstadt", country="DE"
-            ),
+            address=Address.objects.create(line_1="Musterstraße 1", postcode="12345", city="Musterstadt", country="DE"),
             bank_account=BankAccount.objects.create(owner=owner, iban=iban, bic=bic),
             user=self.user,
         )
@@ -1201,8 +1199,8 @@ class InvoiceModelTestCase(TestCase):
             invoice.net_total,
             first_item.net_total + second_item.net_total,
             msg=f"First Net Total:{first_item.net_total}"
-                f"Second Net Total:{second_item.net_total}"
-                f"Invoice Net Total:{invoice.net_total}",
+            f"Second Net Total:{second_item.net_total}"
+            f"Invoice Net Total:{invoice.net_total}",
         )
 
     @given(build_invoice_item(), build_invoice_item())
