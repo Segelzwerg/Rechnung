@@ -5,6 +5,8 @@ on:
       - 'v*'  # Triggers on any tag starting with 'v', e.g., v1.0.0
 jobs:
   create-release:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
