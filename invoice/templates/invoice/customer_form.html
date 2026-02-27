@@ -1,6 +1,15 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load django_bootstrap5 %}
+{% block title %}
+    <title>Rechnung -
+        {% if customer %}
+            {% translate "Customer edit" %}
+        {% else %}
+            {% translate "Customer add" %}
+        {% endif %}
+    </title>
+{% endblock %}
 
 {% block content %}
     <div class="w-50">

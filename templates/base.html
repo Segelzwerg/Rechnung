@@ -2,10 +2,8 @@
 {% load i18n %}
 <!DOCTYPE html>
 <html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>Rechnung</title>
-</head>
+
+
 {% load i18n %}
 
 {# Load the tag library #}
@@ -14,7 +12,10 @@
 {# Load CSS and JavaScript #}
 {% bootstrap_css %}
 {% bootstrap_javascript %}
-
+<head>
+    <meta charset="UTF-8">
+    {% block title %}<title>Rechnung</title>{% endblock %}
+</head>
 <body>
 
 {% block navbar %}
