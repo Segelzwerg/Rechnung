@@ -1861,6 +1861,25 @@ class InvoicePDFViewTestCase(TestCase):
         response = self.client.get(reverse("invoice-pdf", kwargs={"invoice_id": self.invoice.pk}))
         self.assertEqual(response.status_code, 403)
 
+    def test_with_full_address(self):
+        address = Address.objects.create(
+            line_1="Teststreet 1",
+            line_2="Building 4",
+            line_3="Floor 3",
+            postcode="12345",
+            city="Testcity",
+            state="Bayern",
+            country="DE",
+        )
+        vendor = Vendor.objects.create(name="Vendor 2", address=address, user=self.user)
+        customer = Customer.objects.create(address=address, vendor=vendor)
+        invoice = Invoice.objects.create(invoice_number=1, vendor=vendor, customer=customer, date=now())
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("invoice-pdf", kwargs={"invoice_id": invoice.pk}), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Type"), "application/pdf")
+        self.assertEqual(response.status_code, 200)
+
 
 class InvoiceListViewTestCase(TestCase):
     @classmethod
