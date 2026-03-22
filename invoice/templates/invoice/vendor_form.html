@@ -1,15 +1,16 @@
 {% extends 'base.html' %}
-{% load i18n %}
+
 {% load django_bootstrap5 %}
+{% load i18n %}
 {% block title %}
-    <title>Rechnung -
-        {% if vendor %}
-            {% translate "Vendor edit" %}
-        {% else %}
-            {% translate "Vendor add" %}
-        {% endif %}
-    </title>
+    Rechnung -
+    {% if vendor %}
+        {% translate "Vendor edit" %}
+    {% else %}
+        {% translate "Vendor add" %}
+    {% endif %}
 {% endblock %}
+
 {% block content %}
     <div class="w-50">
         <form method="post" class="form-horizontal"

@@ -1,23 +1,20 @@
+<!DOCTYPE html>
+{% load django_bootstrap5 %}
 {% load static %}
 {% load i18n %}
-<!DOCTYPE html>
-<html lang="de">
-
-
-{% load i18n %}
-
-{# Load the tag library #}
-{% load django_bootstrap5 %}
-
-{# Load CSS and JavaScript #}
-{% bootstrap_css %}
-{% bootstrap_javascript %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_available_languages as LANGUAGES %}
+{% get_language_info_list for LANGUAGES as languages %}
+<html lang="{{ LANGUAGE_CODE|default:'de' }}">
 <head>
-    <meta charset="UTF-8">
-    {% block title %}<title>Rechnung</title>{% endblock %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}Rechnung{% endblock %}</title>
+    {# Load CSS and JavaScript #}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
 </head>
 <body>
-
 {% block navbar %}
     <nav class="navbar navbar-expand-md bg-dark" data-bs-theme="dark">
         <a class="navbar-brand" href="{% url "start" %}">{% translate "Rechnung" %}</a>
@@ -91,9 +88,6 @@
                 <input name="next" type="hidden" value="{{ redirect_to }}">
                 <label>
                     <select class="form-select" name="language">
-                        {% get_current_language as LANGUAGE_CODE %}
-                        {% get_available_languages as LANGUAGES %}
-                        {% get_language_info_list for LANGUAGES as languages %}
                         {% for language in languages %}
                             <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %}
                                     selected{% endif %}>

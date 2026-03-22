@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
+
+{% load django_bootstrap5 %}
 {% load static %}
 {% load i18n %}
-{% load django_bootstrap5 %}
 {% block title %}
-    <title>Rechnung -
-        {% if invoice %}
-            {% translate "Invoice edit" %}
-        {% else %}
-            {% translate "Invoice add" %}
-        {% endif %}
-    </title>
+    Rechnung -
+    {% if invoice %}
+        {% translate "Invoice edit" %}
+    {% else %}
+        {% translate "Invoice add" %}
+    {% endif %}
 {% endblock %}
 {% block content %}
     <div class="container">
