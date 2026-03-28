@@ -22,6 +22,7 @@ from django.db.models import (
     EmailField,
     F,
     ForeignKey,
+    ImageField,
     IntegerField,
     Model,
     OneToOneField,
@@ -147,7 +148,7 @@ def post_delete_customer(sender, instance, *args, **kwargs):  # pylint: disable=
         x = instance.address
         if x:
             x.delete()
-    except (KeyError, ObjectDoesNotExist):
+    except KeyError, ObjectDoesNotExist:
         pass
 
 
@@ -164,6 +165,7 @@ class Vendor(Model):
     user = ForeignKey(User, on_delete=CASCADE)
     invoice_counter = IntegerField(_("invoice counter"), default=0)
     invoice_number_format = CharField(_("invoice number format"), max_length=255, blank=True, default="")
+    logo = ImageField(_("logo path"), upload_to="logos", blank=True, default="")
 
     class Meta:
         """Meta configuration of vendor. Ensures uniques of the combination of name and vendor."""
@@ -191,13 +193,13 @@ def post_delete_vendor(sender, instance, *args, **kwargs):  # pylint: disable=un
         x = instance.address
         if x:
             x.delete()
-    except (KeyError, ObjectDoesNotExist):
+    except KeyError, ObjectDoesNotExist:
         pass
     try:
         x = instance.bank_account
         if x:
             x.delete()
-    except (KeyError, ObjectDoesNotExist):
+    except KeyError, ObjectDoesNotExist:
         pass
 
 
