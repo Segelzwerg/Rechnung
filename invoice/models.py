@@ -148,7 +148,7 @@ def post_delete_customer(sender, instance, *args, **kwargs):  # pylint: disable=
         x = instance.address
         if x:
             x.delete()
-    except (KeyError, ObjectDoesNotExist):
+    except KeyError, ObjectDoesNotExist:
         pass
 
 
@@ -193,13 +193,13 @@ def post_delete_vendor(sender, instance, *args, **kwargs):  # pylint: disable=un
         x = instance.address
         if x:
             x.delete()
-    except (KeyError, ObjectDoesNotExist):
+    except KeyError, ObjectDoesNotExist:
         pass
     try:
         x = instance.bank_account
         if x:
             x.delete()
-    except (KeyError, ObjectDoesNotExist):
+    except KeyError, ObjectDoesNotExist:
         pass
 
 
