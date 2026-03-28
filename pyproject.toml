@@ -12,13 +12,15 @@ license-files = ["LICEN[CS]E*"]
 requires-python = ">=3.14"
 dependencies = [
     "django>=6.0",
-    "django-bootstrap5>=25.3",
+    "django-bootstrap5>=26.2",
     "reportlab>=4.4",
-    "schwifty>= 2025.9",
-    "gunicorn>=23.0",
+    "schwifty>= 2026.3",
+    "uvicorn>=0.42",
+    "uvicorn-worker>=0.4",
+    "gunicorn>=25.3",
     "psycopg[binary]>=3.3",
-    "environs[django]>=14.5",
-    "whitenoise>=6.11",
+    "environs[django]>=14.6",
+    "whitenoise>=6.12",
     "django-countries>=8.2.0",
 ]
 
@@ -31,17 +33,17 @@ issues = "https://github.com/Segelzwerg/Rechnung/issues"
 [dependency-groups]
 dev = [
     "pytest>=9.0",
-    "pytest-django>=4.11",
-    "pylint>=3.3", # 4.0 is blocked by pylint-django 2.6
-    "pylint-django>=2.6",
+    "pytest-django>=4.12",
+    "pylint>=4.0",
+    "pylint-django>=2.7",
     "coverage>=7.13",
-    "hypothesis>=6.148",
-    "ruff>=0.14",
-    "django-debug-toolbar>=6.1",
+    "hypothesis>=6.151",
+    "ruff>=0.15",
+    "django-debug-toolbar>=6.2",
 ]
 docs = [
-    "sphinx>=8.2", # 9.0 is blocked by sphinx-rtd-theme 3.0
-    "sphinx-rtd-theme>=3.0",
+    "sphinx>=9.1",
+    "sphinx-rtd-theme>=3.1",
 ]
 
 [tool.ruff]

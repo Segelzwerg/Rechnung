@@ -163,7 +163,7 @@ class InvoiceNumberFormat:
             zero_padding_arg = args[1] if args and len(args) >= 2 else None  # noqa: PLR2004, constant for arg length
             try:
                 zero_padding = int(zero_padding_arg)
-            except (TypeError, ValueError):
+            except TypeError, ValueError:
                 zero_padding = DEFAULT_INVOICE_NUMBER_ZERO_PADDING
 
             counter_index = self._counter_indices.get(counter_type, 0)
