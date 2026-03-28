@@ -1,3 +1,5 @@
+# pylint: disable=invalid-name
+
 """
 Django settings for rechnung project.
 

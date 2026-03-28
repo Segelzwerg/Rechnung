@@ -26,7 +26,7 @@ from django.views.static import serve
 urlpatterns = [
     *static(settings.STATIC_URL, document_root=settings.STATIC_ROOT),
     re_path(
-        r"^{}(?P<path>.*)$".format(re.escape(settings.MEDIA_URL.lstrip("/"))),
+        rf"^{re.escape(settings.MEDIA_URL.lstrip('/'))}(?P<path>.*)$",
         serve,
         kwargs={"document_root": settings.MEDIA_ROOT},
     ),  # TODO: this is unsafe for prod
