@@ -17,7 +17,7 @@ from django.views.generic import CreateView, DeleteView, ListView, TemplateView,
 from invoice import pdf_generator
 from invoice.constants import YEAR_COUNTER_FORMAT
 from invoice.errors import IncompliantWarning
-from invoice.forms import AddressForm, BankAccountForm, CustomerForm, InvoiceForm, InvoiceItemForm, VendorForm
+from invoice.forms import AddressForm, BankAccountForm, CustomerForm, InvoiceForm, InvoiceItemForm, InvoiceItemFormSet, VendorForm
 from invoice.invoice_number_generator import InvoiceNumberFormat
 from invoice.models import Customer, Invoice, InvoiceItem, Vendor
 
@@ -228,13 +228,23 @@ class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
 
     def form_valid(self, form):
         """Raise a warning message if set final and is not compliant."""
+        context = self.get_context_data(form=form)
+        invoice_item_formset = context["invoice_item_formset"]
+
+        if not invoice_item_formset.is_valid():
+            return self.form_invalid(form)
+
         with catch_warnings(record=True) as warning:
-            super().form_valid(form)
+            response = super().form_valid(form)
+            invoice_item_formset.instance = self.object
+            invoice_item_formset.save()
+
             if any(issubclass(w.category, IncompliantWarning) for w in warning):
                 messages.warning(self.request, "The invoice is not compliant.")
                 next_url = reverse("invoice-update", args=[self.kwargs["pk"]])
                 return HttpResponseRedirect(next_url)
-        return HttpResponseRedirect(self.get_success_url())
+
+        return response
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -243,10 +253,15 @@ class InvoiceUpdateView(OwnMixin, SuccessMessageMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         if self.request.POST:
-            context["invoice_item_form"] = InvoiceItemForm(self.request.POST)
+            context["invoice_item_formset"] = InvoiceItemFormSet(
+                self.request.POST,
+                instance=self.object,
+            )
         else:
-            context["invoice_item_form"] = InvoiceItemForm()
+            context["invoice_item_formset"] = InvoiceItemFormSet(instance=self.object)
+
         return context
 
     def handle_no_permission(self, login_redirect="invoice-update", permission_redirect="invoice-list"):
