@@ -1,6 +1,6 @@
 """Forms of the invoice app."""
 
-from django.forms import ModelForm
+from django.forms import ModelForm, inlineformset_factory
 from django.forms.widgets import DateInput
 
 from invoice.models import Address, BankAccount, Customer, Invoice, InvoiceItem, Vendor
@@ -35,7 +35,13 @@ class InvoiceItemForm(ModelForm):
         model = InvoiceItem
         fields = ["name", "description", "quantity", "unit", "price", "tax"]
 
-
+InvoiceItemFormSet = inlineformset_factory(
+    Invoice,
+    InvoiceItem,
+    form=InvoiceItemForm,
+    extra=1,
+    can_delete=True,
+)
 class CustomerForm(ModelForm):
     """Form for customer."""
 
