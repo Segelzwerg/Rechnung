@@ -38,7 +38,7 @@ dev = [
     "pylint-django>=2.7",
     "coverage>=7.13",
     "hypothesis>=6.151",
-    "ruff>=0.15",
+    "ruff>=0.15.10",
     "django-debug-toolbar>=6.2",
 ]
 docs = [
