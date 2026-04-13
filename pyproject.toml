@@ -37,7 +37,7 @@ dev = [
     "pylint>=4.0",
     "pylint-django>=2.7",
     "coverage>=7.13",
-    "hypothesis>=6.151",
+    "hypothesis>=6.151.13",
     "ruff>=0.15",
     "django-debug-toolbar>=6.2",
 ]
