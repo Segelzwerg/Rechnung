@@ -11,7 +11,7 @@ license = "GPL-3.0-only"
 license-files = ["LICEN[CS]E*"]
 requires-python = ">=3.14"
 dependencies = [
-    "django>=6.0",
+    "django>=6.0.6",
     "django-bootstrap5>=26.2",
     "reportlab>=4.4",
     "schwifty>= 2026.3",
